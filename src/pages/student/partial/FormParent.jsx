@@ -26,7 +26,7 @@ const FormParent = ({formData, setFormData, methods, ...props}) => {
         setFormData({...formData, [e.target.name]: e.target.value});
     };
     const onSubmit = () => {
-        if (formData.guardStatus === 1) {
+        if (formData.guardStatus === '1') {
             setFormData({
                 ...formData,
                 guardName: formData.fatherName,
@@ -36,7 +36,7 @@ const FormParent = ({formData, setFormData, methods, ...props}) => {
                 guardEmail: formData.fatherEmail,
                 guardPhone: formData.fatherPhone
             })
-        } else if (formData.guardStatus === 2) {
+        } else if (formData.guardStatus === '2') {
             setFormData({
                 ...formData,
                 guardName: formData.motherName,
@@ -117,6 +117,22 @@ const FormParent = ({formData, setFormData, methods, ...props}) => {
     }
 
     useEffect(() => {
+        setValue('numberKk', formData.numberKk);
+        setValue('headFamily', formData.headFamily);
+        setValue('fatherStatus', formData.fatherStatus);
+        setValue('fatherName', formData.fatherName);
+        setValue('fatherNIK', formData.fatherNIK);
+        setValue('fatherBirthplace', formData.fatherBirthplace);
+        setValue('fatherEmail', formData.fatherEmail);
+        setValue('fatherPhone', formData.fatherPhone);
+        setValue('motherStatus', formData.motherStatus);
+        setValue('motherName', formData.motherName);
+        setValue('motherNIK', formData.motherNIK);
+        setValue('motherBirthplace', formData.motherBirthplace);
+        setValue('motherEmail', formData.motherEmail);
+        setValue('motherPhone', formData.motherPhone);
+        setValue('guardStatus', formData.guardStatus);
+        setFatherBirthdate(moment(formData.fatherBirthdate, 'YYYY-MM-DD').toDate());
         if (formData.guardStatus === '1') {
             setValue('guardName', formData.fatherName)
             setValue('guardNIK', formData.fatherNIK)
@@ -131,8 +147,14 @@ const FormParent = ({formData, setFormData, methods, ...props}) => {
             setGuardBirthDate(moment(formData.motherBirthdate).toDate())
             setValue('guardEmail', formData.motherEmail)
             setValue('guardPhone', formData.motherPhone)
+        } else {
+            setValue('guardName', formData.guardName);
+            setValue('guardNIK', formData.guardNIK);
+            setValue('guardBirthplace', formData.guardBirthplace);
+            setValue('guardEmail', formData.guardEmail);
+            setValue('guardPhone', formData.guardPhone);
         }
-    }, [setValue, formData]);
+    }, [formData, setValue]);
     return (
         <React.Fragment>
             <form className="content clearfix" onSubmit={handleSubmit(onSubmit)}>

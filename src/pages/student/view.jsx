@@ -17,13 +17,19 @@ import {
     UserAvatar
 } from "@/components";
 import {findUpper, role} from "@/utils";
-import {show as showStudent} from "@/api/student"
+import {show as showStudent} from "@/api/student";
+import {get as getActivity} from "@/api/student/activity";
 
 const View = () => {
     const {id} = useParams();
     const [student, setStudent] = useState([]);
     const [sideBar, setSideBar] = useState(true);
     const [tab, setTab] = useState(1)
+    const [province, setProvince] = useState({});
+    const [city, setCity] = useState({});
+    const [district, setDistrict] = useState({});
+    const [village, setVillage] = useState({});
+    const [activities, setActivities] = useState([]);
     const navigate = useNavigate();
     const parentStatus = (e) => {
         switch (e) {
@@ -35,7 +41,26 @@ const View = () => {
                 return "Tidak diketahui"
         }
     }
-
+    const studentStatus = (e) => {
+        switch (e) {
+            case "1":
+                return "Aktif"
+            case "2":
+                return "Keluar"
+            default:
+                return "Alumni"
+        }
+    }
+    const boardingStatus = (e) => {
+        switch (e) {
+            case "1":
+                return "Tahfidz"
+            case "2":
+                return "Kitab"
+            default:
+                return "Non Boarding"
+        }
+    }
     const toggle = () => {
         setSideBar(!sideBar);
     }
@@ -43,6 +68,27 @@ const View = () => {
     useEffect(() => {
         showStudent(id).then((resp) => {
             setStudent(resp);
+            fetch(`https://marifmuntaha.github.io/api-wilayah-indonesia/api/province/${resp.address.provinceId}.json`)
+                .then(response => response.json())
+                .then((resp) => {
+                    setProvince(resp);
+                });
+            fetch(`https://marifmuntaha.github.io/api-wilayah-indonesia/api/regency/${resp.address.cityId}.json`)
+                .then(response => response.json())
+                .then((resp) => {
+                    setCity(resp);
+                });
+            fetch(`https://marifmuntaha.github.io/api-wilayah-indonesia/api/district/${resp.address.districtId}.json`)
+                .then(response => response.json())
+                .then((resp) => {
+                    setDistrict(resp);
+                });
+            fetch(`https://marifmuntaha.github.io/api-wilayah-indonesia/api/village/${resp.address.villageId}.json`)
+                .then(response => response.json())
+                .then((resp) => {
+                    setVillage(resp);
+                });
+            getActivity({studentId: resp.id}).then((resp) => setActivities(resp));
         });
     }, [id]);
 
@@ -353,13 +399,81 @@ const View = () => {
                                                 <div className="profile-ud-item">
                                                     <div className="profile-ud wider">
                                                         <span className="profile-ud-label">Provinsi</span>
-                                                        <span className="profile-ud-value">{student?.address?.provinceId}</span>
+                                                        <span className="profile-ud-value">{province?.name}</span>
                                                     </div>
                                                 </div>
                                                 <div className="profile-ud-item">
                                                     <div className="profile-ud wider">
                                                         <span className="profile-ud-label">Kabupaten/Kota</span>
-                                                        <span className="profile-ud-value">{student?.address?.cityId}</span>
+                                                        <span className="profile-ud-value">{city?.name}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="profile-ud-item">
+                                                    <div className="profile-ud wider">
+                                                        <span className="profile-ud-label">Kecamatan</span>
+                                                        <span className="profile-ud-value">{district?.name}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="profile-ud-item">
+                                                    <div className="profile-ud wider">
+                                                        <span className="profile-ud-label">Kelurahan/Desa</span>
+                                                        <span className="profile-ud-value">{village?.name}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="profile-ud-item">
+                                                    <div className="profile-ud wider">
+                                                        <span className="profile-ud-label">Alamat</span>
+                                                        <span className="profile-ud-value">{student?.address?.address}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </Block>
+                                    </div>
+                                )}
+                                {tab === 4 && (
+                                    <div className="card-inner">
+                                        <Block>
+                                            <BlockHead>
+                                                <BlockTitle tag="h5">Informasi Aktifitas</BlockTitle>
+                                                <p>Basic info, like your name and address, that you use on Nio Platform.</p>
+                                            </BlockHead>
+                                            <div className="profile-ud-list">
+                                                <div className="profile-ud-item">
+                                                    <div className="profile-ud wider">
+                                                        <span className="profile-ud-label">Lembaga</span>
+                                                        <span className="profile-ud-value">
+                                                            {student?.activity?.institution?.ladder?.alias +". "+ student?.activity?.institution?.name}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div className="profile-ud-item">
+                                                    <div className="profile-ud wider">
+                                                        <span className="profile-ud-label">Status</span>
+                                                        <span className="profile-ud-value">{studentStatus(student?.activity?.status)}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="profile-ud-item">
+                                                    <div className="profile-ud wider">
+                                                        <span className="profile-ud-label">Tingkat</span>
+                                                        <span className="profile-ud-value">{student?.activity?.rombel?.level?.name}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="profile-ud-item">
+                                                    <div className="profile-ud wider">
+                                                        <span className="profile-ud-label">Rombel</span>
+                                                        <span className="profile-ud-value">{student?.activity?.rombel?.alias}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="profile-ud-item">
+                                                    <div className="profile-ud wider">
+                                                        <span className="profile-ud-label">Program</span>
+                                                        <span className="profile-ud-value">{student?.activity?.program?.name}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="profile-ud-item">
+                                                    <div className="profile-ud wider">
+                                                        <span className="profile-ud-label">Boarding</span>
+                                                        <span className="profile-ud-value">{boardingStatus(student?.activity?.boardingId)}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -367,83 +481,37 @@ const View = () => {
                                         <Block>
                                             <BlockHead className="nk-block-head-line">
                                                 <BlockTitle tag="h6" className="overline-title text-base">
-                                                    Orangtua
+                                                    Riwayat Aktifitas Siswa
                                                 </BlockTitle>
                                             </BlockHead>
-                                            <div className="profile-ud-list">
-                                                <div className="profile-ud-item">
-                                                    <div className="profile-ud wider">
-                                                        <span className="profile-ud-label">Status Ayah</span>
-                                                        <span className="profile-ud-value">{parentStatus(student.parent?.fatherStatus)}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="profile-ud-item">
-                                                    <div className="profile-ud wider">
-                                                        <span className="profile-ud-label">Status Ibu</span>
-                                                        <span className="profile-ud-value">{parentStatus(student.parent?.motherStatus)}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="profile-ud-item">
-                                                    <div className="profile-ud wider">
-                                                        <span className="profile-ud-label">Nama Ayah</span>
-                                                        <span className="profile-ud-value">{student.parent?.fatherName}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="profile-ud-item">
-                                                    <div className="profile-ud wider">
-                                                        <span className="profile-ud-label">Nama Ibu</span>
-                                                        <span className="profile-ud-value">{student.parent?.motherName}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="profile-ud-item">
-                                                    <div className="profile-ud wider">
-                                                        <span className="profile-ud-label">NIK Ayah</span>
-                                                        <span className="profile-ud-value">{student.parent?.fatherNIK}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="profile-ud-item">
-                                                    <div className="profile-ud wider">
-                                                        <span className="profile-ud-label">NIK Ibu</span>
-                                                        <span className="profile-ud-value">{student.parent?.motherNIK}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="profile-ud-item">
-                                                    <div className="profile-ud wider">
-                                                        <span className="profile-ud-label">Tempat Lahir Ayah</span>
-                                                        <span className="profile-ud-value">{student.parent?.fatherBirthplace}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="profile-ud-item">
-                                                    <div className="profile-ud wider">
-                                                        <span className="profile-ud-label">Tempat Lahir Ibu</span>
-                                                        <span className="profile-ud-value">{student.parent?.motherBirthplace}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="profile-ud-item">
-                                                    <div className="profile-ud wider">
-                                                        <span className="profile-ud-label">Tanggal Lahir Ayah</span>
-                                                        <span className="profile-ud-value">{moment(student.parent?.fatherBirthdate).locale('id').format("DD MMMM YYYY")}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="profile-ud-item">
-                                                    <div className="profile-ud wider">
-                                                        <span className="profile-ud-label">Tanggal Lahir Ibu</span>
-                                                        <span className="profile-ud-value">{moment(student.parent?.motherBirthdate).locale('id').format("DD MMMM YYYY")}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="profile-ud-item">
-                                                    <div className="profile-ud wider">
-                                                        <span className="profile-ud-label">Nomor HP Ayah</span>
-                                                        <span className="profile-ud-value">{student.parent?.fatherPhone}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="profile-ud-item">
-                                                    <div className="profile-ud wider">
-                                                        <span className="profile-ud-label">Nomor HP Ibu</span>
-                                                        <span className="profile-ud-value">{student.parent?.motherPhone}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <table className="table table-bordered">
+                                                <thead>
+                                                <tr>
+                                                    <th scope="col">Tanggal</th>
+                                                    <th scope="col">Lembaga</th>
+                                                    <th scope="col">Status</th>
+                                                    <th scope="col">Tingkat</th>
+                                                    <th scope="col">Jurusan</th>
+                                                    <th scope="col">Rombel</th>
+                                                    <th scope="col">Program</th>
+                                                    <th scope="col">Boarding</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                {activities.map((item, idx) => (
+                                                    <tr key={idx}>
+                                                        <td>{moment(item.created_at).format('D/MM/yyyy')}</td>
+                                                        <td>{item.institution.ladder.alias +". "+ item.institution.name}</td>
+                                                        <td>{studentStatus(item.status)}</td>
+                                                        <td>{item?.rombel?.level?.name}</td>
+                                                        <td>{item?.rombel?.major?.alias}</td>
+                                                        <td>{item?.rombel?.alias}</td>
+                                                        <td>{item?.program?.name}</td>
+                                                        <td>{boardingStatus(item.boardingId)}</td>
+                                                    </tr>
+                                                ))}
+                                                </tbody>
+                                            </table>
                                         </Block>
                                     </div>
                                 )}

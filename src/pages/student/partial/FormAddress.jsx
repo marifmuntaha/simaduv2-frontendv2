@@ -7,7 +7,7 @@ const FormAddress = ({formData, setFormData, methods, ...props}) => {
     const [cityOptions, setCityOptions] = useState([]);
     const [districtOptions, setDistrictOptions] = useState([]);
     const [villageOptions, setVillageOptions] = useState()
-    const {handleSubmit, register, formState: {errors}} = methods;
+    const {handleSubmit, register, setValue, formState: {errors}} = methods;
     const onSubmit = () => {
         props.next()
     }
@@ -59,6 +59,10 @@ const FormAddress = ({formData, setFormData, methods, ...props}) => {
                 })
             });
     }, [formData.districtId]);
+
+    useEffect(() => {
+        setValue('address', formData.address);
+    }, [formData.address, setValue]);
 
     return (
         <React.Fragment>

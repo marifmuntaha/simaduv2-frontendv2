@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import DatePicker from "react-datepicker";
 import moment from "moment";
 import {Button, Row} from "reactstrap";
@@ -17,6 +17,17 @@ const FormPersonal = ({formData, setFormData, methods, ...props}) => {
     const submitForm = () => {
         props.next();
     };
+    useEffect(() => {
+        setValue('name', formData.name);
+        setValue('nisn', formData.nisn);
+        setValue('nism', formData.nism);
+        setValue('nik', formData.nik);
+        setValue('gender', formData.gender);
+        setValue('birthplace', formData.birthplace);
+        setBirthdateSelected(moment(formData.birthdate, 'YYYY-MM-DD').toDate());
+        setValue('email', formData.email);
+        setValue('phone', formData.phone);
+    }, [formData, setValue]);
     return (
         <form className="content clearfix" onSubmit={handleSubmit(submitForm)}>
             <Row className="gy-0">
@@ -127,7 +138,6 @@ const FormPersonal = ({formData, setFormData, methods, ...props}) => {
                             selected={birthdateSelected}
                             onChange={(e) => {
                                 setFormData({...formData, birthdate: moment(e).format('YYYY-MM-DD')});
-                                setBirthdateSelected(e)
                             }}
                             dateFormat={"dd/MM/yyyy"}
                             className="form-control date-picker"

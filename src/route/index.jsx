@@ -19,7 +19,7 @@ import Institution from "@/pages/institution";
 import Program from "@/pages/institution/program";
 import Rombel from "@/pages/institution/rombel";
 import Teacher from "@/pages/teacher";
-import {List as ListStudent, Add as AddStudent, View as ViewStudent} from "@/pages/student"
+import {List as ListStudent, Add as AddStudent, Edit as EditStudent, View as ViewStudent} from "@/pages/student"
 
 const ScrollToTop = (props) => {
     const location = useLocation();
@@ -53,6 +53,7 @@ const Router = () => {
                                 <Route path="data-siswa">
                                     <Route index element={<ListStudent/>}/>
                                     <Route path="tambah" element={<AddStudent/>}/>
+                                    <Route path=":id/ubah" element={<EditStudent/>}/>
                                     <Route path=":id/lihat" element={<ViewStudent/>}/>
                                 </Route>
                                 <Route path="data-guru" element={<Teacher/>}/>

@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import { Form, Spinner } from "reactstrap";
+import { useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import Logo from "@/images/logo.png";
 import LogoDark from "@/images/logo-dark.png";
@@ -14,20 +17,22 @@ import {
     Icon,
     PreviewCard,
 } from "@/components";
-import { Form, Spinner } from "reactstrap";
-import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
 import {login} from "@/api/auth";
+import {useGoogleReCaptcha} from "react-google-recaptcha-v3";
 
 const Login = () => {
     const [loading, setLoading] = useState(false);
     const [passState, setPassState] = useState(false);
-    const [errorVal, setError] = useState("");
+    const {executeRecaptcha} = useGoogleReCaptcha();
     const navigate = useNavigate();
 
-    const onFormSubmit = (formData) => {
+    const onFormSubmit = async (formData) => {
         setLoading(true);
-        setLoading(true);
+        if (!executeRecaptcha) {
+            console.log('Execute recaptcha not yet available');
+            return;
+        }
+        formData["g-recaptcha-response"] = await executeRecaptcha('submit');
         login(formData).then(() => {
             navigate("/");
             setLoading(false);

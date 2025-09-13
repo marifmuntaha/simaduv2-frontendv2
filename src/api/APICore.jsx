@@ -202,7 +202,7 @@ class APICore {
         } else {
             if (response.status === 401) {
                 this.setLoggedInUser();
-                window.location.href = '/auth/masuk'
+                // window.location.href = '/auth/masuk'
             }
             if (response.data){
                 if (response.data.messages) {

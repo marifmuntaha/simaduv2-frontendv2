@@ -105,13 +105,13 @@ const List = () => {
                 <ButtonGroup size="sm">
                     <Button outline color="info" onClick={() => navigate(`${row.id}/lihat`)}><Icon name="eye"/></Button>
                     <Button outline color="warning" onClick={() => navigate(`${row.id}/ubah`)}><Icon name="pen"/></Button>
-                    <Button outline color="danger" onClick={() => {
-                        setLoading(row.id)
-                        destoryStudent(row.id).then(() => {
-                            setLoading(false);
-                            setRefreshData(true);
-                        }).catch(() => setLoading(false))
-                    }}>{loading === row.id ? <Spinner size="sm"/> : <Icon name="trash"/>}</Button>
+                    {/*<Button outline color="danger" onClick={() => {*/}
+                    {/*    setLoading(row.id)*/}
+                    {/*    destoryStudent(row.id).then(() => {*/}
+                    {/*        setLoading(false);*/}
+                    {/*        setRefreshData(true);*/}
+                    {/*    }).catch(() => setLoading(false))*/}
+                    {/*}}>{loading === row.id ? <Spinner size="sm"/> : <Icon name="trash"/>}</Button>*/}
                 </ButtonGroup>
             )
         },

@@ -15,6 +15,7 @@ import {
     BlockHeadContent,
     BlockTitle } from "./block";
 import { Col, Row } from "./grid";
+import { DataTableHead, DataTableItem, DataTableRow } from "./table/Datatable";
 import { LinkItem, LinkList } from "./links";
 import { PreviewCard} from "./preview";
 
@@ -29,6 +30,9 @@ export {
     BlockTitle,
     Button,
     Col,
+    DataTableHead,
+    DataTableItem,
+    DataTableRow,
     Icon,
     LinkItem,
     LinkList,
