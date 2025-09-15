@@ -13,8 +13,7 @@ function get(params) {
 async function store(params) {
     const baseUrl = '/student'
     return api.createWithFile(baseUrl, params).then((resp) => {
-        const {message, result} = resp
-        RToast(message, 'success');
+        const {result} = resp
         return result;
     }).catch(() => {
         throw new Error()

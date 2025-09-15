@@ -205,7 +205,7 @@ const FormParent = ({formData, setFormData, methods, ...props}) => {
                                 <RSelect
                                     id="fatherStatus"
                                     options={statusParentOptions}
-                                    value={statusParentOptions?.find((e) => e.value === formData.fatherStatus)}
+                                    value={formData.fatherStatus !== '' ? statusParentOptions?.find((e) => e.value === formData.fatherStatus) : ""}
                                     onChange={(val) => {
                                         setFormData({...formData, fatherStatus: val.value});
                                         setValue('fatherStatus', val.value);
@@ -223,7 +223,7 @@ const FormParent = ({formData, setFormData, methods, ...props}) => {
                             <RSelect
                                 id="motherStatus"
                                 options={statusParentOptions}
-                                value={statusParentOptions?.find((e) => e.value === formData.motherStatus)}
+                                value={formData.motherStatus !== '' ? statusParentOptions?.find((e) => e.value === formData.motherStatus) : ""}
                                 onChange={(val) => {
                                     setFormData({...formData, motherStatus: val.value});
                                     setValue('motherStatus', val.value);
@@ -442,7 +442,7 @@ const FormParent = ({formData, setFormData, methods, ...props}) => {
                             <RSelect
                                 id="guardStatus"
                                 options={statusGuardOptions}
-                                value={statusGuardOptions?.find((e) => e.value === formData.guardStatus)}
+                                value={formData.guardStatus !== '' ? statusGuardOptions?.find((e) => e.value === formData.guardStatus) : ""}
                                 onChange={(val) => {
                                     setFormData({...formData, guardStatus: val.value});
                                     setValue('guardStatus', val.value);

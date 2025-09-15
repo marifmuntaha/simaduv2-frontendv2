@@ -25,7 +25,7 @@ const FormAddress = ({formData, setFormData, methods, ...props}) => {
     }, [])
 
     useEffect(() => {
-        formData.provinceId !== undefined && fetch(`https://marifmuntaha.github.io/api-wilayah-indonesia/api/regencies/${formData.provinceId}.json`)
+        formData.provinceId !== '' && formData.provinceId !== undefined && fetch(`https://marifmuntaha.github.io/api-wilayah-indonesia/api/regencies/${formData.provinceId}.json`)
             .then(response => response.json())
             .then((regencies) => {
                 setCityOptions(() => {
@@ -37,7 +37,7 @@ const FormAddress = ({formData, setFormData, methods, ...props}) => {
     }, [formData.provinceId])
 
     useEffect(() => {
-        formData.cityId !== undefined && fetch(`https://marifmuntaha.github.io/api-wilayah-indonesia/api/districts/${formData.cityId}.json`)
+        formData.cityId !== '' && fetch(`https://marifmuntaha.github.io/api-wilayah-indonesia/api/districts/${formData.cityId}.json`)
             .then(response => response.json())
             .then((districts) => {
                 setDistrictOptions(() => {
@@ -49,7 +49,7 @@ const FormAddress = ({formData, setFormData, methods, ...props}) => {
     }, [formData.cityId])
 
     useEffect(() => {
-        formData.districtId !== undefined && fetch(`https://marifmuntaha.github.io/api-wilayah-indonesia/api/villages/${formData.districtId}.json`)
+        formData.districtId !== '' && fetch(`https://marifmuntaha.github.io/api-wilayah-indonesia/api/villages/${formData.districtId}.json`)
             .then(response => response.json())
             .then((villages) => {
                 setVillageOptions(() => {

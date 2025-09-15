@@ -74,6 +74,10 @@ const RootMenu = [
                 active: false,
                 subMenu: [
                     {
+                        text: "Pindah Kelas",
+                        link: "/data-siswa/akademik/pindah-kelas",
+                    },
+                    {
                         text: "Kenaikan Kelas",
                         link: "/data-siswa/akademik/kenaikan-kelas",
                     },

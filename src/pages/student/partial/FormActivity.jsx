@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {useForm} from "react-hook-form";
 import {Button, Row} from "reactstrap";
 import {RSelect} from "@/components";
@@ -19,7 +19,6 @@ const FormActivity = ({formData, setFormData, ...props}) => {
     const [rombelSelected, setRombelSelected] = useState([]);
     const [programOptions, setProgramOptions] = useState([]);
     const [programSelected, setProgramSelected] = useState([]);
-    const [boardingSelected, setBoardingSelected] = useState([]);
 
     const statusOptions = [
         {value: '1', label: "Aktif"},
@@ -27,7 +26,7 @@ const FormActivity = ({formData, setFormData, ...props}) => {
         {value: '3', label: "Alumni"}
     ];
     const boardingOptions = [
-        {value: '0', label: "Tidak Boarding"},
+        {value: 0, label: "Tidak Boarding"},
         {value: '1', label: "Tahfidz"},
         {value: '2', label: "Kitab"},
     ];
@@ -39,22 +38,30 @@ const FormActivity = ({formData, setFormData, ...props}) => {
     };
 
     useEffect(() => {
+        setYearSelected(yearOptions.find((item) => item.value === formData.yearId));
+        setInstitutionSelected(institutionOptions.find((item) => item.value === formData.institutionId));
+        setLevelSelected(levelOptions.find((item) => item.value === formData.levelId));
+        setRombelSelected(rombelOptions.find((item) => item.value === formData.rombelId));
+        setProgramSelected(programOptions.find((item) => item.value === formData.programId));
+    }, [yearOptions, institutionOptions, levelOptions, rombelOptions, programOptions, formData]);
+
+    useEffect(() => {
         getYear({type: 'select'}).then((resp) => setYearOptions(resp));
         getInstitution({type: 'select', ladder: 'alias'}).then((resp) => setInstitutionOptions(resp));
     }, []);
 
     useEffect(() => {
-        getLevel({type: 'select', ladderId: institutionSelected.ladderId}).then((resp) => {
+        institutionSelected !== undefined && getLevel({type: 'select', ladderId: institutionSelected.ladderId}).then((resp) => {
             setLevelOptions(resp);
         });
     }, [institutionSelected]);
 
     useEffect(() => {
-        if (yearSelected.value !== undefined && institutionSelected.value !== undefined && levelSelected.value !== undefined) {
+        if (yearSelected?.value !== undefined && institutionSelected?.value !== undefined && levelSelected?.value !== undefined) {
             getRombel({type: 'select', yearId: yearSelected.value, institutionId: institutionSelected.value, levelId: levelSelected.value})
                 .then((resp) => setRombelOptions(resp));
         }
-        if (yearSelected.value !== undefined && institutionSelected.value !== undefined) {
+        if (yearSelected?.value !== undefined && institutionSelected?.value !== undefined) {
             getProgram({type: "select", yearId: yearSelected.value, institutionId: institutionSelected.value})
                 .then((resp) => setProgramOptions(resp));
         }
@@ -68,7 +75,7 @@ const FormActivity = ({formData, setFormData, ...props}) => {
                     <div className="form-control-wrap">
                         <RSelect
                             options={statusOptions}
-                            value={statusOptions?.find((c) => c.value === formData.status)}
+                            value={formData.status !== '' ? statusOptions?.find((c) => c.value === formData.status) : ""}
                             onChange={(val) => setFormData({...formData, status: val.value})}
                             placeholder="Pilih Status"
                         />
@@ -148,7 +155,7 @@ const FormActivity = ({formData, setFormData, ...props}) => {
                     </div>
                 </div>
                 <div className="form-group col-md-3">
-                    <label className="form-label" htmlFor="programId">ProgramId</label>
+                    <label className="form-label" htmlFor="programId">Program</label>
                     <div className="form-control-wrap">
                         <RSelect
                             options={programOptions}
@@ -157,10 +164,10 @@ const FormActivity = ({formData, setFormData, ...props}) => {
                                 setFormData({...formData, programId: val.value});
                                 setProgramSelected(val);
                             }}
-                            placeholder="Pilih Rombel"
+                            placeholder="Pilih Program"
                         />
-                        <input type="hidden" id="rombelId" className="form-control"/>
-                        {errors.rombelId && <span className="invalid">Kolom tidak boleh kosong.</span>}
+                        <input type="hidden" id="programId" className="form-control"/>
+                        {errors.programId && <span className="invalid">Kolom tidak boleh kosong.</span>}
                     </div>
                 </div>
                 <div className="form-group col-md-3">
@@ -168,10 +175,9 @@ const FormActivity = ({formData, setFormData, ...props}) => {
                     <div className="form-control-wrap">
                         <RSelect
                             options={boardingOptions}
-                            value={boardingSelected}
+                            value={formData.boardingId !== '' ? boardingOptions.find((item) => item.value === formData.boardingId) : ""}
                             onChange={(val) => {
                                 setFormData({...formData, boardingId: val.value});
-                                setBoardingSelected(val);
                             }}
                             placeholder="Pilih Boarding"
                         />

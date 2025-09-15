@@ -1,6 +1,6 @@
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {Badge, ButtonGroup, Spinner} from "reactstrap";
+import {Badge, ButtonGroup} from "reactstrap";
 import moment from "moment/moment";
 import 'moment/locale/id'
 import Head from "@/layout/head";
@@ -13,15 +13,27 @@ import {
     BlockTitle,
     Button, Icon,
     PreviewCard,
-    ReactDataTable
+    ReactDataTable, Row, RSelect
 } from "@/components";
-import {get as getStudent, destroy as destoryStudent} from "@/api/student"
+import {get as getStudent} from "@/api/student";
+import {get as getYear} from "@/api/master/year";
+import {get as getInstitution} from "@/api/institution";
+import {get as getRombel} from "@/api/institution/rombel";
+import Upload from "./partial/upload";
 
 const List = () => {
     const [sm, updateSm] = useState(false);
+    const [modal, setModal] = useState(false)
     const [refreshData, setRefreshData] = useState(true);
     const [loading, setLoading] = useState(false);
     const [students, setStudents] = useState([]);
+    const [yearOptions, setYearOptions] = useState([]);
+    const [yearSelected, setYearSelected] = useState([]);
+    const [institutionOptions, setInstitutionOptions] = useState([]);
+    const [institutionSelected, setInstitutionSelected] = useState([]);
+    const [rombelOptions, setRombelOptions] = useState([]);
+    const [rombelSelected, setRombelSelected] = useState([]);
+    const [boardingSelected, setBoardingSelected] = useState([]);
     const Column = [
         {
             name: "Jenjang",
@@ -89,7 +101,7 @@ const List = () => {
             sortable: false,
             // hide: 370,
             cell: (row) => (
-                row?.activity?.boardingId
+                row?.activity?.boardingId !== 0
                     ? <Badge pill color="success">YA</Badge>
                     : <Badge pill color="danger">No</Badge>
             )
@@ -116,13 +128,57 @@ const List = () => {
             )
         },
     ];
+    const boardingOptions = [
+        {value: '0', label: 'Non Boarding'},
+        {value: '1', label: 'Tahfidz'},
+        {value: '2', label: 'Kitab'},
+    ]
     const navigate = useNavigate();
+    const paramsStudent = useCallback(() => {
+        let params = {};
+        if (yearSelected.value !== undefined) {
+            params = {
+                ...params,
+                yearId: yearSelected.value,
+            }
+        }
+        if (institutionSelected.value !== undefined) {
+            params = {
+                ...params,
+                institutionId: institutionSelected.value,
+            }
+        }
+        if (rombelSelected.value !== undefined) {
+            params = {
+                ...params,
+                rombelId: rombelSelected.value,
+            }
+        }
+        if (boardingSelected.value !== undefined) {
+            params = {
+                ...params,
+                boardingId: boardingSelected.value,
+            }
+        }
+
+        return params;
+    }, [yearSelected, institutionSelected, rombelSelected, boardingSelected])
     useEffect(() => {
-        refreshData && getStudent().then((resp) => {
+        getYear({type: 'select'}).then((resp) => setYearOptions(resp));
+        getInstitution({type: 'select', ladder: 'alias'}).then((resp) => setInstitutionOptions(resp));
+    }, []);
+
+    useEffect(() => {
+        yearSelected.value !== undefined &&
+        institutionSelected.value &&
+        getRombel({type: 'select', yearId: yearSelected.value, institutionId: institutionSelected.value}).then((resp) => setRombelOptions(resp));
+    }, [yearSelected, institutionSelected]);
+    useEffect(() => {
+        refreshData && getStudent(paramsStudent()).then((resp) => {
             setStudents(resp)
             setRefreshData(false);
         }).catch(() => setLoading(false));
-    }, [refreshData])
+    }, [refreshData, paramsStudent]);
     return (
         <React.Fragment>
             <Head title="Data Siswa"/>
@@ -154,6 +210,13 @@ const List = () => {
                                                     <span>TAMBAH</span>
                                                 </Button>
                                             </li>
+                                            <li>
+                                                <Button color="danger" size={"sm"} outline className="btn-white"
+                                                        onClick={() => setModal(true)}>
+                                                    <Icon name="upload"></Icon>
+                                                    <span>UNGGAH</span>
+                                                </Button>
+                                            </li>
                                         </ul>
                                     </div>
                                 </div>
@@ -161,8 +224,63 @@ const List = () => {
                         </BlockBetween>
                     </BlockHead>
                     <PreviewCard>
+                        <Row className="gy-0">
+                            <div className="form-group col-md-3">
+                                <div className="form-control-wrap">
+                                    <RSelect
+                                        options={yearOptions}
+                                        value={yearSelected}
+                                        onChange={(val) => {
+                                            setYearSelected(val);
+                                            setRefreshData(true);
+                                        }}
+                                        placeholder="Pilih Tahun Pelajaran"
+                                    />
+                                </div>
+                            </div>
+                            <div className="form-group col-md-3">
+                                <div className="form-control-wrap">
+                                    <RSelect
+                                        options={institutionOptions}
+                                        value={institutionSelected}
+                                        onChange={(val) => {
+                                            setInstitutionSelected(val);
+                                            setRefreshData(true);
+                                        }}
+                                        placeholder="Pilih Lembaga"
+                                    />
+                                </div>
+                            </div>
+                            <div className="form-group col-md-3">
+                                <div className="form-control-wrap">
+                                    <RSelect
+                                        options={rombelOptions}
+                                        value={rombelSelected}
+                                        onChange={(val) => {
+                                            setRombelSelected(val);
+                                            setRefreshData(true);
+                                        }}
+                                        placeholder="Pilih Rombel"
+                                    />
+                                </div>
+                            </div>
+                            <div className="form-group col-md-3">
+                                <div className="form-control-wrap">
+                                    <RSelect
+                                        options={boardingOptions}
+                                        value={boardingSelected}
+                                        onChange={(val) => {
+                                            setBoardingSelected(val);
+                                            setRefreshData(true);
+                                        }}
+                                        placeholder="Pilih Boarding"
+                                    />
+                                </div>
+                            </div>
+                        </Row>
                         <ReactDataTable data={students} columns={Column} pagination progressPending={refreshData}/>
                     </PreviewCard>
+                    <Upload modal={modal} setModal={setModal} setRefreshData={setRefreshData}/>
                 </Block>
             </Content>
         </React.Fragment>

@@ -128,7 +128,7 @@ export const Add = () => {
                         phone: formData.phone,
                         role: '5'
                     }
-                    storeUser(paramsUserStudent).then(respUserStudent=>{
+                    storeUser(paramsUserStudent).then(respUserStudent=> {
                         const paramsStudent = {
                             userId: respUserStudent.id,
                             parentId: respStudentParent.id,
@@ -363,14 +363,19 @@ export const Edit = () => {
     const {id} = useParams();
     const [sm, updateSm] = useState(false);
     const [formData, setFormData] = useState({
+        studentId: '',
+        studentUserId: '',
         name: '',
         nisn: '',
         nism: '',
+        nik: '',
         gender: '',
         birthplace: '',
         birthdate: new Date(),
         email: '',
         phone: '',
+        parentId: '',
+        parentUserId: '',
         numberKk: '',
         headFamily: '',
         fatherStatus: '',
@@ -394,7 +399,20 @@ export const Edit = () => {
         guardBirthdate: new Date(),
         guardEmail: '',
         guardPhone: '',
-
+        addressId: '',
+        provinceId: '',
+        cityId: '',
+        districtId: '',
+        villageId: '',
+        address: '',
+        activityId: '',
+        status: '',
+        yearId: '',
+        institutionId: '',
+        levelId: '',
+        rombelId: '',
+        programId: '',
+        boardingId: ''
     });
     const methods = useForm();
     const onSubmit = () => {
@@ -487,6 +505,8 @@ export const Edit = () => {
     }
     const handleReset = () => {
         setFormData({
+            studentId: '',
+            studentUserId: '',
             name: '',
             nisn: '',
             nism: '',
@@ -496,6 +516,10 @@ export const Edit = () => {
             birthdate: new Date(),
             email: '',
             phone: '',
+            parentId: '',
+            parentUserId: '',
+            numberKk: '',
+            headFamily: '',
             fatherStatus: '',
             fatherName: '',
             fatherNIK: '',
@@ -517,7 +541,21 @@ export const Edit = () => {
             guardBirthdate: new Date(),
             guardEmail: '',
             guardPhone: '',
-        })
+            addressId: '',
+            provinceId: '',
+            cityId: '',
+            districtId: '',
+            villageId: '',
+            address: '',
+            activityId: '',
+            status: '',
+            yearId: '',
+            institutionId: '',
+            levelId: '',
+            rombelId: '',
+            programId: '',
+            boardingId: ''
+        });
         methods.reset()
     }
     useEffect(() => {
@@ -572,7 +610,7 @@ export const Edit = () => {
                 institutionId: resp.activity?.institutionId,
                 levelId: resp.activity?.rombel?.levelId,
                 rombelId: resp.activity?.rombelId,
-                programId: resp.activity?.prgramId,
+                programId: resp.activity?.programId,
                 boardingId: resp.activity?.boardingId,
             });
         });

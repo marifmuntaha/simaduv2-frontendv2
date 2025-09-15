@@ -53,9 +53,9 @@ const View = () => {
     }
     const boardingStatus = (e) => {
         switch (e) {
-            case "1":
+            case 1:
                 return "Tahfidz"
-            case "2":
+            case 2:
                 return "Kitab"
             default:
                 return "Non Boarding"
@@ -382,6 +382,51 @@ const View = () => {
                                                     <div className="profile-ud wider">
                                                         <span className="profile-ud-label">Nomor HP Ibu</span>
                                                         <span className="profile-ud-value">{student.parent?.motherPhone}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </Block>
+                                        <Block>
+                                            <BlockHead className="nk-block-head-line">
+                                                <BlockTitle tag="h6" className="overline-title text-base">
+                                                    Wali Siswa
+                                                </BlockTitle>
+                                            </BlockHead>
+                                            <div className="profile-ud-list">
+                                                <div className="profile-ud-item">
+                                                    <div className="profile-ud wider">
+                                                        <span className="profile-ud-label">Nama Wali</span>
+                                                        <span className="profile-ud-value">{student.parent?.guardName}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="profile-ud-item">
+                                                    <div className="profile-ud wider">
+                                                        <span className="profile-ud-label">NIK Wali</span>
+                                                        <span className="profile-ud-value">{student.parent?.guardNIK}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="profile-ud-item">
+                                                    <div className="profile-ud wider">
+                                                        <span className="profile-ud-label">Tempat Lahir Wali</span>
+                                                        <span className="profile-ud-value">{student.parent?.guardBirthplace}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="profile-ud-item">
+                                                    <div className="profile-ud wider">
+                                                        <span className="profile-ud-label">Tanggal Lahir Wali</span>
+                                                        <span className="profile-ud-value">{moment(student.parent?.guardBirthdate).locale('id').format("DD MMMM YYYY")}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="profile-ud-item">
+                                                    <div className="profile-ud wider">
+                                                        <span className="profile-ud-label">EmailWali</span>
+                                                        <span className="profile-ud-value">{student.parent?.guardEmail}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="profile-ud-item">
+                                                    <div className="profile-ud wider">
+                                                        <span className="profile-ud-label">Nomor HP Wali</span>
+                                                        <span className="profile-ud-value">{student.parent?.guardPhone}</span>
                                                     </div>
                                                 </div>
                                             </div>

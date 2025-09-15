@@ -20,6 +20,7 @@ import Program from "@/pages/institution/program";
 import Rombel from "@/pages/institution/rombel";
 import Teacher from "@/pages/teacher";
 import {List as ListStudent, Add as AddStudent, Edit as EditStudent, View as ViewStudent} from "@/pages/student"
+import MoveRombel from "@/pages/student/academic/moveRombel";
 
 const ScrollToTop = (props) => {
     const location = useLocation();
@@ -55,6 +56,9 @@ const Router = () => {
                                     <Route path="tambah" element={<AddStudent/>}/>
                                     <Route path=":id/ubah" element={<EditStudent/>}/>
                                     <Route path=":id/lihat" element={<ViewStudent/>}/>
+                                    <Route path="akademik">
+                                        <Route path="pindah-kelas" element={<MoveRombel/>} />
+                                    </Route>
                                 </Route>
                                 <Route path="data-guru" element={<Teacher/>}/>
                             </Route>
