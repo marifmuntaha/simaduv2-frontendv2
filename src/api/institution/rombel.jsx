@@ -4,7 +4,10 @@ import {RToast} from "@/components";
 const api = new APICore()
 
 function get(params) {
-    const baseUrl = '/institution/rombel'
+    const baseUrl = `/institution/rombel`;
+    if (params.id) {
+        const baseUrl = `/institution/rombel/${params.id}`;
+    }
     return api.get(baseUrl, params).then((resp) => {
         return resp.result
     })

@@ -15,25 +15,61 @@ import {get as getYear} from "@/api/master/year";
 import {get as getInstitution} from '@/api/institution';
 import {get as getRombel} from "@/api/institution/rombel";
 import {get as getStudent} from "@/api/student";
+import {store as storeActivity} from "@/api/student/activity";
 
 const MoveRombel = () => {
     const [sm, updateSm] = useState(false);
-    const [refreshData, setRefreshData] = useState(true);
     const [yearOptions, setYearOptions] = useState([]);
     const [yearSelected, setYearSelected] = useState([]);
     const [institutionOptions, setInstitutionOptions] = useState([]);
     const [institutionSelected, setInstitutionSelected] = useState([]);
+    const [rombels, setRombels] = useState([]);
     const [rombelBeforeOptions, setRombelBeforeOptions] = useState([]);
     const [rombelBeforeSelected, setRombelBeforeSelected] = useState([]);
     const [studentBefore, setStudentBefore] = useState([]);
     const [studentAfter, setStudentAfter] = useState([]);
     const [rombelAfterOptions, setRombelAfterOptions] = useState([]);
     const [rombelAfterSelected, setRombelAfterSelected] = useState([]);
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const rombel = rombels.find((item) => item.id === rombelAfterSelected.value);
+        const newStudent = studentAfter.filter((item) => item.status === 1);
+        newStudent.map((item) => {
+            const params = {
+                status: '1',
+                studentId: item.id,
+                yearId: yearSelected.value,
+                institutionId: institutionSelected.value,
+                levelId: rombel.levelId,
+                majorId: rombel.majorId,
+                rombelId: rombel.id,
+                programId: item.programId,
+                boardingId: item.boardingId,
+            }
+            storeActivity(params).then((resp) => {
+                console.log(resp);
+            })
+        })
+    }
     const handleAdd = (id) => {
         const student = studentBefore.find((student) => student.id === id);
-        setStudentAfter([...studentAfter, student]);
+        setStudentAfter([...studentAfter, {
+            id: student.id,
+            name: student.name,
+            nisn: student.nisn,
+            status: 1,
+            programId: student.programId,
+            boardingId: student.boardingId,
+        }]);
         setStudentBefore(() => {
             return studentBefore.filter((student) => student.id !== id);
+        })
+    }
+    const handleRemove = (id) => {
+        const student = studentAfter.find((student) => student.id === id);
+        setStudentBefore([...studentBefore, student]);
+        setStudentAfter(() => {
+            return studentAfter.filter((student) => student.id !== id);
         })
     }
     useEffect(() => {
@@ -41,25 +77,45 @@ const MoveRombel = () => {
         getInstitution({type: 'select', ladder: "alias"}).then(data => setInstitutionOptions(data));
     }, []);
     useEffect(() => {
-        if(yearSelected.value === undefined && institutionSelected.value === undefined){
-            getRombel({type: 'select'}).then(data => {
-                setRombelBeforeOptions(data);
-                setRombelAfterOptions(data);
+        if(yearSelected.value !== undefined && institutionSelected.value !== undefined){
+            getRombel({yearId: yearSelected.value, institutionId: institutionSelected.value}).then(data => {
+                setRombels(data);
+                setRombelBeforeOptions(() => {
+                    return data.map((item) => {
+                        return {
+                            value: item.id,
+                            label: item.alias
+                        }
+                    })
+                });
             });
         }
     }, [yearSelected, institutionSelected])
 
     useEffect(() => {
-        getStudent({rombelId: rombelBeforeSelected.value}).then(data => setStudentBefore(() => {
+        rombelBeforeSelected.value !== undefined && getStudent({rombelId: rombelBeforeSelected.value}).then(data => setStudentBefore(() => {
             return data.map(student => {
                 return {
                     id: student.id,
                     name: student.name,
                     nisn: student.nisn,
+                    programId: student.activity?.programId,
+                    boardingId: student.activity?.boardingId,
                 }
             })
         }));
-    }, [rombelBeforeSelected])
+        const rombelAfter = rombels.filter((item) => item.id !== rombelBeforeSelected.value)
+        setRombelAfterOptions(rombelAfter.map((item) => {
+            return {
+                value: item.id,
+                label: item.alias
+            }
+        }));
+    }, [rombels, rombelBeforeSelected])
+
+    useEffect(() => {
+        rombelAfterSelected.value !== undefined && getStudent({rombelId: rombelAfterSelected.value}).then(data => setStudentAfter(data));
+    }, [rombelAfterSelected])
     return (
         <React.Fragment>
             <Head title="Pindah Kelas" />
@@ -73,6 +129,26 @@ const MoveRombel = () => {
                                     Just import <code>ReactDataTable</code> from <code>components</code>, it is built in
                                     for react dashlite.
                                 </p>
+                            </BlockHeadContent>
+                            <BlockHeadContent>
+                                <div className="toggle-wrap nk-block-tools-toggle">
+                                    <Button
+                                        className={`btn-icon btn-trigger toggle-expand me-n1 ${sm ? "active" : ""}`}
+                                        onClick={() => updateSm(!sm)}
+                                    >
+                                        <Icon name="menu-alt-r"></Icon>
+                                    </Button>
+                                    <div className="toggle-expand-content" style={{display: sm ? "block" : "none"}}>
+                                        <ul className="nk-block-tools g-3">
+                                            <li>
+                                                <Button color="info" size={"sm"} outline className="btn-white" onClick={(e) => handleSubmit(e)}>
+                                                    <Icon name="save"></Icon>
+                                                    <span>PROSES</span>
+                                                </Button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </BlockHeadContent>
                         </BlockBetween>
                     </BlockHead>
@@ -122,6 +198,7 @@ const MoveRombel = () => {
                                         <Table className="table table-bordered">
                                             <thead>
                                             <tr>
+                                                <th>No</th>
                                                 <th>Nama</th>
                                                 <th>NISN</th>
                                                 <th>Aksi</th>
@@ -130,6 +207,7 @@ const MoveRombel = () => {
                                             <tbody>
                                             {studentBefore?.map((row, i) => (
                                                 <tr key={i}>
+                                                    <td>{i+1}</td>
                                                     <td>{row.name}</td>
                                                     <td>{row.nisn}</td>
                                                     <td><Button className="btn btn-xs btn-info" onClick={() => handleAdd(row.id)}><Icon name="plus"/> </Button> </td>
@@ -151,7 +229,6 @@ const MoveRombel = () => {
                                                 value={yearSelected}
                                                 onChange={(val) => {
                                                     setYearSelected(val);
-                                                    setRefreshData(true);
                                                 }}
                                                 placeholder="Pilih Tahun Pelajaran"
                                             />
@@ -164,7 +241,6 @@ const MoveRombel = () => {
                                                 value={institutionSelected}
                                                 onChange={(val) => {
                                                     setInstitutionSelected(val);
-                                                    setRefreshData(true);
                                                 }}
                                                 placeholder="Pilih Lembaga"
                                             />
@@ -188,6 +264,7 @@ const MoveRombel = () => {
                                         <Table className="table table-bordered">
                                             <thead>
                                             <tr>
+                                                <th>No</th>
                                                 <th>Nama</th>
                                                 <th>NISN</th>
                                                 <th>Aksi</th>
@@ -196,9 +273,10 @@ const MoveRombel = () => {
                                             <tbody>
                                             {studentAfter?.map((row, i) => (
                                                 <tr key={i}>
+                                                    <td>{i + 1}</td>
                                                     <td>{row.name}</td>
                                                     <td>{row.nisn}</td>
-                                                    <td><Button className="btn btn-xs btn-info" onClick={() => handleAdd(row.id)}><Icon name="plus"/> </Button> </td>
+                                                    <td><Button className="btn btn-xs btn-danger" onClick={() => handleRemove(row.id)}><Icon name="trash"/> </Button> </td>
                                                 </tr>
                                             ))}
                                             </tbody>
