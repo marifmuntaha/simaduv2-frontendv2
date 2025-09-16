@@ -30,7 +30,7 @@ const Notification = () => {
                         <span>Aktifitas</span>
                     </DataTableRow>
                 </DataTableHead>
-                {notifications.map((item, idx) => (
+                {notifications?.map((item, idx) => (
                     <DataTableItem key={idx}>
                         <DataTableRow size="md">
                             <span className="tb-sub">{moment(item.updated_at).format('D/MM/yyyy HH:mm:ss')}</span>

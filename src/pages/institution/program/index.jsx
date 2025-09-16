@@ -38,14 +38,14 @@ const Program = () => {
     const Column = [
         {
             name: "Tahun Pelajaran",
-            selector: (row) => row.year?.name,
+            selector: (row) => row.yearName,
             sortable: false,
             // hide: 370,
             // width: "300px",
         },
         {
             name: "Lembaga",
-            selector: (row) => row.institution?.ladder?.alias + '. ' + row.institution?.name,
+            selector: (row) => row.institutionName,
             sortable: false,
             // hide: 370,
 

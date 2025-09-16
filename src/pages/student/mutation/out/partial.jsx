@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {Button, Modal, ModalBody, ModalHeader, Spinner} from "reactstrap";
+import {Button, Input, Modal, ModalBody, ModalHeader, Spinner} from "reactstrap";
 import {useForm} from "react-hook-form";
 import {Icon, RSelect} from "@/components";
 import {get as getMutation, store as storeMutation, update as updateMutation} from "@/api/student/mutation";
@@ -37,21 +37,24 @@ const Partial = ({modal, setModal, mutation, setMutation, setReloadData}) => {
                 institutionId: mutation.institutionId,
                 studentId: mutation.studentId,
                 type: 1,
-                token: generateSecureToken(),
-                numberLetter: zeroPad(resp[0]?.numberLetter + 1, 3),
+                token: generateSecureToken(16),
+                numberLetter: zeroPad(resp[0]?.numberLetter !== undefined ? resp[0]?.numberLetter + 1 : 1, 3),
+                description: mutation.description,
+                file: mutation.file,
             }
+            setLoading(false);
             storeMutation(formData).then(() => {
-                setLoading(false)
-                setReloadData(true)
-                toggle()
+                setLoading(false);
+                setReloadData(true);
+                toggle();
             }).catch(() => setLoading(false));
         });
     }
     const onUpdate = () => {
         setLoading(true);
         updateMutation(mutation).then(() => {
-            setLoading(false)
-            setReloadData(true)
+            setLoading(false);
+            setReloadData(true);
             toggle();
         }).catch(() => setLoading(false));
     }
@@ -65,8 +68,12 @@ const Partial = ({modal, setModal, mutation, setMutation, setReloadData}) => {
             token: '',
             numberLetter: '',
             description: "",
+            file: "",
         });
         reset();
+        setYearSelected([]);
+        setInstitutionSelected([]);
+        setStudentSelected([]);
     }
     const toggle = () => {
         setModal(false);
@@ -168,6 +175,22 @@ const Partial = ({modal, setModal, mutation, setMutation, setReloadData}) => {
                                     onChange: (e) => handleChange(e)
                                 })}
                             />
+                        </div>
+                    </div>
+                    <div className="form-group col-md-12">
+                        <label className="form-label" htmlFor="file">Surat Keterangan EMIS</label>
+                        <div className="form-control-wrap">
+                            <div className="form-file">
+                                <Input
+                                    type="file"
+                                    id="file"
+                                    onChange={(e) => {
+                                        setValue('file', e.target.files[0]);
+                                        setMutation({...mutation, file: e.target.files[0]});
+                                    }}
+                                />
+                            </div>
+                            {errors.file && <span className="invalid">Kolom tidak boleh kosong</span>}
                         </div>
                     </div>
                     <div className="form-group">

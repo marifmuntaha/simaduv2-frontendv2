@@ -1,7 +1,6 @@
 import React, {useCallback, useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {Badge, ButtonGroup} from "reactstrap";
-import moment from "moment/moment";
+import {Badge, ButtonGroup, Spinner} from "reactstrap";
 import 'moment/locale/id'
 import Head from "@/layout/head";
 import Content from "@/layout/content";
@@ -15,7 +14,7 @@ import {
     PreviewCard,
     ReactDataTable, Row, RSelect
 } from "@/components";
-import {get as getStudent} from "@/api/student";
+import {get as getStudent, destroy as destroyStudent} from "@/api/student";
 import {get as getYear} from "@/api/master/year";
 import {get as getInstitution} from "@/api/institution";
 import {get as getRombel} from "@/api/institution/rombel";
@@ -37,7 +36,7 @@ const List = () => {
     const Column = [
         {
             name: "Jenjang",
-            selector: (row) => row.activity?.institution?.alias,
+            selector: (row) => row.institutionAlias,
             sortable: false,
             // hide: 370,
             width: "100px",
@@ -52,7 +51,7 @@ const List = () => {
         },
         {
             name: "Tempat, Tanggal Lahir",
-            selector: (row) => row.birthplace + ', ' + moment(row.birthdate).locale('id').format('DD MMM YYYY'),
+            selector: (row) => row.birth,
             sortable: false,
             // hide: 370,
 
@@ -73,11 +72,11 @@ const List = () => {
         },
         {
             name: "Status",
-            selector: (row) => row.activity.status,
+            selector: (row) => row.status,
             sortable: false,
             // hide: 370,
             cell: (row) => {
-                switch(row?.activity?.status) {
+                switch(row?.status) {
                     case '1' :
                         return <Badge pill color="success">Aktif</Badge>
                     case '2':
@@ -91,18 +90,18 @@ const List = () => {
         },
         {
             name: "Rombel",
-            selector: (row) => row?.activity?.rombel?.alias,
+            selector: (row) => row.rombelAlias,
             sortable: false,
             // hide: 370,
 
         },
         {
             name: "Boarding",
-            selector: (row) => row?.activity?.boardingId,
+            selector: (row) => row.boardingId,
             sortable: false,
             // hide: 370,
             cell: (row) => (
-                row?.activity?.boardingId !== 0
+                row.boardingId !== 0
                     ? <Badge pill color="success">YA</Badge>
                     : <Badge pill color="danger">No</Badge>
             )
@@ -118,13 +117,13 @@ const List = () => {
                 <ButtonGroup size="sm">
                     <Button outline color="info" onClick={() => navigate(`${row.id}/lihat`)}><Icon name="eye"/></Button>
                     <Button outline color="warning" onClick={() => navigate(`${row.id}/ubah`)}><Icon name="pen"/></Button>
-                    {/*<Button outline color="danger" onClick={() => {*/}
-                    {/*    setLoading(row.id)*/}
-                    {/*    destoryStudent(row.id).then(() => {*/}
-                    {/*        setLoading(false);*/}
-                    {/*        setRefreshData(true);*/}
-                    {/*    }).catch(() => setLoading(false))*/}
-                    {/*}}>{loading === row.id ? <Spinner size="sm"/> : <Icon name="trash"/>}</Button>*/}
+                    <Button outline color="danger" onClick={() => {
+                        setLoading(row.id)
+                        destroyStudent(row.id).then(() => {
+                            setLoading(false);
+                            setRefreshData(true);
+                        }).catch(() => setLoading(false))
+                    }}>{loading === row.id ? <Spinner size="sm"/> : <Icon name="trash"/>}</Button>
                 </ButtonGroup>
             )
         },
@@ -136,7 +135,7 @@ const List = () => {
     ]
     const navigate = useNavigate();
     const paramsStudent = useCallback(() => {
-        let params = {};
+        let params = {list: 'table'};
         if (yearSelected.value !== undefined) {
             params = {
                 ...params,

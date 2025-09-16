@@ -12,7 +12,7 @@ function get(params) {
 
 async function store(params) {
     const baseUrl = '/student/mutation'
-    return api.create(baseUrl, params).then((resp) => {
+    return api.createWithFile(baseUrl, params).then((resp) => {
         const {result} = resp
         return result;
     }).catch(() => {

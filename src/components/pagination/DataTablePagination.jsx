@@ -124,7 +124,7 @@ const DataTablePagination = ({
             </Col>
             <Col sm="12" md="3" className="col-5 text-start text-md-end">
                 <div className="dataTables_info" id="DataTables_Table_2_info" role="status" aria-live="polite">
-                    {itemPerPage*(currentPage-1)+1} - {(totalItems > itemPerPage*currentPage) ? itemPerPage*currentPage : totalItems} of {totalItems}
+                    {itemPerPage*(currentPage-1)+1} - {(totalItems > itemPerPage*currentPage) ? itemPerPage*currentPage : totalItems} dari {totalItems}
                 </div>
             </Col>
         </Row>

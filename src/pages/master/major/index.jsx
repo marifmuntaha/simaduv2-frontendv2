@@ -31,7 +31,7 @@ const Major = () => {
     const Column = [
         {
             name: "Jenjang",
-            selector: (row) => row.ladder?.alias,
+            selector: (row) => row.ladderAlias,
             sortable: false,
             // hide: 370,
             // width: "300px",

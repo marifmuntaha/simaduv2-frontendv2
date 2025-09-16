@@ -1,8 +1,9 @@
 import axios from 'axios'
 import { RToast } from "@/components";
 
-axios.defaults.headers.common['Accept'] = 'application/json'
-axios.defaults.headers.common['Content-Type'] = 'application/x-www-form-urlencoded'
+axios.defaults.headers.common['Accept'] = 'application/json';
+axios.defaults.headers.common['Content-Type'] = 'application/x-www-form-urlencoded';
+axios.defaults.headers.common['ngrok-skip-browser-warning'] = true;
 axios.defaults.baseURL = import.meta.env.VITE_API_ENDPOINT;
 
 class APICore {

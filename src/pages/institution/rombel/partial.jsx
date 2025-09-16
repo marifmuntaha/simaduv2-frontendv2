@@ -70,13 +70,12 @@ const Partial = ({modal, setModal, rombel, setRombel, setRefreshData}) => {
     }, [])
 
     useEffect(() => {
-        getLevel({type: 'select', ladderId: ladder}).then((resp) => setLevelOptions(resp));
+        getLevel({type: 'select', ladderId: ladder}).then((resp) => {
+            setLevelOptions(resp)
+        });
         getMajor({type: 'select', ladderId: ladder}).then((resp) => setMajorOptions(resp));
-    }, [ladder])
-
-    useEffect(() => {
         getTeacher({type: 'select', institutionId: rombel.institutionId}).then((resp) => setTeacherOptions(resp));
-    }, [rombel])
+    }, [rombel, ladder])
 
     useEffect(() => {
         setValue('id', rombel.id)

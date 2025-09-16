@@ -54,7 +54,7 @@ const Upload = ({modal, setModal, setRefreshData}) => {
                     await storeUser(paramsUserStudent).then(async respUserStudent => {
                         const paramsStudent = {
                             userId: respUserStudent.id,
-                            parentId: respStudentParent?.id,
+                            parentId: respStudentParent[0].id,
                             nisn: item['NISN'],
                             nism: item['NISM'],
                             nik: item['NIK'],
@@ -94,15 +94,18 @@ const Upload = ({modal, setModal, setRefreshData}) => {
                                     start++
                                     setDataStart(start)
                                 }).catch(()=>{
+                                    setLoading(false);
                                     destroyAddress(respStudentAddress.id)
                                     destroyStudent(respStudent.id)
                                     destroyUser(respUserStudent.id)
                                 })
                             }).catch(() => {
+                                setLoading(false);
                                 destroyStudent(respStudent.id);
                                 destroyUser(respUserStudent.id);
                             })
                         }).catch(() => {
+                            setLoading(false);
                             destroyUser(respUserStudent.id);
                         })
                     })

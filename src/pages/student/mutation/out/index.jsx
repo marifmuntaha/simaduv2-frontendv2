@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
-import Head from "@/layout/head/index.jsx";
-import Content from "@/layout/content/index.jsx";
+import {Badge, Button, ButtonGroup, Spinner} from "reactstrap";
+import Head from "@/layout/head";
+import Content from "@/layout/content";
 import {
     Block,
     BlockBetween,
@@ -10,10 +11,9 @@ import {
     Icon,
     PreviewCard,
     ReactDataTable
-} from "@/components/index.jsx";
-import {Button, ButtonGroup, Spinner} from "reactstrap";
+} from "@/components";
 import {get as getMutation, destroy as destroyMutation} from "@/api/student/mutation";
-import Partial from "./partial.jsx";
+import Partial from "./partial";
 
 const MutationOut = () => {
     const [sm, updateSm] = useState(false);
@@ -29,19 +29,27 @@ const MutationOut = () => {
         token: '',
         numberLetter: '',
         description: "",
+        letterEmis: "",
     });
     const [modal, setModal] = useState(false);
     const Columns = [
         {
             name: "Jenjang",
-            selector: (row) => row.name,
+            selector: (row) => row.institution,
             sortable: false,
             // hide: 370,
             // width: "300px",
         },
         {
-            name: "Alias",
-            selector: (row) => row.alias,
+            name: "Nomor Surat",
+            selector: (row) => row.numberLetter,
+            sortable: false,
+            // hide: 370,
+            // width: "200px",
+        },
+        {
+            name: "Nama Siswa",
+            selector: (row) => row.name,
             sortable: false,
             // hide: 370,
             // width: "200px",
@@ -52,6 +60,17 @@ const MutationOut = () => {
             sortable: false,
             // hide: 370,
 
+        },
+        {
+            name: "Status",
+            selector: (row) => row.status,
+            sortable: false,
+            // hide: 370,
+            cell: (row) => (
+                row.status === 1
+                    ? <Badge pill size="sm" color="success">Terkirim</Badge>
+                    : <Badge pill size="sm" color="danger">Belum terkirim</Badge>
+            )
         },
         {
             name: "Aksi",
@@ -78,8 +97,8 @@ const MutationOut = () => {
     ];
 
     useEffect(() => {
-        reloadData && getMutation().then((resp) => {
-            setMutation(resp);
+        reloadData && getMutation({list: 'table'}).then((resp) => {
+            setMutations(resp);
             setReloadData(false);
         }).catch(() => {
             setReloadData(false);
