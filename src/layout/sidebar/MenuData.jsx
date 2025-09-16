@@ -61,11 +61,11 @@ const RootMenu = [
                 subMenu: [
                     {
                         text: "Mutasi Keluar",
-                        link: "/data-siswa/mutasi/mutasi-keluar",
+                        link: "/data-siswa/mutasi/keluar",
                     },
                     {
                         text: "Mutasi Masuk",
-                        link: "/data-siswa/mutasi/mutasi-masuk",
+                        link: "/data-siswa/mutasi/masuk",
                     }
                 ]
             },

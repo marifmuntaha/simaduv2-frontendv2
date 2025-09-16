@@ -82,6 +82,7 @@ const List = () => {
                         return <Badge pill color="success">Aktif</Badge>
                     case '2':
                         return <Badge pill color="danger">Keluar</Badge>
+                    case '3':
                     default:
                         return <Badge pill color="info">Alumni</Badge>
                 }

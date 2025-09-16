@@ -8,7 +8,7 @@ import {
     BlockHeadContent,
     BlockTitle, Button, Col, Icon,
     PreviewCard,
-    Row, RSelect
+    Row, RSelect, RToast
 } from "@/components/index.jsx";
 import {Table} from "reactstrap";
 import {get as getYear} from "@/api/master/year";
@@ -47,7 +47,7 @@ const MoveRombel = () => {
                 boardingId: item.boardingId,
             }
             storeActivity(params).then((resp) => {
-                console.log(resp);
+                RToast(`Siswa ${item.name} berhasil dipindahkan`, 'success')
             })
         })
     }

@@ -54,7 +54,7 @@ const Upload = ({modal, setModal, setRefreshData}) => {
                     await storeUser(paramsUserStudent).then(async respUserStudent => {
                         const paramsStudent = {
                             userId: respUserStudent.id,
-                            parentId: respStudentParent.id,
+                            parentId: respStudentParent?.id,
                             nisn: item['NISN'],
                             nism: item['NISM'],
                             nik: item['NIK'],

@@ -88,7 +88,7 @@ export const calcPercentage = (str1, str2) => {
 export const findUpper = (string) => {
     let extractedString = [];
 
-    for (var i = 0; i < string.length; i++) {
+    for (let i = 0; i < string.length; i++) {
         if (string.charAt(i) === string.charAt(i).toUpperCase() && string.charAt(i) !== " ") {
             extractedString.push(string.charAt(i));
         }
@@ -99,3 +99,14 @@ export const findUpper = (string) => {
         return extractedString[0];
     }
 };
+
+export const generateSecureToken = (length = 32) => {
+    const array = new Uint8Array(length);
+    crypto.getRandomValues(array);
+    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+export const zeroPad = (num, places) => {
+    let zero = places - num.toString().length + 1;
+    return Array(+(zero > 0 && zero)).join("0") + num;
+}

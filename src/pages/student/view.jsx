@@ -47,6 +47,8 @@ const View = () => {
                 return "Aktif"
             case "2":
                 return "Keluar"
+            case "4":
+                return "Pindah Kelas"
             default:
                 return "Alumni"
         }
