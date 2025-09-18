@@ -13,11 +13,11 @@ import {
     ReactDataTable
 } from "@/components";
 import {get as getLevel, destroy as destroyLevel} from "@/api/master/level"
-import Partial from "./partial";
+import Partial from "@/pages/master/level/partial";
 
 const Ladder = () => {
     const [sm, updateSm] = useState(false);
-    const [refreshData, setRefreshData] = useState(true);
+    const [reloadData, setReloadData] = useState(true);
     const [loading, setLoading] = useState(false);
     const [modal, setModal] = useState(false);
     const [levels, setLevels] = useState([]);
@@ -73,7 +73,7 @@ const Ladder = () => {
                         setLoading(row.id)
                         destroyLevel(row.id).then(() => {
                             setLoading(false);
-                            setRefreshData(true);
+                            setReloadData(true);
                         }).catch(() => setLoading(false))
                     }}>{loading === row.id ? <Spinner size="sm" /> : <Icon name="trash" /> }</Button>
                 </ButtonGroup>
@@ -82,11 +82,11 @@ const Ladder = () => {
     ];
 
     useEffect(() => {
-        refreshData && getLevel().then((resp) => {
+        reloadData && getLevel({list: 'table'}).then((resp) => {
             setLevels(resp)
-            setRefreshData(false);
+            setReloadData(false);
         }).catch(() => setLoading(false));
-    }, [refreshData])
+    }, [reloadData])
     return (
         <React.Fragment>
             <Head title="Data Tingkat"/>
@@ -125,9 +125,9 @@ const Ladder = () => {
                         </BlockBetween>
                     </BlockHead>
                     <PreviewCard>
-                        <ReactDataTable data={levels} columns={Column} pagination progressPending={refreshData} />
+                        <ReactDataTable data={levels} columns={Column} pagination progressPending={reloadData} />
                     </PreviewCard>
-                    <Partial modal={modal} setModal={setModal} level={level} setLevel={setLevel} setRefreshData={setRefreshData}/>
+                    <Partial modal={modal} setModal={setModal} level={level} setLevel={setLevel} setReloadData={setReloadData}/>
                 </Block>
             </Content>
         </React.Fragment>

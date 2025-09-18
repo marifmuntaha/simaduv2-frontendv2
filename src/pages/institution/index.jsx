@@ -13,11 +13,11 @@ import {
     ReactDataTable
 } from "@/components";
 import {get as getInstitution, destroy as destroyInstitution} from "@/api/institution"
-import Partial from "./partial";
+import Partial from "@/pages/institution/partial";
 
 const Major = () => {
     const [sm, updateSm] = useState(false);
-    const [refreshData, setRefreshData] = useState(true);
+    const [loadData, setLoadData] = useState(true);
     const [loading, setLoading] = useState(false);
     const [modal, setModal] = useState(false);
     const [institutions, setInstitutions] = useState([]);
@@ -86,7 +86,7 @@ const Major = () => {
                         setLoading(row.id)
                         destroyInstitution(row.id).then(() => {
                             setLoading(false);
-                            setRefreshData(true);
+                            setLoadData(true);
                         }).catch(() => setLoading(false))
                     }}>{loading === row.id ? <Spinner size="sm"/> : <Icon name="trash"/>}</Button>
                 </ButtonGroup>
@@ -95,11 +95,11 @@ const Major = () => {
     ];
 
     useEffect(() => {
-        refreshData && getInstitution().then((resp) => {
+        loadData && getInstitution({list: 'table'}).then((resp) => {
             setInstitutions(resp)
-            setRefreshData(false);
+            setLoadData(false);
         }).catch(() => setLoading(false));
-    }, [refreshData])
+    }, [loadData])
     return (
         <React.Fragment>
             <Head title="Data Lembaga"/>
@@ -138,9 +138,9 @@ const Major = () => {
                         </BlockBetween>
                     </BlockHead>
                     <PreviewCard>
-                        <ReactDataTable data={institutions} columns={Column} pagination progressPending={refreshData}/>
+                        <ReactDataTable data={institutions} columns={Column} pagination progressPending={loadData}/>
                     </PreviewCard>
-                    <Partial modal={modal} setModal={setModal} institution={institution} setInstitution={setInstitution} setRefreshData={setRefreshData}/>
+                    <Partial modal={modal} setModal={setModal} institution={institution} setInstitution={setInstitution} setLoadData={setLoadData}/>
                 </Block>
             </Content>
         </React.Fragment>

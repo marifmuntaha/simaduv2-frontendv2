@@ -9,7 +9,7 @@ import {get as getLevel} from "@/api/master/level"
 import {get as getMajor} from "@/api/master/major"
 import {get as getTeacher} from "@/api/teacher"
 
-const Partial = ({modal, setModal, rombel, setRombel, setRefreshData}) => {
+const Partial = ({modal, setModal, rombel, setRombel, setLoadData}) => {
     const [loading, setLoading] = useState(false);
     const [yearOptions, setYearOptions] = useState([]);
     const [institutionOptions, setInstitutionOptions] = useState([]);
@@ -30,19 +30,19 @@ const Partial = ({modal, setModal, rombel, setRombel, setRefreshData}) => {
     const onSubmit = () => {
         rombel.id === '' ? onStore() : onUpdate();
     }
-    const onStore = () => {
+    const onStore = async () => {
         setLoading(true);
-        storeRombel(rombel).then(() => {
+        await storeRombel(rombel).then(() => {
             setLoading(false)
-            setRefreshData(true)
+            setLoadData(true)
             toggle()
         }).catch(() => setLoading(false));
     }
-    const onUpdate = () => {
+    const onUpdate = async () => {
         setLoading(true)
-        updateRombel(rombel).then(() => {
+        await updateRombel(rombel).then(() => {
             setLoading(false)
-            setRefreshData(true)
+            setLoadData(true)
             toggle()
         }).catch(() => setLoading(false));
     }

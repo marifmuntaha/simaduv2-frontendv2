@@ -5,7 +5,7 @@ import {Icon, RSelect} from "@/components";
 import {store as storeLevel, update as updateLevel} from "@/api/master/level"
 import {get as getLadder} from "@/api/master/ladder"
 
-const Partial = ({modal, setModal, level, setLevel, setRefreshData}) => {
+const Partial = ({modal, setModal, level, setLevel, setReloadData}) => {
     const [loading, setLoading] = useState(false);
     const [ladderOptions, setLadderOptions] = useState([]);
     const {
@@ -21,21 +21,27 @@ const Partial = ({modal, setModal, level, setLevel, setRefreshData}) => {
     const onSubmit = () => {
         level.id === '' ? onStore() : onUpdate();
     }
-    const onStore = () => {
+    const onStore = async () => {
         setLoading(true);
-        storeLevel(level).then(() => {
-            setLoading(false)
-            setRefreshData(true)
-            toggle()
-        }).catch(() => setLoading(false));
+        const store = await storeLevel(level);
+        if (store) {
+            setLoading(false);
+            setReloadData(true);
+            toggle();
+        } else {
+            setLoading(false);
+        }
     }
-    const onUpdate = () => {
+    const onUpdate = async () => {
         setLoading(true)
-        updateLevel(level).then(() => {
-            setLoading(false)
-            setRefreshData(true)
-            toggle()
-        }).catch(() => setLoading(false));
+        const update = await updateLevel(level);
+        if (update) {
+            setLoading(false);
+            setReloadData(true);
+            toggle();
+        } else {
+            setLoading(false);
+        }
     }
 
     const handleReset = () => {

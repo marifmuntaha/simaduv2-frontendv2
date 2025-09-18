@@ -23,19 +23,11 @@ class APICore {
                     .map((key) => key + '=' + params[key])
                     .join('&')
                 : ''
-            response = await axios.get(`${url}?${queryString}`, params).then((resp) => {
-                return {
-                    result: resp.data.result,
-                }
-            }).catch((error) => this.handleError(error))
+            response = await axios.get(`${url}?${queryString}`, params).then((resp) => resp);
         } else {
-            response = await axios.get(`${url}`, params).then((resp) => {
-                return {
-                    result: resp.data.result,
-                }
-            }).catch((error) => this.handleError(error))
+            response = await axios.get(`${url}`, params).then((resp) => resp)
         }
-        return response
+        return this.handleResponse(response)
     }
 
     getFile = (url, params) => {
@@ -70,46 +62,26 @@ class APICore {
         return axios.all(reqs)
     }
 
-    create = (url, data) => {
-        return axios.post(url, data).then((resp) => {
-            return {
-                message: resp.data.message,
-                result: resp.data.result,
-            }
-        }).catch((error) => {
-            this.handleError(error)
-        })
+    create = async (url, data, message) => {
+        const response = await axios.post(url, data).then((resp) => resp).catch((error) => error);
+        return this.handleResponse(response, message)
     }
 
     updatePatch = (url, data) => {
         return axios.patch(url, data)
     }
 
-    update = async (url, data) => {
-        return await axios.put(url, data).then((resp) => {
-            return {
-                message: resp.data.message,
-                result: resp.data.result,
-            }
-        }).catch((error) => {
-            this.handleError(error)
-            throw new Error()
-        })
+    update = async (url, data, message) => {
+        const response =  await axios.put(url, data).then((resp) => resp).catch((error) => error);
+        return this.handleResponse(response, message);
     }
 
-    delete = (url) => {
-        return axios.delete(url).then((resp) => {
-            return {
-                message: resp.data.message,
-                result: resp.data.result,
-            }
-        }).catch((error) => {
-            this.handleError(error)
-            throw new Error()
-        })
+    delete = async (url, message) => {
+        const response = await axios.delete(url).then((resp) => resp);
+        return this.handleResponse(response, message)
     }
 
-    createWithFile = (url, data) => {
+    createWithFile = async (url, data, message) => {
         const formData = new FormData()
         for (const k in data) {
             if (Array.isArray(data[k])) {
@@ -127,18 +99,11 @@ class APICore {
                 'content-type': 'multipart/form-data',
             },
         }
-        return axios.post(url, formData, config).then((resp) => {
-            return {
-                message: resp.data.message,
-                result: resp.data.result
-            }
-        }).catch((error) => {
-            this.handleError(error)
-            throw new Error()
-        })
+        const result =  await axios.post(url, formData, config).then((resp) => resp).catch((error) => error);
+        return this.handleResponse(result, message);
     }
 
-    updateWithFile = (url, data) => {
+    updateWithFile = async (url, data, message) => {
         const formData = new FormData()
         for (const k in data) {
             if (Array.isArray(data[k])) {
@@ -156,15 +121,8 @@ class APICore {
                 'content-type': 'multipart/form-data',
             },
         }
-        return axios.post(url, formData, config).then((resp) => {
-            return {
-                message: resp.data.message,
-                result: resp.data.result
-            }
-        }).catch((error) => {
-            this.handleError(error)
-            throw new Error()
-        })
+        const result =  await axios.post(url, formData, config).then((resp) => resp).catch((error) => error);
+        return this.handleResponse(result, message);
     }
 
     isUserAuthenticated = () => {
@@ -195,29 +153,39 @@ class APICore {
         else delete axios.defaults.headers.common['Authorization']
     }
 
-    handleError(error) {
-        const {code, response} = error
-        let message = ''
+    handleResponse = (resp, message = true) => {
+        const {code, data, response} = resp;
         if (code === "ERR_NETWORK") {
-            message = 'Tidak dapat terhubung ke server.'
-        } else {
-            if (response.status === 401) {
+            RToast('Tidak dapat terhubung ke server.');
+        }
+        else if (response) {
+            const {statusMessage, statusCode} = response.data;
+            if (statusCode === 401) {
+                RToast(statusMessage)
                 this.setLoggedInUser();
-                // window.location.href = '/auth/masuk'
-            }
-            if (response.data){
-                if (response.data.messages) {
-                    response.data.messages.map(item => {
-                        message += item.message + ', '
-                    })
-                } else {
-                    message = response.data.message
-                }
+                return false;
+            } else if (statusCode === 403) {
+                RToast('Anda tidak berhak mengakses halaman ini.')
             } else {
-                message = response.message
+                message && RToast(statusMessage);
+                return false;
+            }
+        } else {
+            const {status, statusMessage, statusCode, result} = data;
+            if (status === 'success') {
+                statusMessage !== '' && message && RToast(statusMessage, 'success');
+                return result;
+            } else {
+                if (statusCode === 401) {
+                    RToast(statusMessage);
+                    this.setLoggedInUser();
+                    return false;
+                } else {
+                    RToast(statusMessage);
+                    return false;
+                }
             }
         }
-        RToast(message)
     }
 }
 

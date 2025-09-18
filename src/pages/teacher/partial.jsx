@@ -11,7 +11,7 @@ import {get as getInstitution} from "@/api/institution"
 
 registerLocale("id", id)
 
-const Partial = ({modal, setModal, teacher, setTeacher, setRefreshData}) => {
+const Partial = ({modal, setModal, teacher, setTeacher, setLoadData}) => {
     const [loading, setLoading] = useState(false);
     const [birthdateSelected, setBirthdateSelected] = useState(new Date());
     const [institutionOptions, setInstitutionOptions] = useState([]);
@@ -33,47 +33,47 @@ const Partial = ({modal, setModal, teacher, setTeacher, setRefreshData}) => {
     const onSubmit = () => {
         teacher.id === '' ? onStore() : onUpdate();
     }
-    const onStore = () => {
+    const onStore = async () => {
         setLoading(true);
-        storeUser({
+        await storeUser({
             name: teacher.name,
             email: teacher.email,
             username: teacher.pegId,
             password: teacher.birthplace,
             phone: teacher.phone,
             role: '4'
-        }).then((resp) => {
-            storeTeacher({
-                userId: resp.id,
-                institution: institutionSelected.map((i) => i.value),
-                name: teacher.name,
-                pegId: teacher.pegId,
-                birthplace: teacher.birthplace,
-                birthdate: moment(teacher.birthdate).format('YYYY-MM-DD'),
-                gender: teacher.gender,
-                frontTitle: teacher.frontTitle,
-                backTitle: teacher.backTitle,
-                phone: teacher.phone,
-                email: teacher.email,
-                address: teacher.address,
-            }).then(() => {
+        }).then(async (respUser) => {
+            if (respUser === false) {
                 setLoading(false);
-                setRefreshData(true);
-                toggle();
-            }).catch(() => {
-                destroyUser(resp.id).then(() => {
+            } else {
+                const store = await storeTeacher({
+                    userId: respUser.id,
+                    institution: institutionSelected.map((i) => i.value),
+                    name: teacher.name,
+                    pegId: teacher.pegId,
+                    birthplace: teacher.birthplace,
+                    birthdate: moment(teacher.birthdate).format('YYYY-MM-DD'),
+                    gender: teacher.gender,
+                    frontTitle: teacher.frontTitle,
+                    backTitle: teacher.backTitle,
+                    phone: teacher.phone,
+                    email: teacher.email,
+                    address: teacher.address,
+                });
+                if (store !== false) {
                     setLoading(false);
-                }).catch(() => {
-                    setLoading(false)
-                })
-            })
-        }).catch(() => {
-            setLoading(false)
-        });
+                    setLoadData(true);
+                    toggle()
+                } else {
+                    await destroyUser(respUser.id)
+                    setLoading(false);
+                }
+            }
+        }).catch(() => setLoading(false));
     }
-    const onUpdate = () => {
+    const onUpdate = async () => {
         setLoading(true);
-        updateUser({
+        await updateUser({
             id: teacher.userId,
             name: teacher.name,
             email: teacher.email,
@@ -81,10 +81,10 @@ const Partial = ({modal, setModal, teacher, setTeacher, setRefreshData}) => {
             password: teacher.birthplace,
             phone: teacher.phone,
             role: '4'
-        }).then((resp) => {
-            updateTeacher({
+        }).then(async (respUser) => {
+            const update = await updateTeacher({
                 id: teacher.id,
-                userId: resp.id,
+                userId: respUser.id,
                 institution: institutionSelected.map((i) => i.value),
                 name: teacher.name,
                 pegId: teacher.pegId,
@@ -96,28 +96,15 @@ const Partial = ({modal, setModal, teacher, setTeacher, setRefreshData}) => {
                 phone: teacher.phone,
                 email: teacher.email,
                 address: teacher.address,
-            }).then(() => {
+            });
+            if (update !== false) {
                 setLoading(false);
-                setRefreshData(true);
+                setLoadData(true);
                 toggle();
-            }).catch(() => {
-                updateUser({
-                    id: teacher.userId,
-                    name: teacher.name,
-                    email: teacher.email,
-                    username: teacher.pegId,
-                    password: teacher.birthplace,
-                    phone: teacher.phone,
-                    role: '4'
-                }).then(() => {
-                    setLoading(false);
-                }).catch(() => {
-                    setLoading(false)
-                })
-            })
-        }).catch(() => {
-            setLoading(false)
-        });
+            } else {
+                setLoading(false);
+            }
+        }).catch(() => setLoading(false));
     }
     const handleReset = () => {
         setTeacher({
@@ -152,24 +139,24 @@ const Partial = ({modal, setModal, teacher, setTeacher, setRefreshData}) => {
     }, []);
 
     useEffect(() => {
-        setValue('id', teacher?.id)
-        setValue('userId', teacher?.userId)
-        setValue('name', teacher?.name)
-        setValue('pegId', teacher?.pegId)
-        setValue('birthplace', teacher?.birthplace)
-        setValue('birthdate', teacher?.birthdate)
-        setValue('gender', teacher?.gender)
-        setValue('frontTitle', teacher?.frontTitle ? teacher.frontTitle : '')
-        setValue('backTitle', teacher?.backTitle ? teacher.backTitle : '')
-        setValue('phone', teacher?.phone)
-        setValue('email', teacher?.email)
-        setValue('address', teacher?.address)
-        setInstitutionSelected(() => {
+        setValue('id', teacher?.id);
+        setValue('userId', teacher?.userId);
+        setValue('name', teacher?.name);
+        setValue('pegId', teacher?.pegId);
+        setValue('birthplace', teacher?.birthplace);
+        setValue('birthdate', teacher?.birthdate);
+        setValue('gender', teacher?.gender);
+        setValue('frontTitle', teacher?.frontTitle ? teacher.frontTitle : '');
+        setValue('backTitle', teacher?.backTitle ? teacher.backTitle : '');
+        setValue('phone', teacher?.phone);
+        setValue('email', teacher?.email);
+        setValue('address', teacher?.address);
+        teacher.institution !== undefined && setInstitutionSelected(() => {
             return teacher?.institution?.map((i) => {
                 return institutionOptions.find((c) => c.value === i.id);
-            })
-        })
-    }, [teacher, setValue, institutionOptions])
+            });
+        });
+    }, [teacher, setValue, institutionOptions]);
 
     return (
         <Modal isOpen={modal.partial} toggle={toggle} size="md">
@@ -178,7 +165,7 @@ const Partial = ({modal, setModal, teacher, setTeacher, setRefreshData}) => {
                     <Icon name="cross"/>
                 </button>
             }>
-                {teacher ? 'UBAH' : 'TAMBAH'}
+                {teacher === "" ? 'UBAH' : 'TAMBAH'}
             </ModalHeader>
             <ModalBody>
                 <form className="is-alter" onSubmit={handleSubmit(onSubmit)}>
@@ -191,6 +178,7 @@ const Partial = ({modal, setModal, teacher, setTeacher, setRefreshData}) => {
                                 value={institutionSelected}
                                 onChange={(val) => {
                                     setInstitutionSelected(val);
+                                    setTeacher({...teacher, institution: val.value});
                                     setValue('institution', val);
                                 }}
                                 placeholder="Pilih Lembaga"

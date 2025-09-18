@@ -74,7 +74,7 @@ const Ladder = () => {
     ];
 
     useEffect(() => {
-        reloadData && getLadder().then((resp) => {
+        reloadData && getLadder({list: 'table'}).then((resp) => {
             setLadders(resp);
             setReloadData(false);
         }).catch(() => {
@@ -122,7 +122,7 @@ const Ladder = () => {
                         <ReactDataTable data={ladders} columns={Columns} expandableRows pagination/>
                     </PreviewCard>
                 </Block>
-                <Partial modal={modal} setModal={setModal} ladder={ladder} setLadder={setLadder} setRefreshData={setReloadData} />
+                <Partial modal={modal} setModal={setModal} ladder={ladder} setLadder={setLadder} setReloadData={setReloadData} />
             </Content>
         </React.Fragment>
     )

@@ -4,7 +4,7 @@ import {useForm} from "react-hook-form";
 import {Icon, RSelect} from "@/components";
 import {store as storeYear, update as updateYear} from "@/api/master/year"
 
-const Partial = ({modal, setModal, year, setYear, setRefreshData}) => {
+const Partial = ({modal, setModal, year, setYear, setLoadData}) => {
     const [loading, setLoading] = useState(false);
     const activeOptions = [
         {value: 1, label: "Ya"},
@@ -23,21 +23,27 @@ const Partial = ({modal, setModal, year, setYear, setRefreshData}) => {
     const onSubmit = () => {
         year.id === '' ? onStore() : onUpdate();
     }
-    const onStore = () => {
+    const onStore = async () => {
         setLoading(true);
-        storeYear(year).then(() => {
-            setLoading(false)
-            setRefreshData(true)
-            toggle()
-        }).catch(() => setLoading(false));
+        const store = await storeYear(year).then((resp) => resp);
+        if (store) {
+            setLoading(false);
+            setLoadData(true);
+            toggle();
+        } else {
+            setLoading(false);
+        }
     }
-    const onUpdate = () => {
+    const onUpdate = async () => {
         setLoading(true)
-        updateYear(year).then(() => {
-            setLoading(false)
-            setRefreshData(true)
-            toggle()
-        }).catch(() => setLoading(false));
+        const update = await updateYear(year).then((resp) => resp);
+        if (update) {
+            setLoading(false);
+            setLoadData(true);
+            toggle();
+        } else {
+            setLoading(false);
+        }
     }
 
     const handleReset = () => {

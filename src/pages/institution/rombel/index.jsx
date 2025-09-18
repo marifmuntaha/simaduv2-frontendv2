@@ -16,11 +16,11 @@ import {ButtonGroup, Spinner} from "reactstrap";
 import {get as getRombel, destroy as destroyRombel} from "@/api/institution/rombel"
 import {get as getYear} from "@/api/master/year";
 import {get as getInstitution} from "@/api/institution";
-import Partial from "./partial";
+import Partial from "@/pages/institution/rombel/partial";
 
 const Rombel = () => {
     const [sm, updateSm] = useState(false);
-    const [refreshData, setRefreshData] = useState(true);
+    const [loadData, setLoadData] = useState(true);
     const [loading, setLoading] = useState(false);
     const [modal, setModal] = useState(false);
     const [yearOptions, setYearOptions] = useState([]);
@@ -104,7 +104,7 @@ const Rombel = () => {
                         setLoading(row.id)
                         destroyRombel(row.id).then(() => {
                             setLoading(false);
-                            setRefreshData(true);
+                            setLoadData(true);
                         }).catch(() => setLoading(false))
                     }}>{loading === row.id ? <Spinner size="sm"/> : <Icon name="trash"/>}</Button>
                 </ButtonGroup>
@@ -112,7 +112,7 @@ const Rombel = () => {
         },
     ];
     const params = useCallback(() => {
-        let query = {}
+        let query = {list: 'table'}
         if (yearSelected.value !== undefined) {
             query.yearId = yearSelected.value;
         }
@@ -128,11 +128,11 @@ const Rombel = () => {
     }, []);
 
     useEffect(() => {
-        refreshData && getRombel(params()).then((resp) => {
+        loadData && getRombel(params()).then((resp) => {
             setRombels(resp)
-            setRefreshData(false);
+            setLoadData(false);
         }).catch(() => setLoading(false));
-    }, [refreshData, params])
+    }, [loadData, params])
 
     return (
         <React.Fragment>
@@ -185,7 +185,7 @@ const Rombel = () => {
                                         value={yearSelected}
                                         onChange={(val) => {
                                             setYearSelected(val);
-                                            setRefreshData(true);
+                                            setLoadData(true);
                                         }}
                                         placeholder="Pilih Tahun Pelajaran"
                                     />
@@ -198,17 +198,17 @@ const Rombel = () => {
                                         value={institutionSelected}
                                         onChange={(val) => {
                                             setInstitutionSelected(val);
-                                            setRefreshData(true);
+                                            setLoadData(true);
                                         }}
                                         placeholder="Pilih Lembaga"
                                     />
                                 </div>
                             </div>
                         </Row>
-                        <ReactDataTable data={rombels} columns={Column} pagination progressPending={refreshData}/>
+                        <ReactDataTable data={rombels} columns={Column} pagination progressPending={loadData}/>
                     </PreviewCard>
                     <Partial modal={modal} setModal={setModal} rombel={rombel} setRombel={setRombel}
-                             setRefreshData={setRefreshData}/>
+                             setLoadData={setLoadData}/>
                 </Block>
             </Content>
         </React.Fragment>

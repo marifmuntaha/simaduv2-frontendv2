@@ -13,11 +13,11 @@ import {
     ReactDataTable
 } from "@/components";
 import {get as getYear, destroy as destroyYear} from "@/api/master/year"
-import Partial from "./partial";
+import Partial from "@/pages/master/year/partial";
 
 const Major = () => {
     const [sm, updateSm] = useState(false);
-    const [refreshData, setRefreshData] = useState(true);
+    const [loadData, setLoadData] = useState(true);
     const [loading, setLoading] = useState(false);
     const [modal, setModal] = useState(false);
     const [years, setYears] = useState([]);
@@ -68,7 +68,7 @@ const Major = () => {
                         setLoading(row.id)
                         destroyYear(row.id).then(() => {
                             setLoading(false);
-                            setRefreshData(true);
+                            setLoadData(true);
                         }).catch(() => setLoading(false))
                     }}>{loading === row.id ? <Spinner size="sm"/> : <Icon name="trash"/>}</Button>
                 </ButtonGroup>
@@ -77,11 +77,11 @@ const Major = () => {
     ];
 
     useEffect(() => {
-        refreshData && getYear().then((resp) => {
+        loadData && getYear({list: 'table'}).then((resp) => {
             setYears(resp)
-            setRefreshData(false);
+            setLoadData(false);
         }).catch(() => setLoading(false));
-    }, [refreshData])
+    }, [loadData])
     return (
         <React.Fragment>
             <Head title="Data Tahun Pelajaran"/>
@@ -120,10 +120,9 @@ const Major = () => {
                         </BlockBetween>
                     </BlockHead>
                     <PreviewCard>
-                        <ReactDataTable data={years} columns={Column} pagination progressPending={refreshData}/>
+                        <ReactDataTable data={years} columns={Column} pagination progressPending={loadData}/>
                     </PreviewCard>
-                    <Partial modal={modal} setModal={setModal} year={year} setYear={setYear}
-                             setRefreshData={setRefreshData}/>
+                    <Partial modal={modal} setModal={setModal} year={year} setYear={setYear} setLoadData={setLoadData}/>
                 </Block>
             </Content>
         </React.Fragment>

@@ -16,12 +16,12 @@ import {
 } from "@/components";
 import {get as getTeacher, destroy as destroyTeacher} from "@/api/teacher"
 import {get as getInstitution} from "@/api/institution"
-import Partial from "./partial";
-import Upload from "./upload";
+import Partial from "@/pages/teacher/partial";
+import Upload from "@/pages/teacher/upload";
 
 const Teacher = () => {
     const [sm, updateSm] = useState(false);
-    const [refreshData, setRefreshData] = useState(true);
+    const [loadData, setLoadData] = useState(true);
     const [loading, setLoading] = useState(false);
     const [modal, setModal] = useState({
         partial: false,
@@ -118,7 +118,7 @@ const Teacher = () => {
                         setLoading(row.id)
                         destroyTeacher(row.id).then(() => {
                             setLoading(false);
-                            setRefreshData(true);
+                            setLoadData(true);
                         }).catch(() => setLoading(false))
                     }}>{loading === row.id ? <Spinner size="sm"/> : <Icon name="trash"/>}</Button>
                 </ButtonGroup>
@@ -130,7 +130,7 @@ const Teacher = () => {
         {value: 0, label: "Tidak Aktif"},
     ]
     const params = useCallback(() => {
-        let query = {}
+        let query = {list: 'table'}
         if (institutionSelected.value !== undefined) {
             query.institutionId = institutionSelected.value;
         }
@@ -143,11 +143,11 @@ const Teacher = () => {
         getInstitution({type: 'select', ladder: 'alias'}).then(resp => setInstitutionOptions(resp));
     }, [])
     useEffect(() => {
-        refreshData && getTeacher(params()).then((resp) => {
+        loadData && getTeacher(params()).then((resp) => {
             setTeachers(resp)
-            setRefreshData(false);
+            setLoadData(false);
         }).catch(() => setLoading(false));
-    }, [refreshData, params])
+    }, [loadData, params])
     return (
         <React.Fragment>
             <Head title="Data Guru"/>
@@ -207,7 +207,7 @@ const Teacher = () => {
                                         value={institutionSelected}
                                         onChange={(val) => {
                                             setInstitutionSelected(val);
-                                            setRefreshData(true);
+                                            setLoadData(true);
                                         }}
                                         placeholder="Pilih Lembaga"
                                     />
@@ -220,18 +220,18 @@ const Teacher = () => {
                                         value={statusSelected}
                                         onChange={(val) => {
                                             setStatusSelected(val);
-                                            setRefreshData(true);
+                                            setLoadData(true);
                                         }}
                                         placeholder="Pilih Status"
                                     />
                                 </div>
                             </div>
                         </Row>
-                        <ReactDataTable data={teachers} columns={Column} pagination progressPending={refreshData}/>
+                        <ReactDataTable data={teachers} columns={Column} pagination progressPending={loadData}/>
                     </PreviewCard>
                     <Partial modal={modal} setModal={setModal} teacher={teacher} setTeacher={setTeacher}
-                             setRefreshData={setRefreshData}/>
-                    <Upload modal={modal} setModal={setModal} setRefreshData={setRefreshData}/>
+                             setLoadData={setLoadData}/>
+                    <Upload modal={modal} setModal={setModal} setLoadData={setLoadData}/>
                 </Block>
             </Content>
         </React.Fragment>

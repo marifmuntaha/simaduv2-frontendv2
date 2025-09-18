@@ -3,11 +3,11 @@ import { toast } from "react-toastify";
 const RToast = (message, type) => {
     const config = {
         position: "top-right",
-        autoClose: false,
+        autoClose: 2000,
         hideProgressBar: true,
         closeOnClick: true,
         pauseOnHover: false,
-        draggable: true,
+        draggable: false,
         progress: false,
     }
 

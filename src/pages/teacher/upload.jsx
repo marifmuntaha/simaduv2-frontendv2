@@ -4,16 +4,17 @@ import * as xlsx from "xlsx";
 import moment from "moment";
 import {Icon, RSelect, RToast} from "@/components";
 import {get as getInstitution} from "@/api/institution"
-import {destroy as destroyUser, store as storeUser} from "@/api/user"
+import {store as storeUser, destroy as destroyUser} from "@/api/user"
 import {store as storeTeacher} from "@/api/teacher";
 import {calcPercentage} from "@/utils";
 
-const Upload = ({modal, setModal, setRefreshData}) => {
+const Upload = ({modal, setModal, setLoadData}) => {
     const [loading, setLoading] = useState(false);
     const [dataStart, setDataStart] = useState(0);
-    const [dataTotal, setDataTotal] = useState(0)
+    const [dataTotal, setDataTotal] = useState(0);
     const [institutionOptions, setInstitutionOptions] = useState([]);
-    const [institutionSelected, setInstitutionSelected] = useState([])
+    const [institutionSelected, setInstitutionSelected] = useState([]);
+    const [errorsTeacher, setErrorsTeacher] = useState([]);
     const [file, setFile] = useState({})
     const onSubmit = async (e) => {
         e.preventDefault();
@@ -35,38 +36,50 @@ const Upload = ({modal, setModal, setRefreshData}) => {
                 password: item['Tempat Lahir'],
                 phone: item['Nomor HP'],
                 role: '4'
-            }).then(async (resp) => {
-                await storeTeacher({
-                    userId: resp.id,
-                    institution: [institutionSelected.value],
-                    name: item['Nama Lengkap'],
-                    pegId: item['PegId'],
-                    birthplace: item['Tempat Lahir'],
-                    birthdate: moment(item['Tanggal Lahir'], 'DD/MM/YYYY').format('YYYY-MM-DD'),
-                    gender: item['Jenis Kelamin'],
-                    frontTitle: item['Gelar Depan'],
-                    backTitle: item['Gelar Belakang'],
-                    phone: item['Nomor HP'],
-                    email: item['Email'],
-                    address: item['Alamat'],
+            }, false).then(async (respUser) => {
+                if (respUser === false) {
+                    start++;
+                    setDataStart(start);
+                    setErrorsTeacher(errorsTeacher => [...errorsTeacher, {
+                        name: item['Nama Lengkap'],
+                        pegId: item['PegId'],
+                        status: 'Gagal ditambahkan'
+                    }]);
+                } else {
+                    const store = await storeTeacher({
+                        userId: respUser.id,
+                        institution: [institutionSelected.value],
+                        name: item['Nama Lengkap'],
+                        pegId: item['PegId'],
+                        birthplace: item['Tempat Lahir'],
+                        birthdate: moment(item['Tanggal Lahir'], 'DD/MM/YYYY').format('YYYY-MM-DD'),
+                        gender: item['Jenis Kelamin'],
+                        frontTitle: item['Gelar Depan'],
+                        backTitle: item['Gelar Belakang'],
+                        phone: item['Nomor HP'],
+                        email: item['Email'],
+                        address: item['Alamat'],
 
-                }).then(() => {
-                    start++
-                    setDataStart(start)
-                }).catch(() => {
-                    destroyUser(resp.id).then(() => {
-                        setLoading(false);
-                    }).catch(() => {
-                        setLoading(false)
-                    })
-                })
+                    }, false)
+                    if (store === false) {
+                        setErrorsTeacher(errorsTeacher => [...errorsTeacher, {
+                            name: item['Nama Lengkap'],
+                            pegId: item['PegId'],
+                            status: 'Gagal ditambahkan'
+                        }]);
+                        await destroyUser(respUser.id, false);
+                    }
+                    start++;
+                    setDataStart(start);
+                }
             }).catch(() => {
                 setLoading(false)
             });
+
             if(start === jsonData.length) {
                 setLoading(false)
                 RToast('Data Guru berhasil diunggah.', 'success')
-                setRefreshData(true)
+                setLoadData(true)
             }
         }
     }
@@ -80,7 +93,11 @@ const Upload = ({modal, setModal, setRefreshData}) => {
 
     useEffect(() => {
         getInstitution({type: 'select', ladder: 'alias'}).then((resp) => setInstitutionOptions(resp));
-    }, [])
+    }, []);
+
+    useEffect(() => {
+        console.log(errorsTeacher);
+    }, [errorsTeacher]);
 
     return (
         <Modal isOpen={modal.upload} toggle={toggle} size="md">

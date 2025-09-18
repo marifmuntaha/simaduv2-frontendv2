@@ -5,7 +5,7 @@ import {Icon, Row, RSelect} from "@/components";
 import {store as storeInstitution, update as updateInstitution} from "@/api/institution"
 import {get as getLadder} from "@/api/master/ladder"
 
-const Partial = ({modal, setModal, institution, setInstitution, setRefreshData}) => {
+const Partial = ({modal, setModal, institution, setInstitution, setLoadData}) => {
     const [loading, setLoading] = useState(false);
     const [ladderOptions, setLadderOptions] = useState([]);
     const {
@@ -21,21 +21,27 @@ const Partial = ({modal, setModal, institution, setInstitution, setRefreshData})
     const onSubmit = () => {
         institution.id === '' ? onStore() : onUpdate();
     }
-    const onStore = () => {
+    const onStore = async () => {
         setLoading(true);
-        storeInstitution(institution).then(() => {
-            setLoading(false)
-            setRefreshData(true)
-            toggle()
-        }).catch(() => setLoading(false));
+        const store = await storeInstitution(institution).then((resp) => resp);
+        if (store) {
+            setLoading(false);
+            setLoadData(true);
+            toggle();
+        } else {
+            setLoading(false);
+        }
     }
-    const onUpdate = () => {
+    const onUpdate = async () => {
         setLoading(true)
-        updateInstitution(institution).then(() => {
-            setLoading(false)
-            setRefreshData(true)
-            toggle()
-        }).catch(() => setLoading(false));
+        const update = await updateInstitution(institution).then((resp) => resp);
+        if (update) {
+            setLoading(false);
+            setLoadData(true);
+            toggle();
+        } else {
+            setLoading(false);
+        }
     }
     const handleReset = () => {
         setInstitution({
@@ -73,8 +79,8 @@ const Partial = ({modal, setModal, institution, setInstitution, setRefreshData})
     }, [institution, setValue])
 
     useEffect(() => {
-        getLadder({type: 'select'}).then((data) => setLadderOptions(data))
-    }, [])
+        getLadder({type: 'select'}).then((data) => setLadderOptions(data));
+    }, []);
 
     return (
         <Modal isOpen={modal} toggle={toggle} size={"md"}>

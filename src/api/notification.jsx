@@ -3,11 +3,10 @@ import {RToast} from "@/components";
 
 const api = new APICore()
 
-function get(params) {
+async function get(params) {
     const baseUrl = '/notification'
-    return api.get(baseUrl, params).then((resp) => {
-        return resp.result
-    })
+    const result =  await api.get(baseUrl, params).then((resp) => resp)
+    return result !== false ? result : [];
 }
 
 function update(params) {

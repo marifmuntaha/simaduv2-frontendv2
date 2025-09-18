@@ -16,11 +16,11 @@ import {
 import {get as getProgram, destroy as destroyProgram} from "@/api/institution/program"
 import {get as getYear} from "@/api/master/year"
 import {get as getInstitution} from "@/api/institution"
-import Partial from "./partial";
+import Partial from "@/pages/institution/program/partial";
 
 const Program = () => {
     const [sm, updateSm] = useState(false);
-    const [refreshData, setRefreshData] = useState(true);
+    const [loadData, setLoadData] = useState(true);
     const [loading, setLoading] = useState(false);
     const [yearOptions, setYearOptions] = useState([]);
     const [yearSelected, setYearSelected] = useState([]);
@@ -80,7 +80,7 @@ const Program = () => {
                         setLoading(row.id)
                         destroyProgram(row.id).then(() => {
                             setLoading(false);
-                            setRefreshData(true);
+                            setLoadData(true);
                         }).catch(() => setLoading(false))
                     }}>{loading === row.id ? <Spinner size="sm"/> : <Icon name="trash"/>}</Button>
                 </ButtonGroup>
@@ -88,7 +88,7 @@ const Program = () => {
         },
     ];
     const params = useCallback(() => {
-        let query = {}
+        let query = {list: 'table'}
         if (yearSelected.value !== undefined) {
             query.yearId = yearSelected.value;
         }
@@ -102,11 +102,11 @@ const Program = () => {
         getInstitution({type: 'select', ladder: 'alias'}).then(institution => setInstitutionOptions(institution));
     }, []);
     useEffect(() => {
-        refreshData && getProgram(params()).then((resp) => {
+        loadData && getProgram(params()).then((resp) => {
             setPrograms(resp)
-            setRefreshData(false);
+            setLoadData(false);
         }).catch(() => setLoading(false));
-    }, [refreshData, params])
+    }, [loadData, params])
     return (
         <React.Fragment>
             <Head title="Data Program"/>
@@ -158,7 +158,7 @@ const Program = () => {
                                         value={yearSelected}
                                         onChange={(val) => {
                                             setYearSelected(val);
-                                            setRefreshData(true);
+                                            setLoadData(true);
                                         }}
                                         placeholder="Pilih Tahun Pelajaran"
                                     />
@@ -171,17 +171,17 @@ const Program = () => {
                                         value={institutionSelected}
                                         onChange={(val) => {
                                             setInstitutionSelected(val);
-                                            setRefreshData(true);
+                                            setLoadData(true);
                                         }}
                                         placeholder="Pilih Lembaga"
                                     />
                                 </div>
                             </div>
                         </Row>
-                        <ReactDataTable data={programs} columns={Column} pagination progressPending={refreshData}/>
+                        <ReactDataTable data={programs} columns={Column} pagination progressPending={loadData}/>
                     </PreviewCard>
                     <Partial modal={modal} setModal={setModal} program={program} setProgram={setProgram}
-                             setRefreshData={setRefreshData}/>
+                             setLoadData={setLoadData}/>
                 </Block>
             </Content>
         </React.Fragment>

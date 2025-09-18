@@ -4,7 +4,7 @@ import {useForm} from "react-hook-form";
 import {Icon} from "@/components";
 import {store as storeLadder, update as updateLadder} from "@/api/master/ladder"
 
-const Partial = ({modal, setModal, ladder, setLadder, setRefreshData}) => {
+const Partial = ({modal, setModal, ladder, setLadder, setReloadData}) => {
     const [loading, setLoading] = useState(false);
     const {handleSubmit, reset, register, formState: {errors}, setValue} = useForm();
     const handleChange = (e) => {
@@ -13,21 +13,27 @@ const Partial = ({modal, setModal, ladder, setLadder, setRefreshData}) => {
     const onSubmit = () => {
         ladder.id === "" ? onStore() : onUpdate();
     }
-    const onStore = () => {
+    const onStore = async () => {
         setLoading(true);
-        storeLadder(ladder).then(() => {
-            setLoading(false)
-            setRefreshData(true)
+        const store = await storeLadder(ladder);
+        if (store) {
+            setLoading(false);
+            setReloadData(true);
             toggle()
-        }).catch(() => setLoading(false));
+        } else {
+            setLoading(false);
+        }
     }
-    const onUpdate = () => {
+    const onUpdate = async () => {
         setLoading(true);
-        updateLadder(ladder).then(() => {
-            setLoading(false)
-            setRefreshData(true)
+        const update = await updateLadder(ladder);
+        if (update) {
+            setLoading(false);
+            setReloadData(true);
             toggle();
-        }).catch(() => setLoading(false));
+        } else {
+            setLoading(false);
+        }
     }
     const handleReset = () => {
         setLadder({

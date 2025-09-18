@@ -6,7 +6,7 @@ import {store as storeProgram, update as updateProgram} from "@/api/institution/
 import {get as getYear} from "@/api/master/year"
 import {get as getInstitution} from "@/api/institution"
 
-const Partial = ({modal, setModal, program, setProgram, setRefreshData}) => {
+const Partial = ({modal, setModal, program, setProgram, setLoadData}) => {
     const [loading, setLoading] = useState(false);
     const [yearOptions, setYearOptions] = useState([]);
     const [institutionOptions, setInstitutionOptions] = useState([])
@@ -23,21 +23,27 @@ const Partial = ({modal, setModal, program, setProgram, setRefreshData}) => {
     const onSubmit = () => {
         program.id === '' ? onStore() : onUpdate();
     }
-    const onStore = () => {
+    const onStore = async () => {
         setLoading(true);
-        storeProgram(program).then(() => {
-            setLoading(false)
-            setRefreshData(true)
-            toggle()
-        }).catch(() => setLoading(false));
+        const store = await storeProgram(program);
+        if (store) {
+            setLoading(false);
+            setLoadData(true);
+            toggle();
+        } else {
+            setLoading(false);
+        }
     }
-    const onUpdate = () => {
+    const onUpdate = async () => {
         setLoading(true)
-        updateProgram(program).then(() => {
-            setLoading(false)
-            setRefreshData(true)
-            toggle()
-        }).catch(() => setLoading(false));
+        const update = await updateProgram(program);
+        if (update) {
+            setLoading(false);
+            setLoadData(true);
+            toggle();
+        } else {
+            setLoading(false);
+        }
     }
     const handleReset = () => {
         setProgram({

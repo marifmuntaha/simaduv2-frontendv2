@@ -3,27 +3,19 @@ import {RToast} from "@/components";
 
 const api = new APICore()
 
-function login(params) {
+async function login(params) {
     const baseUrl = '/auth/login'
-    return api.create(baseUrl, params).then((resp) => {
-        const {message, result} = resp
-        api.setLoggedInUser(result);
-        api.setAuthorization(result.user);
-        RToast(message, 'success');
-    }).catch(() => {
-        throw new Error()
+    return await api.create(baseUrl, params).then((resp) => {
+        api.setLoggedInUser(resp);
+        api.setAuthorization(resp.user);
     })
 }
 
-function logout() {
+async function logout() {
     const baseUrl = '/auth/logout'
-    return api.create(`${baseUrl}`).then((resp) => {
-        const {message} = resp;
-        RToast(message, 'success');
+    return await api.create(`${baseUrl}`).then(() => {
         api.setLoggedInUser();
         api.setAuthorization();
-    }).catch(() => {
-        throw new Error()
     })
 }
 
