@@ -16,7 +16,7 @@ import {
 } from "@/components";
 import {store as storeUser, update as updateUser, destroy as destroyUser} from "@/api/user"
 import {store as storeStudent, show as showStudent, update as updateStudent, destroy as destroyStudent} from "@/api/student"
-import {store as storeParent, update as updateParent, destroy as destroyParent} from "@/api/student/parent"
+import {store as storeParent, update as updateParent} from "@/api/student/parent"
 import {store as storeAddress, update as updateAddress, destroy as destroyAddress} from "@/api/student/address"
 import {store as storeActivity, update as updateActivity} from "@/api/student/activity"
 
@@ -82,19 +82,20 @@ export const Add = () => {
 
     });
     const methods = useForm();
-    const onSubmit = () => {
+    const onSubmit = async () => {
+        let parent = false;
         if (!formData.parentId) {
-            const paramsUserParent = {
+            const userParent = await storeUser({
                 name: formData.guardName,
                 email: formData.guardEmail,
                 username: formData.guardNIK,
                 password: formData.guardBirthplace,
                 phone: formData.guardPhone,
                 role: '6'
-            }
-            storeUser(paramsUserParent).then(respUserParent => {
-                const paramsStudentParent = {
-                    userId: respUserParent.id,
+            });
+            if (userParent !== false) {
+                parent = await storeParent({
+                    userId: userParent.id,
                     numberKk: formData.numberKk,
                     headFamily: formData.headFamily,
                     fatherStatus: formData.fatherStatus,
@@ -118,136 +119,74 @@ export const Add = () => {
                     guardBirthdate: formData.guardBirthdate,
                     guardEmail: formData.guardEmail,
                     guardPhone: formData.guardPhone,
+                });
+                if (parent !== false) {
+                    setFormData({...formData, parentId: parent.id});
+                } else {
+                    await destroyUser(userParent.id);
                 }
-                storeParent(paramsStudentParent).then(respStudentParent => {
-                    const paramsUserStudent = {
-                        name: formData.name,
-                        email: formData.email,
-                        username: formData.nisn,
-                        password: formData.birthplace,
-                        phone: formData.phone,
-                        role: '5'
-                    }
-                    storeUser(paramsUserStudent).then(respUserStudent=> {
-                        const paramsStudent = {
-                            userId: respUserStudent.id,
-                            parentId: respStudentParent.id,
-                            nisn: formData.nisn,
-                            nism: formData.nism,
-                            nik: formData.nik,
-                            name: formData.name,
-                            gender: formData.gender,
-                            birthplace: formData.birthplace,
-                            birthdate: formData.birthdate,
-                            email: formData.email,
-                            phone: formData.phone,
-                        }
-                        storeStudent(paramsStudent).then((respStudent) => {
-                            const paramsStudentAddress = {
-                                studentId: respStudent.id,
-                                provinceId: formData.provinceId,
-                                cityId: formData.cityId,
-                                districtId: formData.districtId,
-                                villageId: formData.villageId,
-                                address: formData.address,
-                            }
-                            storeAddress(paramsStudentAddress).then((respStudentAddress) => {
-                                const params = {
-                                    status: formData.status,
-                                    studentId: respStudent.id,
-                                    yearId: formData.yearId,
-                                    institutionId: formData.institutionId,
-                                    levelId: formData.levelId,
-                                    majorId: formData.majorId,
-                                    rombelId: formData.rombelId,
-                                    programId: formData.programId,
-                                    boardingId: formData.boardingId,
-                                }
-                                storeActivity(params).catch(()=>{
-                                    destroyAddress(respStudentAddress.id)
-                                    destroyStudent(respStudent.id)
-                                    destroyUser(respUserStudent.id)
-                                    destroyParent(respStudentParent.id)
-                                    destroyUser(respUserParent.id)
-                                })
-                            }).catch(() => {
-                                destroyStudent(respStudent.id)
-                                destroyUser(respUserStudent.id)
-                                destroyParent(respStudentParent.id)
-                                destroyUser(respUserParent.id)
-                            })
-                        }).catch(() => {
-                            destroyUser(respUserStudent.id)
-                            destroyParent(respStudentParent.id)
-                            destroyUser(respUserParent.id)
-                        })
-                    }).catch(() => {
-                        destroyParent(respStudentParent.id)
-                        destroyUser(respUserParent.id)
-                    })
-                }).catch(() => {
-                    destroyUser(respUserParent.id)
-                })
-            })
-        } else {
-            const paramsUserStudent = {
-                name: formData.name,
-                email: formData.email,
-                username: formData.nisn,
-                password: formData.birthplace,
-                phone: formData.phone,
-                role: '5'
             }
-            storeUser(paramsUserStudent).then(respUserStudent=>{
-                const paramsStudent = {
-                    userId: respUserStudent.id,
-                    parentId: formData.parentId,
-                    nisn: formData.nisn,
-                    nism: formData.nism,
-                    nik: formData.nik,
-                    name: formData.name,
-                    gender: formData.gender,
-                    birthplace: formData.birthplace,
-                    birthdate: formData.birthdate,
-                    email: formData.email,
-                    phone: formData.phone,
-                }
-                storeStudent(paramsStudent).then((respStudent) => {
-                    const paramsStudentAddress = {
-                        studentId: respStudent.id,
-                        provinceId: formData.provinceId,
-                        cityId: formData.cityId,
-                        districtId: formData.districtId,
-                        villageId: formData.villageId,
-                        address: formData.address,
-                    }
-                    storeAddress(paramsStudentAddress).then((respStudentAddress) => {
-                        const params = {
-                            status: formData.status,
-                            studentId: respStudent.id,
-                            yearId: formData.yearId,
-                            institutionId: formData.institutionId,
-                            levelId: formData.levelId,
-                            majorId: formData.majorId,
-                            rombelId: formData.rombelId,
-                            programId: formData.programId,
-                            boardingId: formData.boardingId,
-                        }
-                        storeActivity(params).catch(()=>{
-                            destroyAddress(respStudentAddress.id)
-                            destroyStudent(respStudent.id)
-                            destroyUser(respUserStudent.id)
-                        })
-                    }).catch(() => {
-                        destroyStudent(respStudent.id)
-                        destroyUser(respUserStudent.id)
-                    })
-                }).catch(() => {
-                    destroyUser(respUserStudent.id)
-                })
-            })
+        } else {
+            parent = {
+                id: formData.parentId
+            };
         }
-
+        const userStudent = await storeUser({
+            name: formData.name,
+            email: formData.email,
+            username: formData.nisn,
+            password: formData.birthplace,
+            phone: formData.phone,
+            role: '5'
+        });
+        if (userStudent !== false) {
+            const student = await storeStudent({
+                userId: userStudent.id,
+                parentId: parent.id,
+                nisn: formData.nisn,
+                nism: formData.nism,
+                nik: formData.nik,
+                name: formData.name,
+                gender: formData.gender,
+                birthplace: formData.birthplace,
+                birthdate: formData.birthdate,
+                email: formData.email,
+                phone: formData.phone,
+            });
+            if (student !== false) {
+                const address = await storeAddress({
+                    studentId: student.id,
+                    provinceId: formData.provinceId,
+                    cityId: formData.cityId,
+                    districtId: formData.districtId,
+                    villageId: formData.villageId,
+                    address: formData.address,
+                });
+                if (address !== null) {
+                    const activity = await storeActivity({
+                        status: formData.status,
+                        studentId: student.id,
+                        yearId: formData.yearId,
+                        institutionId: formData.institutionId,
+                        levelId: formData.levelId,
+                        majorId: formData.majorId,
+                        rombelId: formData.rombelId,
+                        programId: formData.programId,
+                        boardingId: formData.boardingId,
+                    });
+                    if (activity === false) {
+                        await destroyAddress(address.id);
+                        await destroyStudent(student.id);
+                        await destroyUser(userStudent.id);
+                    }
+                } else {
+                    await destroyStudent(student.id);
+                    await destroyUser(userStudent.id);
+                }
+            } else {
+                await destroyUser(userStudent.id);
+            }
+        }
     }
     const handleReset = () => {
         setFormData({
@@ -304,6 +243,9 @@ export const Add = () => {
         })
         methods.reset()
     }
+    useEffect(() => {
+        console.log(formData)
+    }, [formData]);
     return (
         <React.Fragment>
             <Head title="Tambah Siswa" />
@@ -415,7 +357,7 @@ export const Edit = () => {
         boardingId: ''
     });
     const methods = useForm();
-    const onSubmit = () => {
+    const onSubmit = async () => {
         const paramsUserParent = {
             id: formData.parentUserId,
             name: formData.guardName,
@@ -425,7 +367,7 @@ export const Edit = () => {
             phone: formData.guardPhone,
             role: '6'
         }
-        updateUser(paramsUserParent).then(respUserParent => console.log(respUserParent));
+        await updateUser(paramsUserParent);
 
         const paramsStudentParent = {
             id: formData.parentId,
@@ -453,7 +395,7 @@ export const Edit = () => {
             guardEmail: formData.guardEmail,
             guardPhone: formData.guardPhone,
         }
-        updateParent(paramsStudentParent).then(respStudentParent => console.log(respStudentParent));
+        await updateParent(paramsStudentParent);
 
         const paramsUserStudent = {
             id: formData.studentUserId,
@@ -464,7 +406,7 @@ export const Edit = () => {
             phone: formData.phone,
             role: '5'
         }
-        updateUser(paramsUserStudent).then(respUserStudent=> console.log(respUserStudent));
+        await updateUser(paramsUserStudent);
 
         const paramsStudent = {
             id: formData.studentId,
@@ -478,7 +420,7 @@ export const Edit = () => {
             email: formData.email,
             phone: formData.phone,
         }
-        updateStudent(paramsStudent).then((respStudent) => console.log(respStudent));
+        await updateStudent(paramsStudent);
 
         const paramsStudentAddress = {
             id: formData.addressId,
@@ -488,8 +430,9 @@ export const Edit = () => {
             villageId: formData.villageId,
             address: formData.address,
         }
-        updateAddress(paramsStudentAddress).then((respStudentAddress) => console.log(respStudentAddress));
-        const params = {
+        await updateAddress(paramsStudentAddress)
+
+        const paramsStudentActivity = {
             id: formData.activityId,
             status: formData.status,
             yearId: formData.yearId,
@@ -500,7 +443,7 @@ export const Edit = () => {
             programId: formData.programId,
             boardingId: formData.boardingId,
         }
-        updateActivity(params).then(respStudent => console.log(respStudent));
+        await updateActivity(paramsStudentActivity);
 
     }
     const handleReset = () => {
@@ -614,6 +557,7 @@ export const Edit = () => {
                 boardingId: resp.activity?.boardingId,
             });
         });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
     return (
         <React.Fragment>

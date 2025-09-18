@@ -94,9 +94,49 @@ const RootMenu = [
         ],
     },
     {
-        icon: "article",
-        text: "Rombongan Belajar",
-        link: "/rombongan-belajar",
+        icon: "cc-alt2",
+        text: "Keuangan",
+        active: false,
+        subMenu: [
+            {
+                text: "Data Rekening",
+                link: "/keuangan/data-rekening",
+            },
+            {
+                text: "Item Pembayaran",
+                link: "/keuangan/item-pembayaran",
+            },
+            {
+                text: "Transaksi",
+                link: "/keuangan/transaksi",
+            },
+            {
+                text: "Tagihan",
+                link: "/keuangan/tagihan",
+            },
+            {
+                text: "Potongan",
+                link: "/keuangan/potongan",
+            },
+            {
+                text: 'Laporan',
+                active: false,
+                subMenu: [
+                    {
+                        text: 'Neraca',
+                        link: "/keuangan/laporan/neraca",
+                    },
+                    {
+                        text: 'Arus Kas',
+                        link: "/keuangan/laporan/arus-kas",
+                    },
+                    {
+                        text: 'Tagihan',
+                        link: "/keuangan/laporan/tagihan",
+                    }
+                ]
+            }
+        ]
     },
     {
         icon: "list",

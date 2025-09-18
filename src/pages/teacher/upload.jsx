@@ -29,15 +29,40 @@ const Upload = ({modal, setModal, setLoadData}) => {
         setDataTotal(jsonData.length);
         let start = 0;
         for await (let item of jsonData) {
-            await storeUser({
+            const userTeacher = await storeUser({
                 name: item['Nama Lengkap'],
                 email: item['Email'],
                 username: item['PegId'],
                 password: item['Tempat Lahir'],
                 phone: item['Nomor HP'],
                 role: '4'
-            }, false).then(async (respUser) => {
-                if (respUser === false) {
+            }, false)
+            if (userTeacher === false) {
+                start++;
+                setDataStart(start);
+                setErrorsTeacher(errorsTeacher => [...errorsTeacher, {
+                    name: item['Nama Lengkap'],
+                    pegId: item['PegId'],
+                    status: 'Gagal ditambahkan'
+                }]);
+            } else {
+                const teacher = await storeTeacher({
+                    userId: userTeacher.id,
+                    institution: [institutionSelected.value],
+                    name: item['Nama Lengkap'],
+                    pegId: item['PegId'],
+                    birthplace: item['Tempat Lahir'],
+                    birthdate: moment(item['Tanggal Lahir'], 'DD/MM/YYYY').format('YYYY-MM-DD'),
+                    gender: item['Jenis Kelamin'],
+                    frontTitle: item['Gelar Depan'],
+                    backTitle: item['Gelar Belakang'],
+                    phone: item['Nomor HP'],
+                    email: item['Email'],
+                    address: item['Alamat'],
+
+                }, false);
+                if (teacher === false) {
+                    await destroyUser(userTeacher.id, false);
                     start++;
                     setDataStart(start);
                     setErrorsTeacher(errorsTeacher => [...errorsTeacher, {
@@ -46,39 +71,13 @@ const Upload = ({modal, setModal, setLoadData}) => {
                         status: 'Gagal ditambahkan'
                     }]);
                 } else {
-                    const store = await storeTeacher({
-                        userId: respUser.id,
-                        institution: [institutionSelected.value],
-                        name: item['Nama Lengkap'],
-                        pegId: item['PegId'],
-                        birthplace: item['Tempat Lahir'],
-                        birthdate: moment(item['Tanggal Lahir'], 'DD/MM/YYYY').format('YYYY-MM-DD'),
-                        gender: item['Jenis Kelamin'],
-                        frontTitle: item['Gelar Depan'],
-                        backTitle: item['Gelar Belakang'],
-                        phone: item['Nomor HP'],
-                        email: item['Email'],
-                        address: item['Alamat'],
-
-                    }, false)
-                    if (store === false) {
-                        setErrorsTeacher(errorsTeacher => [...errorsTeacher, {
-                            name: item['Nama Lengkap'],
-                            pegId: item['PegId'],
-                            status: 'Gagal ditambahkan'
-                        }]);
-                        await destroyUser(respUser.id, false);
-                    }
                     start++;
                     setDataStart(start);
                 }
-            }).catch(() => {
-                setLoading(false)
-            });
-
+            }
             if(start === jsonData.length) {
                 setLoading(false)
-                RToast('Data Guru berhasil diunggah.', 'success')
+                errorsTeacher.length === 0 && RToast('Data Guru berhasil diunggah.', 'success')
                 setLoadData(true)
             }
         }
@@ -89,15 +88,12 @@ const Upload = ({modal, setModal, setLoadData}) => {
             upload: false,
         });
         setInstitutionSelected([]);
+        setErrorsTeacher([]);
     }
 
     useEffect(() => {
         getInstitution({type: 'select', ladder: 'alias'}).then((resp) => setInstitutionOptions(resp));
     }, []);
-
-    useEffect(() => {
-        console.log(errorsTeacher);
-    }, [errorsTeacher]);
 
     return (
         <Modal isOpen={modal.upload} toggle={toggle} size="md">
@@ -149,6 +145,28 @@ const Upload = ({modal, setModal, setLoadData}) => {
                         </Button>
                     </div>
                 </form>
+                {errorsTeacher.length > 0 && (
+                    <table className="table table-bordered mt-3">
+                        <thead>
+                        <tr>
+                            <th scope="col">No</th>
+                            <th scope="col">Nama Guru</th>
+                            <th scope="col">PegId</th>
+                            <th scope="col">Status</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {errorsTeacher.map((item, idx) => (
+                            <tr key={idx}>
+                                <td>{idx + 1}</td>
+                                <td>{item.name}</td>
+                                <td>{item.pegId}</td>
+                                <td>{item.status}</td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                )}
             </ModalBody>
         </Modal>
     )

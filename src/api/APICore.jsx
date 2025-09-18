@@ -15,7 +15,7 @@ class APICore {
         }
     }
 
-    get = async (url, params) => {
+    get = async (url, params, message) => {
         let response
         if (params) {
             const queryString = params
@@ -23,14 +23,14 @@ class APICore {
                     .map((key) => key + '=' + params[key])
                     .join('&')
                 : ''
-            response = await axios.get(`${url}?${queryString}`, params).then((resp) => resp);
+            response = await axios.get(`${url}?${queryString}`, params).then((resp) => resp).catch((error) => error);
         } else {
-            response = await axios.get(`${url}`, params).then((resp) => resp)
+            response = await axios.get(`${url}`, params).then((resp) => resp).catch((error) => error)
         }
-        return this.handleResponse(response)
+        return this.handleResponse(response, message)
     }
 
-    getFile = (url, params) => {
+    getFile = (url, params, message) => {
         let response
         if (params) {
             const queryString = params
@@ -45,7 +45,7 @@ class APICore {
         return response
     }
 
-    getMultiple = (urls, params) => {
+    getMultiple = (urls, params, message) => {
         const reqs = []
         let queryString = ''
         if (params) {
@@ -159,15 +159,15 @@ class APICore {
             RToast('Tidak dapat terhubung ke server.');
         }
         else if (response) {
-            const {statusMessage, statusCode} = response.data;
-            if (statusCode === 401) {
-                RToast(statusMessage)
+            const {data, status} = response;
+            if (status === 401) {
+                RToast('Sesi anda telah berakhir, silahkan masuk kembali.')
                 this.setLoggedInUser();
                 return false;
-            } else if (statusCode === 403) {
+            } else if (status === 403) {
                 RToast('Anda tidak berhak mengakses halaman ini.')
             } else {
-                message && RToast(statusMessage);
+                message && RToast(data.statusMessage);
                 return false;
             }
         } else {

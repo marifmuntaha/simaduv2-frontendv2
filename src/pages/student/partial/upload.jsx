@@ -9,7 +9,7 @@ import {destroy as destroyUser, store as storeUser} from "@/api/user";
 import {get as getYear} from "@/api/master/year";
 import {get as getRombel} from "@/api/institution/rombel";
 import {get as getProgram} from "@/api/institution/program";
-import {get as getParent, store as storeParent, destroy as destroyParent} from "@/api/student/parent";
+import {get as getParent, store as storeParent} from "@/api/student/parent";
 import {store as storeStudent, destroy as destroyStudent} from "@/api/student";
 import {store as storeAddress, destroy as destroyAddress} from "@/api/student/address";
 import {store as storeActivity} from "@/api/student/activity";
@@ -27,10 +27,21 @@ const Upload = ({modal, setModal, setRefreshData}) => {
     const [rombelSelected, setRombelSelected] = useState([]);
     const [programOptions, setProgramOptions] = useState([]);
     const [programSelected, setProgramSelected] = useState([]);
+    const [errorsStudent, setErrorsStudent] = useState([]);
     const [file, setFile] = useState({});
     const {handleSubmit, register, setValue, formState: {errors}} = useForm();
     const onSubmit = async () => {
         setLoading(true);
+        const boardingId = (name) =>  {
+            switch (name) {
+                case "Tahfidz":
+                    return "1";
+                case "Kitab":
+                    return "2";
+                default:
+                    return "0";
+            }
+        }
         const data = await file.arrayBuffer();
         const workbook = xlsx.read(data);
         const worksheet = workbook.Sheets[workbook.SheetNames[0]]
@@ -41,123 +52,61 @@ const Upload = ({modal, setModal, setRefreshData}) => {
         setDataTotal(jsonData.length);
         let start = 0;
         for await (let item of jsonData) {
-            await getParent({numberKk: item['Nomor KK']}).then(async (respStudentParent) => {
-                if (respStudentParent.length > 0) {
-                    const paramsUserStudent = {
-                        name: item['Nama Lengkap'],
-                        email: item['Email'],
-                        username: item['NISN'],
-                        password: item['Tanggal Lahir'],
-                        phone: item['Nomor HP'],
-                        role: '5'
-                    }
-                    await storeUser(paramsUserStudent).then(async respUserStudent => {
-                        const paramsStudent = {
-                            userId: respUserStudent.id,
-                            parentId: respStudentParent[0].id,
-                            nisn: item['NISN'],
-                            nism: item['NISM'],
-                            nik: item['NIK'],
-                            name: item['Nama Lengkap'],
-                            gender: item['Jenis Kelamin'] === 'Laki-laki' ? 'L' : 'P',
-                            birthplace: item['Tempat Lahir'],
-                            birthdate: moment(item['Tanggal Lahir'], 'DD/MM/YYYY').format('YYYY-MM-DD'),
-                            email: item['Email'],
-                            phone: item['Nomor HP'],
+            let parent = await getParent({numberKk: item['Nomor KK']});
+            if (parent === false) {
+                let paramUserParent = {};
+                switch (item['Status Wali']) {
+                    case "Sama dengan ayah":
+                        paramUserParent = {
+                            name: item['Nama Ayah'],
+                            email: item['Email Ayah'],
+                            username: item['NIK Ayah'],
+                            password: item['Tempat Lahir Ayah'],
+                            phone: item['Nomor HP Ayah'],
+                            role: '6'
                         }
-                        await storeStudent(paramsStudent).then(async (respStudent) => {
-                            const paramsStudentAddress = {
-                                studentId: respStudent.id,
-                                address: item['Alamat']
-                            }
-                            await storeAddress(paramsStudentAddress).then(async (respStudentAddress) => {
-                                const boardingId = (name) =>  {
-                                    switch (name) {
-                                        case "Tahfidz":
-                                            return "1";
-                                        case "Kitab":
-                                            return "2";
-                                        default:
-                                            return "0";
-                                    }
-                                }
-                                const params = {
-                                    status: '1',
-                                    studentId: respStudent.id,
-                                    yearId: yearSelected.value,
-                                    institutionId: institutionSelected.value,
-                                    rombelId: rombelSelected.value,
-                                    programId: programSelected.value,
-                                    boardingId: boardingId(item['Boarding']),
-                                }
-                                await storeActivity(params).then(() => {
-                                    start++
-                                    setDataStart(start)
-                                }).catch(()=>{
-                                    setLoading(false);
-                                    destroyAddress(respStudentAddress.id)
-                                    destroyStudent(respStudent.id)
-                                    destroyUser(respUserStudent.id)
-                                })
-                            }).catch(() => {
-                                setLoading(false);
-                                destroyStudent(respStudent.id);
-                                destroyUser(respUserStudent.id);
-                            })
-                        }).catch(() => {
-                            setLoading(false);
-                            destroyUser(respUserStudent.id);
-                        })
-                    })
+                        break;
+                    case "Sama dengan ibu":
+                        paramUserParent = {
+                            name: item['Nama Ibu'],
+                            email: item['Email Ibu'],
+                            username: item['NIK Ibu'],
+                            password: item['Tempat Lahir Ibu'],
+                            phone: item['Nomor HP Ibu'],
+                            role: '6'
+                        }
+                        break;
+                    case "Lainnya":
+                        paramUserParent = {
+                            name: item['Nama Wali'],
+                            email: item['Email Wali'],
+                            username: item['NIK Wali'],
+                            password: item['Tempat Lahir Wali'],
+                            phone: item['Nomor HP Wali'],
+                            role: '6'
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                const userParent = await storeUser(paramUserParent);
+                if (!userParent) {
+                    setErrorsStudent(errorsStudent => [...errorsStudent, {name: item['Nama Lengkap'], nisn: item['NISN'], status: 'Gagal ditambahkan'}]);
+                    start++;
+                    setDataStart(start);
                 } else {
-                    let paramsUserParent = {};
-                    switch (item['Status Wali']) {
-                        case "Sama dengan ayah":
-                            paramsUserParent = {
-                                name: item['Nama Ayah'],
-                                email: item['Email Ayah'],
-                                username: item['NIK Ayah'],
-                                password: item['Tempat Lahir Ayah'],
-                                phone: item['Nomor HP Ayah'],
-                                role: '6'
-                            }
-                            break;
-                        case "Sama dengan ibu":
-                            paramsUserParent = {
-                                name: item['Nama Ibu'],
-                                email: item['Email Ibu'],
-                                username: item['NIK Ibu'],
-                                password: item['Tempat Lahir Ibu'],
-                                phone: item['Nomor HP Ibu'],
-                                role: '6'
-                            }
-                            break;
-                        case "Lainnya":
-                            paramsUserParent = {
-                                name: item['Nama Wali'],
-                                email: item['Email Wali'],
-                                username: item['NIK Wali'],
-                                password: item['Tempat Lahir Wali'],
-                                phone: item['Nomor HP Wali'],
-                                role: '6'
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                    await storeUser(paramsUserParent).then(async (respUserParent) => {
-                        const parentStatus = (status) => {
-                            switch (status) {
-                                case "Masih Hidup":
-                                    return "1";
-                                case "Meninggal":
-                                    return "2";
-                                default:
-                                    return "3";
-                            }
+                    const parentStatus = (status) => {
+                        switch (status) {
+                            case "Masih Hidup":
+                                return "1";
+                            case "Meninggal":
+                                return "2";
+                            default:
+                                return "3";
                         }
-                        let paramsStudentParent = {
-                            userId: respUserParent.id,
+                    }
+                    let paramStudentParent = {
+                            userId: userParent.id,
                             numberKk: item['Nomor KK'],
                             headFamily: item['Kepala Keluarga'],
                             fatherStatus: parentStatus(item['Status Ayah']),
@@ -177,8 +126,8 @@ const Upload = ({modal, setModal, setRefreshData}) => {
                         }
                         switch (item['Status Wali']) {
                             case "Sama dengan ayah":
-                                paramsStudentParent = {
-                                    ...paramsStudentParent,
+                                paramStudentParent = {
+                                    ...paramStudentParent,
                                     guardStatus: '1',
                                     guardName: item['Nama Ayah'],
                                     guardNIK: item['NIK Ayah'],
@@ -189,8 +138,8 @@ const Upload = ({modal, setModal, setRefreshData}) => {
                                 }
                                 break;
                             case "Sama dengan ibu":
-                                paramsStudentParent = {
-                                    ...paramsStudentParent,
+                                paramStudentParent = {
+                                    ...paramStudentParent,
                                     guardStatus: '2',
                                     guardName: item['Nama Ibu'],
                                     guardNIK: item['NIK Ibu'],
@@ -201,8 +150,8 @@ const Upload = ({modal, setModal, setRefreshData}) => {
                                 }
                                 break;
                             default:
-                                paramsStudentParent = {
-                                    ...paramsStudentParent,
+                                paramStudentParent = {
+                                    ...paramStudentParent,
                                     guardStatus: '3',
                                     guardName: item['Nama Wali'],
                                     guardNIK: item['NIK Wali'],
@@ -212,85 +161,89 @@ const Upload = ({modal, setModal, setRefreshData}) => {
                                     guardPhone: item['Nomor HP Wali'],
                                 }
                         }
-                        await storeParent(paramsStudentParent).then(async respStudentParent => {
-                            const paramsUserStudent = {
-                                name: item['Nama Lengkap'],
-                                email: item['Email'],
-                                username: item['NISN'],
-                                password: item['Tanggal Lahir'],
-                                phone: item['Nomor HP'],
-                                role: '5'
-                            }
-                            await storeUser(paramsUserStudent).then(async respUserStudent => {
-                                const paramsStudent = {
-                                    userId: respUserStudent.id,
-                                    parentId: respStudentParent.id,
-                                    nisn: item['NISN'],
-                                    nism: item['NISM'],
-                                    nik: item['NIK'],
-                                    name: item['Nama Lengkap'],
-                                    gender: item['Jenis Kelamin'] === 'Laki-laki' ? 'L' : 'P',
-                                    birthplace: item['Tempat Lahir'],
-                                    birthdate: moment(item['Tanggal Lahir'], 'DD/MM/YYYY').format('YYYY-MM-DD'),
-                                    email: item['Email'],
-                                    phone: item['Nomor HP'],
-                                }
-                                await storeStudent(paramsStudent).then(async (respStudent) => {
-                                    const paramsStudentAddress = {
-                                        studentId: respStudent.id,
-                                        address: item['Alamat']
-                                    }
-                                    await storeAddress(paramsStudentAddress).then(async (respStudentAddress) => {
-                                        const boardingId = (name) =>  {
-                                            switch (name) {
-                                                case "Tahfidz":
-                                                    return "1";
-                                                case "Kitab":
-                                                    return "2";
-                                                default:
-                                                    return "0";
-                                            }
-                                        }
-                                        const params = {
-                                            status: '1',
-                                            studentId: respStudent.id,
-                                            yearId: yearSelected.value,
-                                            institutionId: institutionSelected.value,
-                                            rombelId: rombelSelected.value,
-                                            programId: programSelected.value,
-                                            boardingId: boardingId(item['Boarding']),
-                                        }
-                                        await storeActivity(params).then(() => {
-                                            start++
-                                            setDataStart(start)
-                                        }).catch(()=>{
-                                            destroyAddress(respStudentAddress.id)
-                                            destroyStudent(respStudent.id)
-                                            destroyUser(respUserStudent.id)
-                                            destroyParent(respStudentParent.id)
-                                            destroyUser(respUserParent.id)
-                                        })
-                                    }).catch(() => {
-                                        destroyStudent(respStudent.id);
-                                        destroyUser(respUserStudent.id);
-                                        destroyParent(respStudentParent.id)
-                                        destroyUser(respUserParent.id)
-                                    })
-                                }).catch(() => {
-                                    destroyUser(respUserStudent.id);
-                                    destroyParent(respStudentParent.id)
-                                    destroyUser(respUserParent.id)
-                                })
-                            }).catch(() => {
-                                destroyParent(respStudentParent.id)
-                                destroyUser(respUserParent.id)
-                            })
-                        }).catch(() => {
-                            destroyUser(respUserParent.id)
-                        })
-                    })
+                    parent = await storeParent(paramStudentParent);
+                    if (!parent) {
+                        setErrorsStudent(errorsStudent => [...errorsStudent, {name: item['Nama Lengkap'], nisn: item['NISN'], status: 'Gagal ditambahkan'}]);
+                        start++;
+                        setDataStart(start);
+                        await destroyUser(userParent.id);
+                    }
                 }
-            });
+            } else {
+                parent = parent[0];
+            }
+            const paramUserStudent = {
+                name: item['Nama Lengkap'],
+                email: item['Email'],
+                username: item['NISN'],
+                password: item['Tanggal Lahir'],
+                phone: item['Nomor HP'],
+                role: '5'
+            }
+            const userStudent = await storeUser(paramUserStudent);
+            if (!userStudent) {
+                setErrorsStudent(errorsStudent => [...errorsStudent, {name: item['Nama Lengkap'], nisn: item['NISN'], status: 'Gagal ditambahkan'}]);
+                start++
+                setDataStart(start)
+
+            } else {
+                const paramStudent = {
+                    userId: userStudent.id,
+                    parentId: parent.id,
+                    nisn: item['NISN'],
+                    nism: item['NISM'],
+                    nik: item['NIK'],
+                    name: item['Nama Lengkap'],
+                    gender: item['Jenis Kelamin'] === 'Laki-laki' ? 'L' : 'P',
+                    birthplace: item['Tempat Lahir'],
+                    birthdate: moment(item['Tanggal Lahir'], 'DD/MM/YYYY').format('YYYY-MM-DD'),
+                    email: item['Email'],
+                    phone: item['Nomor HP'],
+                }
+                const student = await storeStudent(paramStudent);
+                if (!student) {
+                    setErrorsStudent(errorsStudent => [...errorsStudent, {name: item['Nama Lengkap'], nisn: item['NISN'], status: 'Gagal ditambahkan'}]);
+                    start++;
+                    setDataStart(start);
+                    await destroyUser(userStudent.id, false);
+                } else {
+                    const paramsStudentAddress = {
+                        studentId: student.id,
+                        address: item['Alamat']
+                    }
+                    const address = await storeAddress(paramsStudentAddress);
+                    if (!address) {
+                        setErrorsStudent(errorsStudent => [...errorsStudent, {name: item['Nama Lengkap'], nisn: item['NISN'], status: 'Gagal ditambahkan'}]);
+                        start++
+                        setDataStart(start);
+                        await destroyStudent(student.id, false);
+                        await destroyUser(userStudent.id, false);
+                    } else {
+                        const paramActivity = {
+                            status: '1',
+                            studentId: student.id,
+                            yearId: yearSelected.value,
+                            institutionId: institutionSelected.value,
+                            rombelId: rombelSelected.value,
+                            programId: programSelected.value,
+                            boardingId: boardingId(item['Boarding']),
+                        }
+                        const activity = await storeActivity(paramActivity);
+                        if (!activity) {
+                            setErrorsStudent(errorsStudent => [...errorsStudent, {name: item['Nama Lengkap'], nisn: item['NISN'], status: 'Gagal ditambahkan'}]);
+                            start++
+                            setDataStart(start);
+                            await destroyAddress(address.id, false);
+                            await destroyStudent(student.id, false);
+                            await destroyUser(userStudent.id, false);
+                        } else {
+                            start++
+                            setDataStart(start);
+                        }
+                    }
+                }
+
+            }
             if(start === jsonData.length) {
                 setLoading(false)
                 RToast('Data Siswa berhasil diunggah.', 'success')
@@ -304,6 +257,7 @@ const Upload = ({modal, setModal, setRefreshData}) => {
         setYearSelected([]);
         setRombelSelected([]);
         setProgramSelected([]);
+        setErrorsStudent([]);
     }
 
     useEffect(() => {
@@ -424,13 +378,13 @@ const Upload = ({modal, setModal, setRefreshData}) => {
                                     href={"/unduhan/template-siswa.xlsx"}>disini</a> </span>
                             </div>
                         </div>
-                        <div className="form-group">
-                            {loading === true && (
+                        {loading === true && (
+                            <div className="form-group">
                                 <Progress className="progress-lg" value={calcPercentage(dataTotal, dataStart)}>
                                     Mengunggah {dataStart} dari {dataTotal}
                                 </Progress>
-                            )}
-                        </div>
+                            </div>
+                        )}
                         <div className="form-group">
                             <Button color="primary" type="submit" size="md">
                                 {loading ? <Spinner size="sm"/> : 'SIMPAN'}
@@ -438,6 +392,28 @@ const Upload = ({modal, setModal, setRefreshData}) => {
                         </div>
                     </Row>
                 </form>
+                {errorsStudent.length > 0 && (
+                    <table className="table table-bordered mt-3">
+                        <thead>
+                        <tr>
+                            <th scope="col">No</th>
+                            <th scope="col">Nama Siswa</th>
+                            <th scope="col">NISN</th>
+                            <th scope="col">Status</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {errorsStudent.map((item, idx) => (
+                            <tr key={idx}>
+                                <td>{idx + 1}</td>
+                                <td>{item.name}</td>
+                                <td>{item.nisn}</td>
+                                <td>{item.status}</td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                )}
             </ModalBody>
         </Modal>
     )

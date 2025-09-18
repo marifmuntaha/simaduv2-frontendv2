@@ -1,43 +1,26 @@
-import {APICore} from '../APICore'
-import {RToast} from "@/components";
+import {APICore} from '../APICore';
 
-const api = new APICore()
+const api = new APICore();
 
-function get(params) {
+async function get(params, message) {
     const baseUrl = '/student/address'
-    return api.get(baseUrl, params).then((resp) => {
-        return resp.result
-    })
+    const result = await api.get(baseUrl, params, message).then((resp) => resp);
+    return result !== false ? result : [];
 }
 
-async function store(params) {
+async function store(params, message) {
     const baseUrl = '/student/address'
-    return api.create(baseUrl, params).then((resp) => {
-        const {result} = resp
-        return result;
-    }).catch(() => {
-        throw new Error()
-    });
+    return await api.create(baseUrl, params, message).then((resp) => resp);
 }
 
-function update(params) {
+async function update(params, message) {
     const baseUrl = `/student/address/${params.id}`
-    return api.updateWithFile(baseUrl, params).then((resp) => {
-        const {message} = resp
-        RToast(message, 'success');
-    }).catch(() => {
-        throw new Error()
-    });
+    return await api.updateWithFile(baseUrl, params, message).then((resp) => resp);
 }
 
-function destroy(id) {
+async function destroy(id, message) {
     const baseUrl = `/student/address/${id}`
-    return api.delete(baseUrl).then((resp) => {
-        const {message} = resp
-        RToast(message, 'success');
-    }).catch(() => {
-        throw new Error()
-    });
+    return await api.delete(baseUrl, message).then((resp) => resp);
 }
 
 export {get, store, update, destroy}
