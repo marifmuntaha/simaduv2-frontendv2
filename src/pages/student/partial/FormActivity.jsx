@@ -23,12 +23,12 @@ const FormActivity = ({formData, setFormData, ...props}) => {
     const statusOptions = [
         {value: '1', label: "Aktif"},
         {value: '2', label: "Keluar"},
-        {value: '3', label: "Alumni"}
+        {value: '3', label: "Alumni"},
     ];
     const boardingOptions = [
-        {value: 0, label: "Tidak Boarding"},
-        {value: '1', label: "Tahfidz"},
-        {value: '2', label: "Kitab"},
+        {value: '1', label: "Tidak Boarding"},
+        {value: '2', label: "Tahfidz"},
+        {value: '3', label: "Kitab"},
     ];
 
     const {  handleSubmit, formState: { errors } } = useForm();

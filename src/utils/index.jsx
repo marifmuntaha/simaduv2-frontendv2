@@ -110,3 +110,8 @@ export const zeroPad = (num, places) => {
     let zero = places - num.toString().length + 1;
     return Array(+(zero > 0 && zero)).join("0") + num;
 }
+
+export const numberFormat = (number) => {
+    const nf = new Intl.NumberFormat('id-ID');
+    return nf.format(String(number).replace(/\./g, ""));
+}

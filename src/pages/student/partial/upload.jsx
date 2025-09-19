@@ -35,11 +35,11 @@ const Upload = ({modal, setModal, setRefreshData}) => {
         const boardingId = (name) =>  {
             switch (name) {
                 case "Tahfidz":
-                    return "1";
-                case "Kitab":
                     return "2";
+                case "Kitab":
+                    return "3";
                 default:
-                    return "0";
+                    return "1";
             }
         }
         const data = await file.arrayBuffer();

@@ -101,7 +101,7 @@ const List = () => {
             sortable: false,
             // hide: 370,
             cell: (row) => (
-                row.boardingId !== 0
+                row.boardingId !== '1'
                     ? <Badge pill color="success">YA</Badge>
                     : <Badge pill color="danger">No</Badge>
             )
