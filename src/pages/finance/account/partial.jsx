@@ -81,10 +81,10 @@ const Partial = ({modal, setModal, item, setItem, setReloadData}) => {
     ];
     const paramProgram = useCallback(() => {
         let params = {type: 'select'}
-        if (item.yearId !== undefined) {
+        if (item.yearId !== '') {
             params = {...params, yearId: item.yearId};
         }
-        if (item.institutionId !== undefined) {
+        if (item.institutionId !== '') {
             params = {...params, institutionId: item.institutionId};
         }
         return params;
@@ -110,12 +110,15 @@ const Partial = ({modal, setModal, item, setItem, setReloadData}) => {
     }, []);
 
     useEffect(() => {
-        getAccount(paramProgram()).then(data => setAccountOptions(data));
         getProgram(paramProgram()).then(data => {
             data = [{value: "0", label: "Semua"},...data];
             setProgramOptions(data);
         });
-    }, [paramProgram])
+    }, [paramProgram]);
+
+    useEffect(() => {
+        getAccount({institutionId: item.institutionId, level: '4', type: 'select'}).then(data => setAccountOptions(data));
+    }, [item.institutionId]);
 
     return (
         <Modal isOpen={modal} toggle={toggle}>

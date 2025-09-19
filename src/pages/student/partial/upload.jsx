@@ -53,7 +53,7 @@ const Upload = ({modal, setModal, setRefreshData}) => {
         let start = 0;
         for await (let item of jsonData) {
             let parent = await getParent({numberKk: item['Nomor KK']});
-            if (parent === false) {
+            if (parent.length === 0) {
                 let paramUserParent = {};
                 switch (item['Status Wali']) {
                     case "Sama dengan ayah":
@@ -89,7 +89,7 @@ const Upload = ({modal, setModal, setRefreshData}) => {
                     default:
                         break;
                 }
-                const userParent = await storeUser(paramUserParent);
+                const userParent = await storeUser(paramUserParent, false);
                 if (!userParent) {
                     setErrorsStudent(errorsStudent => [...errorsStudent, {name: item['Nama Lengkap'], nisn: item['NISN'], status: 'Gagal ditambahkan'}]);
                     start++;
@@ -161,7 +161,7 @@ const Upload = ({modal, setModal, setRefreshData}) => {
                                     guardPhone: item['Nomor HP Wali'],
                                 }
                         }
-                    parent = await storeParent(paramStudentParent);
+                    parent = await storeParent(paramStudentParent, false);
                     if (!parent) {
                         setErrorsStudent(errorsStudent => [...errorsStudent, {name: item['Nama Lengkap'], nisn: item['NISN'], status: 'Gagal ditambahkan'}]);
                         start++;
@@ -180,7 +180,7 @@ const Upload = ({modal, setModal, setRefreshData}) => {
                 phone: item['Nomor HP'],
                 role: '5'
             }
-            const userStudent = await storeUser(paramUserStudent);
+            const userStudent = await storeUser(paramUserStudent, false);
             if (!userStudent) {
                 setErrorsStudent(errorsStudent => [...errorsStudent, {name: item['Nama Lengkap'], nisn: item['NISN'], status: 'Gagal ditambahkan'}]);
                 start++
@@ -200,7 +200,7 @@ const Upload = ({modal, setModal, setRefreshData}) => {
                     email: item['Email'],
                     phone: item['Nomor HP'],
                 }
-                const student = await storeStudent(paramStudent);
+                const student = await storeStudent(paramStudent, false);
                 if (!student) {
                     setErrorsStudent(errorsStudent => [...errorsStudent, {name: item['Nama Lengkap'], nisn: item['NISN'], status: 'Gagal ditambahkan'}]);
                     start++;
@@ -211,7 +211,7 @@ const Upload = ({modal, setModal, setRefreshData}) => {
                         studentId: student.id,
                         address: item['Alamat']
                     }
-                    const address = await storeAddress(paramsStudentAddress);
+                    const address = await storeAddress(paramsStudentAddress, false);
                     if (!address) {
                         setErrorsStudent(errorsStudent => [...errorsStudent, {name: item['Nama Lengkap'], nisn: item['NISN'], status: 'Gagal ditambahkan'}]);
                         start++
@@ -228,7 +228,7 @@ const Upload = ({modal, setModal, setRefreshData}) => {
                             programId: programSelected.value,
                             boardingId: boardingId(item['Boarding']),
                         }
-                        const activity = await storeActivity(paramActivity);
+                        const activity = await storeActivity(paramActivity, false);
                         if (!activity) {
                             setErrorsStudent(errorsStudent => [...errorsStudent, {name: item['Nama Lengkap'], nisn: item['NISN'], status: 'Gagal ditambahkan'}]);
                             start++

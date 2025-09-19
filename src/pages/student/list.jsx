@@ -18,7 +18,7 @@ import {get as getStudent, destroy as destroyStudent} from "@/api/student";
 import {get as getYear} from "@/api/master/year";
 import {get as getInstitution} from "@/api/institution";
 import {get as getRombel} from "@/api/institution/rombel";
-import Upload from "./partial/upload";
+import Upload from "@/pages/student/partial/upload";
 
 const List = () => {
     const [sm, updateSm] = useState(false);
@@ -129,9 +129,9 @@ const List = () => {
         },
     ];
     const boardingOptions = [
-        {value: '0', label: 'Non Boarding'},
-        {value: '1', label: 'Tahfidz'},
-        {value: '2', label: 'Kitab'},
+        {value: '1', label: 'Non Boarding'},
+        {value: '2', label: 'Tahfidz'},
+        {value: '3', label: 'Kitab'},
     ]
     const navigate = useNavigate();
     const paramsStudent = useCallback(() => {

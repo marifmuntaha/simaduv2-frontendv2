@@ -14,7 +14,7 @@ import {
 } from "@/components";
 import {get as getAccount, destroy as destroyAccount} from "@/api/finance/account"
 import Partial from "@/pages/finance/item/partial";
-import {numberFormat} from "@/utils/index.jsx";
+import {numberFormat} from "@/utils";
 
 const Account = () => {
     const [sm, updateSm] = useState(false);
@@ -24,7 +24,11 @@ const Account = () => {
     const [account, setAccount] = useState({
         id: "",
         institutionId: "",
+        codeParent: "",
+        codeApp: "",
+        code: "",
         name: "",
+        level: "",
         balance: "",
     });
     const [modal, setModal] = useState(false);
@@ -35,6 +39,13 @@ const Account = () => {
             sortable: false,
             // hide: 370,
             // width: "300px",
+        },
+        {
+            name: "Kode Rekening",
+            selector: (row) => row.codeApp,
+            sortable: false,
+            // hide: 370,
+            // width: "200px",
         },
         {
             name: "Nama Rekening",

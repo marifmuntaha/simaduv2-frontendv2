@@ -64,7 +64,7 @@ class APICore {
 
     create = async (url, data, message) => {
         const response = await axios.post(url, data).then((resp) => resp).catch((error) => error);
-        return this.handleResponse(response, message)
+        return this.handleResponse(response, message);
     }
 
     updatePatch = (url, data) => {

@@ -132,10 +132,24 @@ const Transaction = () => {
                                     <div className="toggle-expand-content" style={{display: sm ? "block" : "none"}}>
                                         <ul className="nk-block-tools g-3">
                                             <li>
-                                                <Button color="primary" size={"sm"} outline className="btn-white"
+                                                <Button color="danger" size={"sm"} outline className="btn-white"
                                                         onClick={() => setModal(true)}>
-                                                    <Icon name="plus"></Icon>
-                                                    <span>TAMBAH</span>
+                                                    <Icon name="upload"></Icon>
+                                                    <span>KAS KELUAR</span>
+                                                </Button>
+                                            </li>
+                                            <li>
+                                                <Button color="info" size={"sm"} outline className="btn-white"
+                                                        onClick={() => setModal(true)}>
+                                                    <Icon name="download"></Icon>
+                                                    <span>KAS MASUK</span>
+                                                </Button>
+                                            </li>
+                                            <li>
+                                                <Button color="warning" size={"sm"} outline className="btn-white"
+                                                        onClick={() => setModal(true)}>
+                                                    <Icon name="cc"></Icon>
+                                                    <span>PEMBAYARAN</span>
                                                 </Button>
                                             </li>
                                         </ul>
