@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {Badge, Button, ButtonGroup, Spinner} from "reactstrap";
+import {Button, ButtonGroup, Spinner} from "reactstrap";
 import Head from "@/layout/head";
 import Content from "@/layout/content";
 import {
@@ -13,7 +13,8 @@ import {
     ReactDataTable
 } from "@/components";
 import {get as getTransaction, destroy as destroyTransaction} from "@/api/finance/transaction"
-import Partial from "@/pages/finance/transaction/partial";
+import CashIn from "@/pages/finance/transaction/cash-in";
+import CashOut from "@/pages/finance/transaction/cash-out";
 import {numberFormat} from "@/utils";
 
 const Transaction = () => {
@@ -23,26 +24,38 @@ const Transaction = () => {
     const [transactions, setTransactions] = useState([]);
     const [transaction, setTransaction] = useState({
         id: "",
-        yearId: "",
         institutionId: "",
-        accountId: "",
-        name: "",
-        type: "",
+        accountAppId: "",
+        accountRevId: "",
         code: "",
+        number: "",
+        name: "",
         amount: 0,
     });
-    const [modal, setModal] = useState(false);
+    const [modal, setModal] = useState({
+        cashIn: false,
+        cashOut: false,
+        payment: false,
+        moved: false,
+    });
     const Columns = [
         {
-            name: "Tahun Pelajaran",
-            selector: (row) => row.yearName,
+            name: "Nama Jenjang",
+            selector: (row) => row.institutionAlias,
             sortable: false,
             // hide: 370,
             // width: "300px",
         },
         {
-            name: "Nama Jenjang",
-            selector: (row) => row.institutionAlias,
+            name: "Tanggal",
+            selector: (row) => row.date,
+            sortable: false,
+            // hide: 370,
+            // width: "300px",
+        },
+        {
+            name: "Nomor Transaksi",
+            selector: (row) => row.number,
             sortable: false,
             // hide: 370,
             // width: "300px",
@@ -55,22 +68,8 @@ const Transaction = () => {
             // width: "200px",
         },
         {
-            name: "Kredit",
+            name: "Jumlah",
             selector: (row) => numberFormat(row.amount),
-            sortable: false,
-            // hide: 370,
-
-        },
-        {
-            name: "Debit",
-            selector: (row) => numberFormat(row.amount),
-            sortable: false,
-            // hide: 370,
-
-        },
-        {
-            name: "Saldo",
-            selector: (row) => numberFormat(row.price),
             sortable: false,
             // hide: 370,
 
@@ -83,10 +82,6 @@ const Transaction = () => {
             width: "150px",
             cell: (row) => (
                 <ButtonGroup size="sm">
-                    <Button outline color="warning" onClick={() => {
-                        setTransaction(row);
-                        setModal(true);
-                    }}><Icon name="pen"/></Button>
                     <Button outline color="danger" onClick={() => {
                         setLoading(row.id)
                         destroyTransaction(row.id).then(() => {
@@ -133,23 +128,50 @@ const Transaction = () => {
                                         <ul className="nk-block-tools g-3">
                                             <li>
                                                 <Button color="danger" size={"sm"} outline className="btn-white"
-                                                        onClick={() => setModal(true)}>
+                                                        onClick={() => setModal({
+                                                            cashIn: false,
+                                                            cashOut: true,
+                                                            payment: false,
+                                                            moved: false,
+                                                        })}>
                                                     <Icon name="upload"></Icon>
                                                     <span>KAS KELUAR</span>
                                                 </Button>
                                             </li>
                                             <li>
                                                 <Button color="info" size={"sm"} outline className="btn-white"
-                                                        onClick={() => setModal(true)}>
+                                                        onClick={() => setModal({
+                                                            cashIn: true,
+                                                            cashOut: false,
+                                                            payment: false,
+                                                            moved: false,
+                                                        })}>
                                                     <Icon name="download"></Icon>
                                                     <span>KAS MASUK</span>
                                                 </Button>
                                             </li>
                                             <li>
                                                 <Button color="warning" size={"sm"} outline className="btn-white"
-                                                        onClick={() => setModal(true)}>
+                                                        onClick={() => setModal({
+                                                            cashIn: false,
+                                                            cashOut: false,
+                                                            payment: true,
+                                                            moved: false,
+                                                        })}>
                                                     <Icon name="cc"></Icon>
                                                     <span>PEMBAYARAN</span>
+                                                </Button>
+                                            </li>
+                                            <li>
+                                                <Button color="success" size={"sm"} outline className="btn-white"
+                                                        onClick={() => setModal({
+                                                            cashIn: false,
+                                                            cashOut: false,
+                                                            payment: false,
+                                                            moved: true,
+                                                        })}>
+                                                    <Icon name="cc"></Icon>
+                                                    <span>PEMINDAHAN</span>
                                                 </Button>
                                             </li>
                                         </ul>
@@ -162,7 +184,8 @@ const Transaction = () => {
                         <ReactDataTable data={transactions} columns={Columns} expandableRows pagination/>
                     </PreviewCard>
                 </Block>
-                <Partial modal={modal} setModal={setModal} transaction={transaction} setTransaction={setTransaction} setReloadData={setReloadData} />
+                <CashIn modal={modal} setModal={setModal} transaction={transaction} setTransaction={setTransaction} setReloadData={setReloadData} />
+                <CashOut modal={modal} setModal={setModal} transaction={transaction} setTransaction={setTransaction} setReloadData={setReloadData} />
             </Content>
         </React.Fragment>
     )

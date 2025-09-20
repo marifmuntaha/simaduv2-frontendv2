@@ -23,17 +23,12 @@ const Item = () => {
     const [items, setItems] = useState([]);
     const [item, setItem] = useState({
         id: "",
-        yearId: "",
         institutionId: "",
         accountAppId: "",
         accountRevId: "",
         name: "",
         alias: "",
-        gender: "",
-        programId: "",
-        boardingId: "",
         repeat: "",
-        price: "",
     });
     const [modal, setModal] = useState(false);
     const boardingOptions = (boardingId) => {
@@ -50,13 +45,6 @@ const Item = () => {
     }
     const Columns = [
         {
-            name: "Tahun Pelajaran",
-            selector: (row) => row.yearName,
-            sortable: false,
-            // hide: 370,
-            // width: "300px",
-        },
-        {
             name: "Nama Jenjang",
             selector: (row) => row.institutionAlias,
             sortable: false,
@@ -71,25 +59,11 @@ const Item = () => {
             // width: "200px",
         },
         {
-            name: "Program",
-            selector: (row) => row.programName,
+            name: "Alias",
+            selector: (row) => row.alias,
             sortable: false,
             // hide: 370,
-
-        },
-        {
-            name: "Boarding",
-            selector: (row) => boardingOptions(row.boardingId),
-            sortable: false,
-            // hide: 370,
-
-        },
-        {
-            name: "Jenis Kelamin",
-            selector: (row) => row.gender,
-            sortable: false,
-            // hide: 370,
-
+            // width: "200px",
         },
         {
             name: "Bulanan",
@@ -97,13 +71,6 @@ const Item = () => {
             sortable: false,
             // hide: 370,
             cell: (row) => (<Badge pill color="info">{row.repeat === '1' ? "Ya" : "Tidak"}</Badge>)
-
-        },
-        {
-            name: "Harga",
-            selector: (row) => numberFormat(row.price),
-            sortable: false,
-            // hide: 370,
 
         },
         {
@@ -141,7 +108,7 @@ const Item = () => {
     return (
         <React.Fragment>
             <Head title="Item Tagihan"/>
-            <Content>
+            <Content page="component">
                 <Block size="lg">
                     <BlockHead>
                         <BlockBetween>

@@ -3,28 +3,28 @@ import {APICore} from '../APICore';
 const api = new APICore();
 
 async function get(params, message) {
-    const baseUrl = '/finance/cash-flow'
+    const baseUrl = '/finance/transaction'
     const result = await api.get(baseUrl, params, message).then((resp) => resp);
     return result !== false ? result : [];
 }
 
 async function store(params, message) {
-    const baseUrl = '/finance/cash-flow'
+    const baseUrl = '/finance/transaction'
     return await api.create(baseUrl, params, message).then((resp) => resp);
 }
 
 async function show(params, message) {
-    const baseUrl = `/finance/cash-flow/${params}`
+    const baseUrl = `/finance/transaction/${params}`
     return await api.get(baseUrl, params, message).then((resp) => resp);
 }
 
 async function update(params, message) {
-    const baseUrl = `/finance/cash-flow/${params.id}`
+    const baseUrl = `/finance/transaction/${params.id}`
     return await api.update(baseUrl, params, message).then((resp) => resp);
 }
 
 async function destroy(id, message) {
-    const baseUrl = `/finance/cash-flow/${id}`
+    const baseUrl = `/finance/transaction/${id}`
     return await api.delete(baseUrl, message).then((resp) => resp);
 }
 
