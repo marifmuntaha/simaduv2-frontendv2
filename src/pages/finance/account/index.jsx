@@ -13,7 +13,7 @@ import {
     ReactDataTable
 } from "@/components";
 import {get as getAccount, destroy as destroyAccount} from "@/api/finance/account"
-import Partial from "@/pages/finance/item/partial";
+import Partial from "@/pages/finance/account/partial.jsx";
 import {numberFormat} from "@/utils";
 
 const Account = () => {
@@ -24,7 +24,7 @@ const Account = () => {
     const [account, setAccount] = useState({
         id: "",
         institutionId: "",
-        codeParent: "",
+        parent: {id: '', codeApp: ''},
         codeApp: "",
         code: "",
         name: "",
@@ -87,7 +87,22 @@ const Account = () => {
 
     useEffect(() => {
         reloadData && getAccount({list: 'table'}).then((resp) => {
-            setAccounts(resp);
+
+            setAccounts(() => {
+                return resp.map((account) => {
+                    return {
+                        id: account.id,
+                        institutionId: account.institutionId,
+                        parent: {id: account.parent, codeApp: account.codeApp},
+                        codeApp: account.codeApp,
+                        code: account.code,
+                        name: account.name,
+                        level: account.level    ,
+                        balance: account.balance,
+                        institutionAlias: account.institutionAlias
+                    }
+                })
+            });
             setReloadData(false);
         }).catch(() => {
             setReloadData(false);

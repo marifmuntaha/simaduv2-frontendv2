@@ -12,8 +12,8 @@ import {
     PreviewCard,
     ReactDataTable
 } from "@/components";
-import {get as getItem, destroy as destroyItem} from "@/api/finance/item"
-import Partial from "@/pages/finance/account/partial";
+import {get as getItem, destroy as destroyItem} from "@/api/finance/item";
+import Partial from "@/pages/finance/item/partial";
 import {numberFormat} from "@/utils";
 
 const Item = () => {
@@ -25,7 +25,8 @@ const Item = () => {
         id: "",
         yearId: "",
         institutionId: "",
-        accountId: "",
+        accountAppId: "",
+        accountRevId: "",
         name: "",
         alias: "",
         gender: "",

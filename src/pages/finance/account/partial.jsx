@@ -1,29 +1,33 @@
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Button, Modal, ModalBody, ModalHeader, Spinner} from "reactstrap";
 import {useForm} from "react-hook-form";
-import {Icon, Row, RSelect} from "@/components";
-import {store as storeItem, update as updateItem} from "@/api/finance/item";
-import {get as getYear} from "@/api/master/year";
-import {get as getInstitution} from "@/api/institution";
-import {get as getAccount} from "@/api/finance/account";
-import {get as getProgram} from "@/api/institution/program";
+import {Icon, Row, RSelect} from "@/components/index.jsx";
+import {get as getAccounts, store as storeAccount, update as updateAccount} from "@/api/finance/account.jsx"
+import {get as getInstitution} from "@/api/institution.jsx"
 
-const Partial = ({modal, setModal, item, setItem, setReloadData}) => {
+const Partial = ({modal, setModal, account, setAccount, setReloadData}) => {
     const [loading, setLoading] = useState(false);
     const [institutionOptions, setInstitutionOptions] = useState([]);
-    const [yearOptions, setYearOptions] = useState([]);
     const [accountOptions, setAccountOptions] = useState([]);
-    const [programOptions, setProgramOptions] = useState([]);
     const {handleSubmit, reset, register, formState: {errors}, setValue} = useForm();
     const handleChange = (e) => {
-        setItem({...item, [e.target.name]: e.target.value});
+        setAccount({...account, [e.target.name]: e.target.value});
     }
     const onSubmit = () => {
-        item.id === "" ? onStore() : onUpdate();
+        account.id === "" ? onStore() : onUpdate();
     }
     const onStore = async () => {
         setLoading(true);
-        const store = await storeItem(item);
+        const formData = {
+            institutionId: account.institutionId,
+            parent: account.parent?.id,
+            codeApp: (account.parent?.codeApp !== undefined ? account.parent.codeApp : "") + account.code,
+            code: account.code,
+            name: account.name,
+            level: account.level,
+            balance: account.balance
+        }
+        const store = await storeAccount(formData);
         if (store) {
             setLoading(false);
             setReloadData(true);
@@ -34,7 +38,17 @@ const Partial = ({modal, setModal, item, setItem, setReloadData}) => {
     }
     const onUpdate = async () => {
         setLoading(true);
-        const update = await updateItem(item);
+        const formData = {
+            id: account.id,
+            institutionId: account.institutionId,
+            parent: account.parent?.id,
+            codeApp: (account.parent?.codeApp !== undefined ? account.parent.codeApp : "") + account.code,
+            code: account.code,
+            name: account.name,
+            level: account.level,
+            balance: account.balance
+        }
+        const update = await updateAccount(formData);
         if (update) {
             setLoading(false);
             setReloadData(true);
@@ -44,18 +58,15 @@ const Partial = ({modal, setModal, item, setItem, setReloadData}) => {
         }
     }
     const handleReset = () => {
-        setItem({
+        setAccount({
             id: "",
-            yearId: "",
             institutionId: "",
-            accountId: "",
+            codeParent: "",
+            codeApp: "",
+            code: "",
             name: "",
-            alias: "",
-            gender: "",
-            programId: "",
-            boardingId: "",
-            repeat: "",
-            price: "",
+            level: "",
+            balance: "",
         });
         reset();
     }
@@ -63,62 +74,25 @@ const Partial = ({modal, setModal, item, setItem, setReloadData}) => {
         setModal(false);
         handleReset();
     };
-    const genderOptions = [
-        {value: '0', label: "Semua"},
-        {value: 'L', label: 'Laki-laki'},
-        {value: 'P', label: 'Perempuan'},
-    ];
-    const boardingOptions = [
-        {value: '0', label: 'Semua'},
-        {value: '1', label: 'Tidak Boarding'},
-        {value: '2', label: 'Tahfidz'},
-        {value: '3', label: 'Kitab'},
-
-    ];
-    const repeatOptions = [
-        {value: '1', label: "Ya"},
-        {value: '2', label: "Tidak"},
-    ];
-    const paramProgram = useCallback(() => {
-        let params = {type: 'select'}
-        if (item.yearId !== '') {
-            params = {...params, yearId: item.yearId};
-        }
-        if (item.institutionId !== '') {
-            params = {...params, institutionId: item.institutionId};
-        }
-        return params;
-    }, [item])
 
     useEffect(() => {
-        setValue('id', item.id);
-        setValue('yearId', item.yearId);
-        setValue('institutionId', item.institutionId);
-        setValue('accountId', item.accountId);
-        setValue('name', item.name);
-        setValue('alias', item.alias);
-        setValue('gender', item.gender);
-        setValue('programId', item.programId);
-        setValue('boardingId', item.boardingId);
-        setValue('repeat', item.repeat);
-        setValue('price', item.price);
-    }, [item, setValue]);
+        setValue('id', account.id);
+        setValue('institutionId', account.institutionId);
+        setValue('codeApp', parent.codeApp);
+        setValue('code', account.code);
+        setValue('name', account.name);
+        setValue('level', account.level);
+        setValue('balance', account.balance);
+    }, [account, setValue]);
 
     useEffect(() => {
-        getYear({type: 'select'}).then(data => setYearOptions(data));
         getInstitution({type: 'select', ladder: 'alias'}).then(data => setInstitutionOptions(data));
     }, []);
-
     useEffect(() => {
-        getProgram(paramProgram()).then(data => {
-            data = [{value: "0", label: "Semua"},...data];
-            setProgramOptions(data);
+        account.institutionId !== undefined && getAccounts({type: 'select', with: 'level', 'institutionId': account.institutionId}).then(data => {
+            setAccountOptions(data);
         });
-    }, [paramProgram]);
-
-    useEffect(() => {
-        getAccount({institutionId: item.institutionId, level: '4', type: 'select'}).then(data => setAccountOptions(data));
-    }, [item.institutionId]);
+    }, [account.institutionId]);
 
     return (
         <Modal isOpen={modal} toggle={toggle}>
@@ -127,36 +101,19 @@ const Partial = ({modal, setModal, item, setItem, setReloadData}) => {
                     <Icon name="cross"/>
                 </button>
             }>
-                {item.id !== "" ? 'UBAH' : 'TAMBAH'}
+                {account.id !== "" ? 'UBAH' : 'TAMBAH'}
             </ModalHeader>
             <ModalBody>
                 <form className="is-alter" onSubmit={handleSubmit(onSubmit)}>
                     <Row className="gy-0">
-                        <div className="form-group col-md-6">
-                            <label className="form-label" htmlFor="yearId">Pilih Tahun Pelajaran</label>
-                            <div className="form-control-wrap">
-                                <RSelect
-                                    options={yearOptions}
-                                    value={yearOptions?.find((c) => c.value === item.yearId)}
-                                    onChange={(e) => {
-                                        setItem({...item, yearId: e.value});
-                                        setValue('yearId', e.value);
-                                    }}
-                                    placeholder="Pilih Tahun Pelajaran"
-                                />
-                                <input type="hidden" id="yearId"
-                                       className="form-control" {...register("yearId", {required: true})} />
-                                {errors.yearId && <span className="invalid">Kolom tidak boleh kosong.</span>}
-                            </div>
-                        </div>
-                        <div className="form-group col-md-6">
+                        <div className="form-group col-md-12">
                             <label className="form-label" htmlFor="institutionId">Pilih Lembaga</label>
                             <div className="form-control-wrap">
                                 <RSelect
                                     options={institutionOptions}
-                                    value={institutionOptions?.find((c) => c.value === item.institutionId)}
+                                    value={institutionOptions?.find((c) => c.value === account.institutionId)}
                                     onChange={(e) => {
-                                        setItem({...item, institutionId: e.value});
+                                        setAccount({...account, institutionId: e.value});
                                         setValue('institutionId', e.value);
                                     }}
                                     placeholder="Pilih Lembaga"
@@ -167,47 +124,61 @@ const Partial = ({modal, setModal, item, setItem, setReloadData}) => {
                             </div>
                         </div>
                         <div className="form-group col-md-6">
-                            <label className="form-label" htmlFor="programId">Pilih Program</label>
-                            <div className="form-control-wrap">
-                                <RSelect
-                                    options={programOptions}
-                                    value={programOptions?.find((c) => c.value === item.programId)}
-                                    onChange={(e) => {
-                                        setItem({...item, programId: e.value});
-                                        setValue('programId', e.value);
-                                    }}
-                                    placeholder="Pilih Program"
-                                />
-                                <input type="hidden" id="programId"
-                                       className="form-control" {...register("programId", {required: true})} />
-                                {errors.programId && <span className="invalid">Kolom tidak boleh kosong.</span>}
-                            </div>
-                        </div>
-                        <div className="form-group col-md-6">
-                            <label className="form-label" htmlFor="accountId">Pilih Rekening</label>
+                            <label className="form-label" htmlFor="parent">Jenis Akun</label>
                             <div className="form-control-wrap">
                                 <RSelect
                                     options={accountOptions}
-                                    value={accountOptions?.find((c) => c.value === item.accountId)}
+                                    value={accountOptions?.find((c) => c.value === account.parent?.id)}
                                     onChange={(e) => {
-                                        setItem({...item, accountId: e.value});
-                                        setValue('accountId', e.value);
+                                        setAccount({
+                                            ...account,
+                                            parent: {id: e.value, codeApp: e.codeApp}
+                                        });
                                     }}
-                                    placeholder="Pilih Rekening"
+                                    placeholder="Pilih Janis Akun"
                                 />
-                                <input type="hidden" id="accountId"
-                                       className="form-control" {...register("accountId", {required: true})} />
-                                {errors.accountId && <span className="invalid">Kolom tidak boleh kosong.</span>}
                             </div>
                         </div>
                         <div className="form-group col-md-6">
-                            <label className="form-label" htmlFor="name">Nama Item</label>
+                            <label className="form-label" htmlFor="level">Kode Rekening</label>
+                            <div className="form-control-wrap">
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    name="code"
+                                    placeholder="Ex. 1"
+                                    {...register("code", {
+                                        required: true,
+                                        onChange: (e) => handleChange(e)
+                                    })}
+                                />
+                                {errors.code && <span className="invalid">Kolom tidak boleh kosong</span>}
+                            </div>
+                        </div>
+                        <div className="form-group col-md-6">
+                            <label className="form-label" htmlFor="level">Level</label>
+                            <div className="form-control-wrap">
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    name="level"
+                                    placeholder="Ex. 1"
+                                    {...register("level", {
+                                        required: true,
+                                        onChange: (e) => handleChange(e)
+                                    })}
+                                />
+                                {errors.level && <span className="invalid">Kolom tidak boleh kosong</span>}
+                            </div>
+                        </div>
+                        <div className="form-group col-md-6">
+                            <label className="form-label" htmlFor="name">Nama Rekening</label>
                             <div className="form-control-wrap">
                                 <input
                                     type="text"
                                     className="form-control"
                                     name="name"
-                                    placeholder="Ex. Seragam"
+                                    placeholder="Ex. BOS"
                                     {...register("name", {
                                         required: true,
                                         onChange: (e) => handleChange(e)
@@ -216,87 +187,20 @@ const Partial = ({modal, setModal, item, setItem, setReloadData}) => {
                                 {errors.name && <span className="invalid">Kolom tidak boleh kosong</span>}
                             </div>
                         </div>
-                        <div className="form-group col-md-6">
-                            <label className="form-label" htmlFor="alias">Alias</label>
+                        <div className="form-group">
+                            <label className="form-label" htmlFor="balance">Saldo</label>
                             <div className="form-control-wrap">
                                 <input
                                     type="text"
                                     className="form-control"
-                                    name="alias"
-                                    placeholder="Ex. Seragam"
-                                    {...register("alias", {
-                                        required: true,
-                                        onChange: (e) => handleChange(e)
-                                    })}
-                                />
-                                {errors.alias && <span className="invalid">Kolom tidak boleh kosong</span>}
-                            </div>
-                        </div>
-                        <div className="form-group col-md-6">
-                            <label className="form-label" htmlFor="gender">Pilih Jenis Kelamin</label>
-                            <div className="form-control-wrap">
-                                <RSelect
-                                    options={genderOptions}
-                                    value={genderOptions?.find((c) => c.value === item.gender)}
-                                    onChange={(e) => {
-                                        setItem({...item, gender: e.value});
-                                        setValue('gender', e.value);
-                                    }}
-                                    placeholder="Pilih Rekening"
-                                />
-                                <input type="hidden" id="gender"
-                                       className="form-control" {...register("gender", {required: true})} />
-                                {errors.gender && <span className="invalid">Kolom tidak boleh kosong.</span>}
-                            </div>
-                        </div>
-                        <div className="form-group col-md-6">
-                            <label className="form-label" htmlFor="boardingId">Pilih Boarding</label>
-                            <div className="form-control-wrap">
-                                <RSelect
-                                    options={boardingOptions}
-                                    value={boardingOptions?.find((c) => c.value === item.boardingId)}
-                                    onChange={(e) => {
-                                        setItem({...item, boardingId: e.value});
-                                        setValue('boardingId', e.value);
-                                    }}
-                                    placeholder="Pilih Boarding"
-                                />
-                                <input type="hidden" id="boardingId"
-                                       className="form-control" {...register("boardingId", {required: true})} />
-                                {errors.boardingId && <span className="invalid">Kolom tidak boleh kosong.</span>}
-                            </div>
-                        </div>
-                        <div className="form-group col-md-6">
-                            <label className="form-label" htmlFor="repeat">Tagihan Bulanan</label>
-                            <div className="form-control-wrap">
-                                <RSelect
-                                    options={repeatOptions}
-                                    value={repeatOptions?.find((c) => c.value === item.repeat)}
-                                    onChange={(e) => {
-                                        setItem({...item, repeat: e.value});
-                                        setValue('repeat', e.value);
-                                    }}
-                                    placeholder="Tagihan Bulanan"
-                                />
-                                <input type="hidden" id="repeat"
-                                       className="form-control" {...register("repeat", {required: true})} />
-                                {errors.repeat && <span className="invalid">Kolom tidak boleh kosong.</span>}
-                            </div>
-                        </div>
-                        <div className="form-group col-md-6">
-                            <label className="form-label" htmlFor="price">Harga</label>
-                            <div className="form-control-wrap">
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    name="price"
+                                    name="balance"
                                     placeholder="Ex. 1000000"
-                                    {...register("price", {
+                                    {...register("balance", {
                                         required: true,
                                         onChange: (e) => handleChange(e)
                                     })}
                                 />
-                                {errors.price && <span className="invalid">Kolom tidak boleh kosong</span>}
+                                {errors.balance && <span className="invalid">Kolom tidak boleh kosong</span>}
                             </div>
                         </div>
                         <div className="form-group">

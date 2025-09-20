@@ -70,8 +70,8 @@ const Router = () => {
                                 </Route>
                                 <Route path="keuangan">
                                     <Route path="data-rekening" element={<Account/>}/>
-                                    <Route path="transaksi" element={<Transaction/>}/>
                                     <Route path="item-pembayaran" element={<Item/>}/>
+                                    <Route path="transaksi" element={<Transaction/>}/>
                                     <Route path="laporan">
                                         <Route path="neraca" element={<Neraca/>}/>
                                     </Route>
