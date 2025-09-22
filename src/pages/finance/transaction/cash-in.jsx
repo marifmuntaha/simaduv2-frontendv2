@@ -71,7 +71,7 @@ const CashIn = ({modal, setModal, transaction, setTransaction, setReloadData}) =
         transaction.institutionId !== "" && getAccount({
             type: 'select',
             institutionId: transaction.institutionId,
-            level: "4"
+            level: 2
         }).then(data => setAccountOptions(data))
     }, [transaction.institutionId]);
 

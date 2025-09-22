@@ -71,7 +71,7 @@ const CashOut = ({modal, setModal, transaction, setTransaction, setReloadData}) 
         transaction.institutionId !== "" && getAccount({
             type: 'select',
             institutionId: transaction.institutionId,
-            level: "4"
+            shown: 1
         }).then(data => setAccountOptions(data))
     }, [transaction.institutionId]);
 

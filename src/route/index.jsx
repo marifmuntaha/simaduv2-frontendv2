@@ -26,6 +26,8 @@ import Account from "@/pages/finance/account/index.jsx";
 import Item from "@/pages/finance/item/index.jsx";
 import Transaction from "@/pages/finance/transaction/index.jsx";
 import Neraca from "@/pages/finance/report/neraca/index.jsx";
+import Invoice from "@/pages/finance/invoice/index.jsx";
+import Setting from "@/pages/setting/index.jsx";
 
 const ScrollToTop = (props) => {
     const location = useLocation();
@@ -72,11 +74,13 @@ const Router = () => {
                                     <Route path="data-rekening" element={<Account/>}/>
                                     <Route path="item-pembayaran" element={<Item/>}/>
                                     <Route path="transaksi" element={<Transaction/>}/>
+                                    <Route path="tagihan" element={<Invoice/>}/>
                                     <Route path="laporan">
                                         <Route path="neraca" element={<Neraca/>}/>
                                     </Route>
                                 </Route>
                                 <Route path="data-guru" element={<Teacher/>}/>
+                                <Route path="pengaturan/:institutionId" element={<Setting/>}/>
                             </Route>
                         </Route>
                         <Route element={<NoSidebar/>}>

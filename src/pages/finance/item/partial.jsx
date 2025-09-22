@@ -79,7 +79,7 @@ const Partial = ({modal, setModal, item, setItem, setReloadData}) => {
     }, []);
 
     useEffect(() => {
-        getAccount({institutionId: item.institutionId, level: '4', type: 'select'}).then(data => setAccountOptions(data));
+        getAccount({institutionId: item.institutionId, shown: 1, type: 'select'}).then(data => setAccountOptions(data));
     }, [item.institutionId]);
 
     return (

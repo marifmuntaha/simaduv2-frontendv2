@@ -224,6 +224,7 @@ const Upload = ({modal, setModal, setRefreshData}) => {
                             studentId: student.id,
                             yearId: yearSelected.value,
                             institutionId: institutionSelected.value,
+                            levelId: rombelSelected.levelId,
                             rombelId: rombelSelected.value,
                             programId: programSelected.value,
                             boardingId: boardingId(item['Boarding']),
@@ -271,6 +272,7 @@ const Upload = ({modal, setModal, setRefreshData}) => {
                 type: 'select',
                 institutionId: institutionSelected.value,
                 yearId: yearSelected.value,
+                with: 'level'
             }).then((resp) => {
                 setRombelOptions(resp);
             });

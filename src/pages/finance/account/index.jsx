@@ -12,8 +12,8 @@ import {
     PreviewCard,
     ReactDataTable
 } from "@/components";
-import {get as getAccount, destroy as destroyAccount} from "@/api/finance/account"
-import Partial from "@/pages/finance/account/partial.jsx";
+import {get as getAccount, destroy as destroyAccount} from "@/api/finance/account";
+import Partial from "@/pages/finance/account/partial";
 import {numberFormat} from "@/utils";
 
 const Account = () => {
@@ -24,7 +24,7 @@ const Account = () => {
     const [account, setAccount] = useState({
         id: "",
         institutionId: "",
-        parent: {id: '', codeApp: ''},
+        parent: {id: '', codeApp: '', level: 0},
         codeApp: "",
         code: "",
         name: "",
@@ -87,13 +87,12 @@ const Account = () => {
 
     useEffect(() => {
         reloadData && getAccount({list: 'table'}).then((resp) => {
-
             setAccounts(() => {
                 return resp.map((account) => {
                     return {
                         id: account.id,
                         institutionId: account.institutionId,
-                        parent: {id: account.parent, codeApp: account.codeApp},
+                        parent: {id: account.parent, codeApp: account.codeApp, level: account.level},
                         codeApp: account.codeApp,
                         code: account.code,
                         name: account.name,
@@ -106,12 +105,12 @@ const Account = () => {
             setReloadData(false);
         }).catch(() => {
             setReloadData(false);
-        })
+        });
     }, [reloadData]);
     return (
         <React.Fragment>
             <Head title="Data Rekening"/>
-            <Content page="component">
+            <Content>
                 <Block size="lg">
                     <BlockHead>
                         <BlockBetween>

@@ -9,7 +9,21 @@ const Partial = ({modal, setModal, account, setAccount, setReloadData}) => {
     const [loading, setLoading] = useState(false);
     const [institutionOptions, setInstitutionOptions] = useState([]);
     const [accountOptions, setAccountOptions] = useState([]);
-    const {handleSubmit, reset, register, formState: {errors}, setValue} = useForm();
+    const {
+        handleSubmit,
+        reset,
+        register,
+        formState: {errors},
+        setValue
+    } = useForm();
+    const typeOptions = [
+        {value: 'D', label: 'Debit'},
+        {value: 'K', label: 'Kredit'}
+    ];
+    const shownOptions = [
+        {value: 1, label: 'Ya'},
+        {value: 0, label: 'Tidak'},
+    ]
     const handleChange = (e) => {
         setAccount({...account, [e.target.name]: e.target.value});
     }
@@ -24,7 +38,9 @@ const Partial = ({modal, setModal, account, setAccount, setReloadData}) => {
             codeApp: (account.parent?.codeApp !== undefined ? account.parent.codeApp : "") + account.code,
             code: account.code,
             name: account.name,
-            level: account.level,
+            type: account.type,
+            level: (account.parent?.level !== undefined ? account.parent?.level : 0) + 1,
+            shown: account.shown,
             balance: account.balance
         }
         const store = await storeAccount(formData);
@@ -84,7 +100,6 @@ const Partial = ({modal, setModal, account, setAccount, setReloadData}) => {
         setValue('level', account.level);
         setValue('balance', account.balance);
     }, [account, setValue]);
-
     useEffect(() => {
         getInstitution({type: 'select', ladder: 'alias'}).then(data => setInstitutionOptions(data));
     }, []);
@@ -124,7 +139,7 @@ const Partial = ({modal, setModal, account, setAccount, setReloadData}) => {
                             </div>
                         </div>
                         <div className="form-group col-md-6">
-                            <label className="form-label" htmlFor="parent">Jenis Akun</label>
+                            <label className="form-label" htmlFor="parent">Induk Rekening</label>
                             <div className="form-control-wrap">
                                 <RSelect
                                     options={accountOptions}
@@ -132,11 +147,28 @@ const Partial = ({modal, setModal, account, setAccount, setReloadData}) => {
                                     onChange={(e) => {
                                         setAccount({
                                             ...account,
-                                            parent: {id: e.value, codeApp: e.codeApp}
+                                            parent: {id: e.value, codeApp: e.codeApp, level: e.level}
                                         });
                                     }}
                                     placeholder="Pilih Janis Akun"
                                 />
+                            </div>
+                        </div>
+                        <div className="form-group col-md-6">
+                            <label className="form-label" htmlFor="type">Jenis Rekening</label>
+                            <div className="form-control-wrap">
+                                <RSelect
+                                    options={typeOptions}
+                                    value={typeOptions?.find((c) => c.value === account.type?.id)}
+                                    onChange={(e) => {
+                                        setAccount({...account, type: e.value});
+                                        setValue('type', e.value);
+                                    }}
+                                    placeholder="Pilih Janis Akun"
+                                />
+                                <input type="hidden" id="type"
+                                       className="form-control" {...register("type", {required: true})} />
+                                {errors.type && <span className="invalid">Kolom tidak boleh kosong.</span>}
                             </div>
                         </div>
                         <div className="form-group col-md-6">
@@ -155,22 +187,7 @@ const Partial = ({modal, setModal, account, setAccount, setReloadData}) => {
                                 {errors.code && <span className="invalid">Kolom tidak boleh kosong</span>}
                             </div>
                         </div>
-                        <div className="form-group col-md-6">
-                            <label className="form-label" htmlFor="level">Level</label>
-                            <div className="form-control-wrap">
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    name="level"
-                                    placeholder="Ex. 1"
-                                    {...register("level", {
-                                        required: true,
-                                        onChange: (e) => handleChange(e)
-                                    })}
-                                />
-                                {errors.level && <span className="invalid">Kolom tidak boleh kosong</span>}
-                            </div>
-                        </div>
+
                         <div className="form-group col-md-6">
                             <label className="form-label" htmlFor="name">Nama Rekening</label>
                             <div className="form-control-wrap">
@@ -187,7 +204,24 @@ const Partial = ({modal, setModal, account, setAccount, setReloadData}) => {
                                 {errors.name && <span className="invalid">Kolom tidak boleh kosong</span>}
                             </div>
                         </div>
-                        <div className="form-group">
+                        <div className="form-group col-md-6">
+                            <label className="form-label" htmlFor="shown">Tampilkan Rekening</label>
+                            <div className="form-control-wrap">
+                                <RSelect
+                                    options={shownOptions}
+                                    value={shownOptions?.find((c) => c.value === account.shown?.id)}
+                                    onChange={(e) => {
+                                        setAccount({...account, shown: e.value});
+                                        setValue('shown', e.value);
+                                    }}
+                                    placeholder="Pilih Tampilkan"
+                                />
+                                <input type="hidden" id="shown"
+                                       className="form-control" {...register("shown", {required: true})} />
+                                {errors.shown && <span className="invalid">Kolom tidak boleh kosong.</span>}
+                            </div>
+                        </div>
+                        <div className="form-group col-md-6">
                             <label className="form-label" htmlFor="balance">Saldo</label>
                             <div className="form-control-wrap">
                                 <input
