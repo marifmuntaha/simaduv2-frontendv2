@@ -14,7 +14,6 @@ import {
 } from "@/components";
 import {get as getItem, destroy as destroyItem} from "@/api/finance/item";
 import Partial from "@/pages/finance/item/partial";
-import {numberFormat} from "@/utils";
 
 const Item = () => {
     const [sm, updateSm] = useState(false);
@@ -24,25 +23,12 @@ const Item = () => {
     const [item, setItem] = useState({
         id: "",
         institutionId: "",
-        accountAppId: "",
         accountRevId: "",
         name: "",
         alias: "",
         repeat: "",
     });
     const [modal, setModal] = useState(false);
-    const boardingOptions = (boardingId) => {
-        switch (boardingId) {
-            case "0":
-                return "Semua"
-            case "1":
-                return "Non Boarding"
-            case "2":
-                return "Tahfidz"
-            case "3":
-                return "Kitab"
-        }
-    }
     const Columns = [
         {
             name: "Nama Jenjang",

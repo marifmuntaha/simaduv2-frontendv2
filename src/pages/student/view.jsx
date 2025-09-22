@@ -55,12 +55,14 @@ const View = () => {
     }
     const boardingStatus = (e) => {
         switch (e) {
-            case 1:
+            case '1':
+                return "Non Boarding"
+            case '2':
                 return "Tahfidz"
-            case 2:
+            case '3':
                 return "Kitab"
             default:
-                return "Non Boarding"
+                return ""
         }
     }
     const toggle = () => {
@@ -70,22 +72,22 @@ const View = () => {
     useEffect(() => {
         showStudent(id).then((resp) => {
             setStudent(resp);
-            fetch(`https://marifmuntaha.github.io/api-wilayah-indonesia/api/province/${resp.address.provinceId}.json`)
+            resp.address.provinceId && fetch(`https://marifmuntaha.github.io/api-wilayah-indonesia/api/province/${resp.address.provinceId}.json`)
                 .then(response => response.json())
                 .then((resp) => {
                     setProvince(resp);
                 });
-            fetch(`https://marifmuntaha.github.io/api-wilayah-indonesia/api/regency/${resp.address.cityId}.json`)
+            resp.address.cityId && fetch(`https://marifmuntaha.github.io/api-wilayah-indonesia/api/regency/${resp.address.cityId}.json`)
                 .then(response => response.json())
                 .then((resp) => {
                     setCity(resp);
                 });
-            fetch(`https://marifmuntaha.github.io/api-wilayah-indonesia/api/district/${resp.address.districtId}.json`)
+            resp.address.districtId && fetch(`https://marifmuntaha.github.io/api-wilayah-indonesia/api/district/${resp.address.districtId}.json`)
                 .then(response => response.json())
                 .then((resp) => {
                     setDistrict(resp);
                 });
-            fetch(`https://marifmuntaha.github.io/api-wilayah-indonesia/api/village/${resp.address.villageId}.json`)
+            resp.address.villageId && fetch(`https://marifmuntaha.github.io/api-wilayah-indonesia/api/village/${resp.address.villageId}.json`)
                 .then(response => response.json())
                 .then((resp) => {
                     setVillage(resp);

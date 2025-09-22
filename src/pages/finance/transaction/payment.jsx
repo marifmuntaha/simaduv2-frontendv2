@@ -8,13 +8,12 @@ import {get as getInstitution} from "@/api/institution";
 import {numberFormat} from "@/utils";
 import {get as getSetting} from "@/api/setting";
 import {APICore} from "@/api/APICore.jsx";
+import {get as getStudent} from "@/api/student";
+import {get as getInvoice} from "@/api/finance/invoice";
 
-const CashIn = ({modal, setModal, transaction, setTransaction, setReloadData}) => {
+const Payment = ({modal, setModal, transaction, setTransaction, setReloadData}) => {
     const api = new APICore();
-    const user = api.getLoggedInUser()
-    const [loading, setLoading] = useState(false);
-    const [institutionOptions, setInstitutionOptions] = useState([]);
-    const [accountOptions, setAccountOptions] = useState([]);
+    const user = api.getLoggedInUser();
     const {
         handleSubmit,
         reset,
@@ -22,6 +21,13 @@ const CashIn = ({modal, setModal, transaction, setTransaction, setReloadData}) =
         formState: {errors},
         setValue
     } = useForm();
+    const [loading, setLoading] = useState(false);
+    const [institutionOptions, setInstitutionOptions] = useState([]);
+    const [accountOptions, setAccountOptions] = useState([]);
+    const [studentOptions, setStudentOptions] = useState([]);
+    const [invoices, setInvoices] = useState([]);
+    const [payments, setPayments] = useState([]);
+    const [formData, setFormData] = useState([]);
     const handleChange = (e) => {
         setTransaction({...transaction, [e.target.name]: e.target.value});
     }
@@ -89,17 +95,34 @@ const CashIn = ({modal, setModal, transaction, setTransaction, setReloadData}) =
             type: 'select',
             institutionId: transaction.institutionId,
             level: 2
-        }).then(data => setAccountOptions(data))
+        }).then(data => setAccountOptions(data));
+        transaction.institutionId !== "" && getStudent({type: 'select', institutionId: transaction.institutionId}).then(data => setStudentOptions(data));
     }, [transaction.institutionId]);
 
+    useEffect(() => {
+        modal.payment && transaction.studentId !== null && getInvoice({studentId: transaction.studentId}).then(data => setInvoices(data));
+    }, [modal, transaction.studentId]);
+
+    useEffect(() => {
+        const payment = payments.length > 0 && payments?.reduce((acc, cur) => {
+            acc[cur['invoiceId']] = cur;
+            return acc;
+        }, {});
+        setFormData(Object.values(payment))
+    }, [payments])
+
+    useEffect(() => {
+        console.log(formData);
+    }, [formData]);
+
     return (
-        <Modal isOpen={modal.cashIn} toggle={toggle}>
+        <Modal isOpen={modal.payment} toggle={toggle} size="lg">
             <ModalHeader toggle={toggle} close={
                 <button className="close" onClick={toggle}>
                     <Icon name="cross"/>
                 </button>
             }>
-                {transaction.id !== "" ? 'UBAH KAS MASUK' : 'KAS MASUK'}
+                {transaction.id !== "" ? 'UBAH KAS MASUK' : 'PEMBAYARAN'}
             </ModalHeader>
             <ModalBody>
                 <form className="is-alter" onSubmit={handleSubmit(onSubmit)}>
@@ -122,55 +145,57 @@ const CashIn = ({modal, setModal, transaction, setTransaction, setReloadData}) =
                             </div>
                         </div>
                         <div className="form-group col-md-12">
-                            <label className="form-label" htmlFor="accountRevId">Pilih Rekening</label>
+                            <label className="form-label" htmlFor="studentId">Pilih Siswa</label>
                             <div className="form-control-wrap">
                                 <RSelect
-                                    options={accountOptions}
-                                    value={accountOptions?.find((c) => c.value === transaction.accountRevId)}
+                                    options={studentOptions}
+                                    value={studentOptions?.find((c) => c.value === transaction.studentId)}
                                     onChange={(e) => {
-                                        setTransaction({...transaction, accountRevId: e.value});
-                                        setValue('accountRevId', e.value);
+                                        setTransaction({...transaction, studentId: e.value});
+                                        setValue('studentId', e.value);
                                     }}
-                                    placeholder="Pilih Transaksi"
+                                    placeholder="Pilih Siswa"
                                 />
-                                <input type="hidden" id="accountRevId"
-                                       className="form-control" {...register("accountRevId", {required: true})} />
-                                {errors.accountRevId && <span className="invalid">Kolom tidak boleh kosong.</span>}
+                                <input type="hidden" id="studentId"
+                                       className="form-control" {...register("studentId", {required: true})} />
+                                {errors.studentId && <span className="invalid">Kolom tidak boleh kosong.</span>}
                             </div>
                         </div>
-                        <div className="form-group">
-                            <label className="form-label" htmlFor="amount">Harga</label>
-                            <div className="form-control-wrap">
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    name="amount"
-                                    placeholder="Ex. 1000000"
-                                    {...register("amount", {
-                                        required: true,
-                                        onChange: (e) => {
-                                            handleChange(e);
-                                            setValue('amount', numberFormat(e.target.value));
-                                        }
-                                    })}
-                                />
-                                {errors.amount && <span className="invalid">Kolom tidak boleh kosong</span>}
-                            </div>
-                        </div>
-                        <div className="form-group">
-                            <label className="form-label" htmlFor="name">Keterangan</label>
-                            <div className="form-control-wrap">
-                                <textarea
-                                    className="form-control"
-                                    name="name"
-                                    placeholder="Ex. Pembelian Banner Harlah 5x3m"
-                                    {...register("name", {
-                                        required: true,
-                                        onChange: (e) => handleChange(e)
-                                    })}
-                                />
-                                {errors.name && <span className="invalid">Kolom tidak boleh kosong</span>}
-                            </div>
+                        <div className="col-md-12">
+                            <table className="table table-bordered">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Tagihan</th>
+                                    <th scope="col">Jumlah</th>
+                                    <th scope="col">Bayar</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {invoices.map((item, idx) => (
+                                    <tr key={idx}>
+                                        <td>{item.name}</td>
+                                        <td>{numberFormat(item.amount)}</td>
+                                        <td>
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                name="amount"
+                                                placeholder="Ex. 1000000"
+                                                onChange={(e) => {
+                                                    setPayments([...payments, {
+                                                        institutionId: item.institutionId,
+                                                        invoiceId: item.id,
+                                                        itemId: item.itemId,
+                                                        studentId: item.studentId,
+                                                        amount: e.target.value,
+                                                    }])
+                                                }}
+                                            />
+                                        </td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
                         </div>
                         <div className="form-group">
                             <Button color="primary" type="submit" size="md">
@@ -184,4 +209,4 @@ const CashIn = ({modal, setModal, transaction, setTransaction, setReloadData}) =
     )
 }
 
-export default CashIn;
+export default Payment;

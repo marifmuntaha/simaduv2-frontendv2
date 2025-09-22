@@ -43,7 +43,6 @@ const Partial = ({modal, setModal, item, setItem, setReloadData}) => {
         setItem({
             id: "",
             institutionId: "",
-            accountAppId: "",
             accountRevId: "",
             name: "",
             alias: "",
@@ -62,16 +61,11 @@ const Partial = ({modal, setModal, item, setItem, setReloadData}) => {
 
     useEffect(() => {
         setValue('id', item.id);
-        setValue('yearId', item.yearId);
         setValue('institutionId', item.institutionId);
-        setValue('accountId', item.accountId);
+        setValue('accountRevId', item.accountRevId);
         setValue('name', item.name);
         setValue('alias', item.alias);
-        setValue('gender', item.gender);
-        setValue('programId', item.programId);
-        setValue('boardingId', item.boardingId);
         setValue('repeat', item.repeat);
-        setValue('price', item.price);
     }, [item, setValue]);
 
     useEffect(() => {
@@ -144,23 +138,6 @@ const Partial = ({modal, setModal, item, setItem, setReloadData}) => {
                             </div>
                         </div>
                         <div className="form-group col-md-6">
-                            <label className="form-label" htmlFor="accountAppId">Rekening Perkiraan</label>
-                            <div className="form-control-wrap">
-                                <RSelect
-                                    options={accountOptions}
-                                    value={accountOptions?.find((c) => c.value === item.accountAppId)}
-                                    onChange={(e) => {
-                                        setItem({...item, accountAppId: e.value});
-                                        setValue('accountAppId', e.value);
-                                    }}
-                                    placeholder="Pilih Rekening"
-                                />
-                                <input type="hidden" id="accountAppId"
-                                       className="form-control" {...register("accountAppId", {required: true})} />
-                                {errors.accountAppId && <span className="invalid">Kolom tidak boleh kosong.</span>}
-                            </div>
-                        </div>
-                        <div className="form-group col-md-6">
                             <label className="form-label" htmlFor="accountRevId">Rekening Pendapatan</label>
                             <div className="form-control-wrap">
                                 <RSelect
@@ -177,7 +154,7 @@ const Partial = ({modal, setModal, item, setItem, setReloadData}) => {
                                 {errors.accountRevId && <span className="invalid">Kolom tidak boleh kosong.</span>}
                             </div>
                         </div>
-                        <div className="form-group col-md-12">
+                        <div className="form-group col-md-6">
                             <label className="form-label" htmlFor="repeat">Tagihan Bulanan</label>
                             <div className="form-control-wrap">
                                 <RSelect

@@ -26,7 +26,7 @@ const Invoice = () => {
         id: "",
         yearId: "",
         institution: {id: "", ladderId: ""},
-        itemId: "",
+        item: "",
         levelId: "",
         rombelId: "",
         programId: "",
@@ -43,18 +43,18 @@ const Invoice = () => {
     });
     const Columns = [
         {
-            name: "Nama Jenjang",
+            name: "Jenjang",
             selector: (row) => row.institutionAlias,
             sortable: false,
             // hide: 370,
-            // width: "300px",
+            width: "100px",
         },
         {
             name: "Tanggal",
             selector: (row) => row.date,
             sortable: false,
             // hide: 370,
-            // width: "300px",
+            width: "150px",
         },
         {
             name: "Nomor Transaksi",
@@ -82,6 +82,7 @@ const Invoice = () => {
             selector: (row) => numberFormat(row.amount),
             sortable: false,
             // hide: 370,
+            width: "150px",
 
         },
         {
@@ -89,6 +90,7 @@ const Invoice = () => {
             selector: (row) => row.status,
             sortable: false,
             // hide: 370,
+            width: "150px",
             cell: (row) => (
                 <React.Fragment>
                     {row.status === '1' && (<Badge pill color="danger">Belum Dibayar</Badge> )}

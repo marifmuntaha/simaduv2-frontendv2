@@ -1,13 +1,16 @@
 import React, {useEffect, useState} from "react";
 import {Button, Modal, ModalBody, ModalHeader, Spinner} from "reactstrap";
 import {useForm} from "react-hook-form";
-import {Icon, Row, RSelect} from "@/components";
+import {Icon, Row, RSelect, RToast} from "@/components";
 import {get as getInstitution} from "@/api/institution";
 import {get as getItem} from "@/api/finance/item";
 import {get as getYear} from "@/api/master/year";
 import {get as getStudent} from "@/api/student";
 import {store as storeInvoice} from "@/api/finance/invoice";
 import {numberFormat} from "@/utils/index.jsx";
+import moment from "moment/moment";
+import "moment/locale/id"
+import {get as getSetting} from "@/api/setting.jsx";
 
 const Individual = ({modal, setModal, invoice, setInvoice, setReloadData}) => {
     const {
@@ -27,19 +30,44 @@ const Individual = ({modal, setModal, invoice, setInvoice, setReloadData}) => {
     }
     const onSubmit = async () => {
         setLoading(true);
-        const store = await storeInvoice({
-            institutionId: invoice.institution.id,
-            itemId: invoice.itemId,
-            studentId: invoice.studentId,
-            name: invoice.name,
-            amount: invoice.amount,
+        const startMonth = await getSetting({institutionId: invoice.institution.id}).then(data => {
+            let setting = {}
+            data.map((item) => {
+                return Object.assign(setting, item);
+            });
+            return setting.firstMonth.value;
         });
-        if (!store) {
-            setLoading(false);
-        } else {
+        if (invoice.item.repeat === '1') {
+            const startDate = moment(`1/${startMonth - 1}`, 'D/MM');
+            for (let i = 0; i < 12; i++) {
+                const created_at = startDate.add(1, 'month');
+                await storeInvoice({
+                    institutionId: invoice.institution.id,
+                    itemId: invoice.item.value,
+                    studentId: invoice.studentId,
+                    name: invoice.name + ' ' + created_at.locale('id').format('MMMM YYYY'),
+                    amount: invoice.amount,
+                    created_at: created_at.format("YYYY-MM-DD HH:mm:ss"),
+                }, false);
+            }
             setLoading(false);
             setReloadData(true);
-            toggle();
+            RToast('Tagihan berhasil ditambahkan', 'success');
+        } else {
+            const store = await storeInvoice({
+                institutionId: invoice.institution.id,
+                itemId: invoice.item.value,
+                studentId: invoice.studentId,
+                name: invoice.name,
+                amount: invoice.amount,
+            });
+            if (!store) {
+                setLoading(false);
+            } else {
+                setLoading(false);
+                setReloadData(true);
+                toggle();
+            }
         }
 
     }
@@ -71,22 +99,26 @@ const Individual = ({modal, setModal, invoice, setInvoice, setReloadData}) => {
 
     useEffect(() => {
         modal.individual !== false && getYear({type: 'select'}).then(data => setYearOptions(data));
-        modal.individual !== false && getInstitution({type: 'select', ladder: 'alias'}).then(data => setInstitutionOptions(data));
+        modal.individual !== false && getInstitution({
+            type: 'select',
+            ladder: 'alias'
+        }).then(data => setInstitutionOptions(data));
     }, [modal.individual]);
 
     useEffect(() => {
-        if (modal.individual !== false && invoice.institution.id !== "" ) {
+        if (modal.individual !== false && invoice.institution.id !== "") {
             getItem({
                 type: 'select',
                 institutionId: invoice.institution?.id,
+                with: 'repeat'
             }).then(data => setItemOptions(data));
-            getStudent({type: 'select', yearId: invoice.yearId, institutionId: invoice.institution.id}).then(data => setStudentOptions(data));
+            getStudent({
+                type: 'select',
+                yearId: invoice.yearId,
+                institutionId: invoice.institution.id
+            }).then(data => setStudentOptions(data));
         }
     }, [modal.individual, invoice.yearId, invoice.institution.id]);
-
-    useEffect(() => {
-        console.log(invoice);
-    }, [invoice]);
 
     return (
         <Modal isOpen={modal.individual} toggle={toggle}>
@@ -139,9 +171,9 @@ const Individual = ({modal, setModal, invoice, setInvoice, setReloadData}) => {
                             <div className="form-control-wrap">
                                 <RSelect
                                     options={itemOptions}
-                                    value={itemOptions?.find((c) => c.value === invoice.itemId)}
+                                    value={itemOptions?.find((c) => c.value === invoice?.item?.value)}
                                     onChange={(e) => {
-                                        setInvoice({...invoice, itemId: e.value});
+                                        setInvoice({...invoice, item: e});
                                         setValue('itemId', e.value);
                                     }}
                                     placeholder="Pilih Transaksi"

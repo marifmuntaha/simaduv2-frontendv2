@@ -5,8 +5,13 @@ import {Icon, Row, RSelect} from "@/components";
 import {get as getAccount} from "@/api/finance/account";
 import {store as storeTransaction} from "@/api/finance/transaction";
 import {get as getInstitution} from "@/api/institution";
+import {get as getSetting} from "@/api/setting.jsx";
+import {APICore} from "@/api/APICore.jsx";
+import {numberFormat} from "@/utils/index.jsx";
 
 const CashOut = ({modal, setModal, transaction, setTransaction, setReloadData}) => {
+    const api = new APICore();
+    const user = api.getLoggedInUser();
     const [loading, setLoading] = useState(false);
     const [institutionOptions, setInstitutionOptions] = useState([]);
     const [accountOptions, setAccountOptions] = useState([]);
@@ -22,8 +27,20 @@ const CashOut = ({modal, setModal, transaction, setTransaction, setReloadData}) 
     }
     const onSubmit = async () => {
         setLoading(true);
+        const accountAppId = await getSetting({institutionId: transaction.institutionId}).then(data => {
+            let setting = {}
+            data.map((item) => {
+                return Object.assign(setting, item);
+            });
+            if (user.role === '1' || user.role === '3') {
+                return setting.cashBendahara.value;
+            } else {
+                return setting.cashTeller.value;
+            }
+        });
         const formData = {
             institutionId: transaction.institutionId,
+            accountAppId: accountAppId,
             accountRevId: transaction.accountRevId,
             code: 'KK',
             number: '',
@@ -131,7 +148,10 @@ const CashOut = ({modal, setModal, transaction, setTransaction, setReloadData}) 
                                     placeholder="Ex. 1000000"
                                     {...register("amount", {
                                         required: true,
-                                        onChange: (e) => handleChange(e)
+                                        onChange: (e) => {
+                                            handleChange(e);
+                                            setValue('amount', numberFormat(e.target.value));
+                                        }
                                     })}
                                 />
                                 {errors.amount && <span className="invalid">Kolom tidak boleh kosong</span>}

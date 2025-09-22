@@ -11,6 +11,9 @@ import {get as getProgram} from "@/api/institution/program";
 import {get as getStudent} from "@/api/student";
 import {store as storeInvoice} from "@/api/finance/invoice";
 import {numberFormat} from "@/utils/index.jsx";
+import {get as getSetting} from "@/api/setting.jsx";
+import moment from "moment/moment";
+import "moment/locale/id";
 
 const Group = ({modal, setModal, invoice, setInvoice, setReloadData}) => {
     const {
@@ -43,27 +46,51 @@ const Group = ({modal, setModal, invoice, setInvoice, setReloadData}) => {
     }
     const onSubmit = async () => {
         setLoading(true);
+        const startMonth = await getSetting({institutionId: invoice.institution.id}).then(data => {
+            let setting = {}
+            data.map((item) => {
+                return Object.assign(setting, item);
+            });
+            return setting.firstMonth.value;
+        });
         const students = await getStudent(studentParam());
         if (!students) {
             setLoading(false);
         } else {
             students.map(async (student) => {
-                const store = await storeInvoice({
-                    institutionId: invoice.institution.id,
-                    itemId: invoice.itemId,
-                    studentId: student.id,
-                    name: invoice.name,
-                    amount: invoice.amount,
-                }, false);
-                if (!store) {
-                    setLoading(false);
-                } else {
+                if (invoice.item.repeat === '1') {
+                    const startDate = moment(`1/${startMonth - 1}`, 'D/MM');
+                    for (let i = 0; i < 12; i++) {
+                        const created_at = startDate.add(1, 'month');
+                        await storeInvoice({
+                            institutionId: invoice.institution.id,
+                            itemId: invoice.item.value,
+                            studentId: student.id,
+                            name: invoice.name + ' ' + created_at.locale('id').format('MMMM YYYY'),
+                            amount: invoice.amount,
+                            created_at: created_at.format("YYYY-MM-DD HH:mm:ss"),
+                        }, false);
+                    }
                     setLoading(false);
                     setReloadData(true);
-                    toggle();
-                    RToast('Tagihan berhasil dibuat.', 'success')
+                } else {
+                    const store = await storeInvoice({
+                        institutionId: invoice.institution.id,
+                        itemId: invoice.item.value,
+                        studentId: student.id,
+                        name: invoice.name,
+                        amount: invoice.amount,
+                    });
+                    if (!store) {
+                        setLoading(false);
+                    } else {
+                        setLoading(false);
+                        setReloadData(true);
+                        toggle();
+                    }
                 }
             });
+            RToast('Tagihan berhasil ditambahkan', 'success');
         }
 
     }
@@ -92,7 +119,6 @@ const Group = ({modal, setModal, invoice, setInvoice, setReloadData}) => {
         });
         handleReset();
     };
-
     const levelParam = useCallback(() => {
         let param = {type: 'select'}
         if (invoice.yearId !== '') {
@@ -146,6 +172,7 @@ const Group = ({modal, setModal, invoice, setInvoice, setReloadData}) => {
             getItem({
                 type: 'select',
                 institutionId: invoice.institution?.id,
+                with: "repeat"
             }).then(data => setItemOptions(data))
             getLevel({type: 'select', ladderId: invoice.institution?.ladderId}).then(data => setLevelOptions([{value: '', label: 'Semua'}, ...data]));
         }
@@ -207,9 +234,9 @@ const Group = ({modal, setModal, invoice, setInvoice, setReloadData}) => {
                             <div className="form-control-wrap">
                                 <RSelect
                                     options={itemOptions}
-                                    value={itemOptions?.find((c) => c.value === invoice.itemId)}
+                                    value={itemOptions?.find((c) => c.value === invoice?.item?.value)}
                                     onChange={(e) => {
-                                        setInvoice({...invoice, itemId: e.value});
+                                        setInvoice({...invoice, item: e});
                                         setValue('itemId', e.value);
                                     }}
                                     placeholder="Pilih Transaksi"

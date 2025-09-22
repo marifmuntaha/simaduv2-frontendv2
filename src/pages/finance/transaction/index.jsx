@@ -16,6 +16,7 @@ import {get as getTransaction, destroy as destroyTransaction} from "@/api/financ
 import CashIn from "@/pages/finance/transaction/cash-in";
 import CashOut from "@/pages/finance/transaction/cash-out";
 import {numberFormat} from "@/utils";
+import Payment from "@/pages/finance/transaction/payment.jsx";
 
 const Transaction = () => {
     const [sm, updateSm] = useState(false);
@@ -31,6 +32,7 @@ const Transaction = () => {
         number: "",
         name: "",
         amount: 0,
+        studentId: null,
     });
     const [modal, setModal] = useState({
         cashIn: false,
@@ -186,6 +188,7 @@ const Transaction = () => {
                 </Block>
                 <CashIn modal={modal} setModal={setModal} transaction={transaction} setTransaction={setTransaction} setReloadData={setReloadData} />
                 <CashOut modal={modal} setModal={setModal} transaction={transaction} setTransaction={setTransaction} setReloadData={setReloadData} />
+                <Payment modal={modal} setModal={setModal} transaction={transaction} setTransaction={setTransaction} setReloadData={setReloadData} />
             </Content>
         </React.Fragment>
     )
