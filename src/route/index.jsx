@@ -28,6 +28,7 @@ import Transaction from "@/pages/finance/transaction/index.jsx";
 import Neraca from "@/pages/finance/report/neraca/index.jsx";
 import Invoice from "@/pages/finance/invoice/index.jsx";
 import Setting from "@/pages/setting/index.jsx";
+import Discount from "@/pages/finance/discount/index.jsx";
 
 const ScrollToTop = (props) => {
     const location = useLocation();
@@ -75,6 +76,7 @@ const Router = () => {
                                     <Route path="item-pembayaran" element={<Item/>}/>
                                     <Route path="transaksi" element={<Transaction/>}/>
                                     <Route path="tagihan" element={<Invoice/>}/>
+                                    <Route path="potongan" element={<Discount/>}/>
                                     <Route path="laporan">
                                         <Route path="neraca" element={<Neraca/>}/>
                                     </Route>

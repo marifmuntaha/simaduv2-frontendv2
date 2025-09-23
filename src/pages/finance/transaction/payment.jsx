@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {Button, Modal, ModalBody, ModalHeader, Spinner} from "reactstrap";
-import {useForm} from "react-hook-form";
+import {useFieldArray, useForm} from "react-hook-form";
 import {Icon, Row, RSelect} from "@/components";
 import {get as getAccount} from "@/api/finance/account";
 import {store as storeTransaction} from "@/api/finance/transaction";
@@ -19,7 +19,8 @@ const Payment = ({modal, setModal, transaction, setTransaction, setReloadData}) 
         reset,
         register,
         formState: {errors},
-        setValue
+        setValue,
+        getValues,
     } = useForm();
     const [loading, setLoading] = useState(false);
     const [institutionOptions, setInstitutionOptions] = useState([]);
@@ -28,6 +29,9 @@ const Payment = ({modal, setModal, transaction, setTransaction, setReloadData}) 
     const [invoices, setInvoices] = useState([]);
     const [payments, setPayments] = useState([]);
     const [formData, setFormData] = useState([]);
+    const [invoiceAmount, setInvoiceAmount] = useState(0);
+    const [discountAmount, setDiscountAmount] = useState(0);
+    const [totalAmount, setTotalAmount] = useState(0);
     const handleChange = (e) => {
         setTransaction({...transaction, [e.target.name]: e.target.value});
     }
@@ -44,24 +48,24 @@ const Payment = ({modal, setModal, transaction, setTransaction, setReloadData}) 
                 return setting.cashTeller.value;
             }
         });
-        const formData = {
-            institutionId: transaction.institutionId,
-            accountAppId: accountAppId,
-            accountRevId: transaction.accountRevId,
-            code: 'KM',
-            number: '',
-            name: transaction.name,
-            amount: transaction.amount,
-        }
-        const store = await storeTransaction(formData);
-        if (!store) {
-            setLoading(false);
-        } else {
-            setLoading(false);
-            setReloadData(true);
-            toggle();
-        }
-
+        formData.map(async (item) => {
+            const formData = {
+                institutionId: item.institutionId,
+                accountAppId: accountAppId,
+                accountRevId: item.item.accountRevId,
+                code: 'KM',
+                number: '',
+                name: `${item.student.label}: Bayar Tunai ${item.name}`,
+                amount: item.amount,
+            }
+            const store = await storeTransaction(formData);
+            if (!store) {
+                setLoading(false);
+            } else {
+                setLoading(false);
+                setReloadData(true);
+            }
+        });
     }
     const handleReset = () => {
         setTransaction({
@@ -74,6 +78,8 @@ const Payment = ({modal, setModal, transaction, setTransaction, setReloadData}) 
             name: "",
             amount: 0,
         });
+        setPayments([]);
+        setFormData([]);
         reset();
     }
     const toggle = () => {
@@ -100,23 +106,27 @@ const Payment = ({modal, setModal, transaction, setTransaction, setReloadData}) 
     }, [transaction.institutionId]);
 
     useEffect(() => {
-        modal.payment && transaction.studentId !== null && getInvoice({studentId: transaction.studentId}).then(data => setInvoices(data));
-    }, [modal, transaction.studentId]);
+        modal.payment && transaction?.student?.value !== null && getInvoice({studentId: transaction?.student?.value}).then(data => {
+            let invoice = 0;
+            let discount = 0;
+            data.map((item) => {
+                invoice += parseInt(item.amount);
+            });
+            setInvoiceAmount(invoice);
+            setInvoices(data.reverse());
+        });
+    }, [modal, transaction.student]);
 
     useEffect(() => {
         const payment = payments.length > 0 && payments?.reduce((acc, cur) => {
             acc[cur['invoiceId']] = cur;
             return acc;
         }, {});
-        setFormData(Object.values(payment))
-    }, [payments])
-
-    useEffect(() => {
-        console.log(formData);
-    }, [formData]);
+        setFormData(Object.values(payment));
+    }, [payments]);
 
     return (
-        <Modal isOpen={modal.payment} toggle={toggle} size="lg">
+        <Modal isOpen={modal.payment} toggle={toggle} size="xl">
             <ModalHeader toggle={toggle} close={
                 <button className="close" onClick={toggle}>
                     <Icon name="cross"/>
@@ -149,9 +159,9 @@ const Payment = ({modal, setModal, transaction, setTransaction, setReloadData}) 
                             <div className="form-control-wrap">
                                 <RSelect
                                     options={studentOptions}
-                                    value={studentOptions?.find((c) => c.value === transaction.studentId)}
+                                    value={studentOptions?.find((c) => c.value === transaction?.student?.value)}
                                     onChange={(e) => {
-                                        setTransaction({...transaction, studentId: e.value});
+                                        setTransaction({...transaction, student: e});
                                         setValue('studentId', e.value);
                                     }}
                                     placeholder="Pilih Siswa"
@@ -164,36 +174,52 @@ const Payment = ({modal, setModal, transaction, setTransaction, setReloadData}) 
                         <div className="col-md-12">
                             <table className="table table-bordered">
                                 <thead>
-                                <tr>
+                                <tr className="text-center">
+                                    <th scope="col">Keterangan</th>
                                     <th scope="col">Tagihan</th>
+                                    <th scope="col">Potongan</th>
                                     <th scope="col">Jumlah</th>
                                     <th scope="col">Bayar</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 {invoices.map((item, idx) => (
-                                    <tr key={idx}>
+                                    <tr key={idx} className="align-text-bottom">
                                         <td>{item.name}</td>
-                                        <td>{numberFormat(item.amount)}</td>
+                                        <td className="text-end">{numberFormat(item.amount)}</td>
+                                        <td className="text-end">0</td>
+                                        <td className="text-end">{numberFormat(item.amount)}</td>
                                         <td>
                                             <input
                                                 type="text"
-                                                className="form-control"
+                                                className="form-control text-end"
                                                 name="amount"
                                                 placeholder="Ex. 1000000"
-                                                onChange={(e) => {
-                                                    setPayments([...payments, {
-                                                        institutionId: item.institutionId,
-                                                        invoiceId: item.id,
-                                                        itemId: item.itemId,
-                                                        studentId: item.studentId,
-                                                        amount: e.target.value,
-                                                    }])
-                                                }}
+                                                {...register(`inv.${item.id}`, {
+                                                    required: false,
+                                                    onChange: (e) => {
+                                                        setPayments([...payments, {
+                                                            institutionId: item.institutionId,
+                                                            invoiceId: item.id,
+                                                            item: item.item,
+                                                            name: item.name,
+                                                            student: transaction.student,
+                                                            amount: numberFormat(e.target.value),
+                                                        }]);
+                                                        setValue(`inv.${item.id}`, numberFormat(e.target.value));
+                                                    }
+                                                })}
                                             />
                                         </td>
                                     </tr>
                                 ))}
+                                <tr>
+                                    <th scope="col">Jumlah</th>
+                                    <th scope="col">{numberFormat(invoiceAmount)}</th>
+                                    <th scope="col">Potongan</th>
+                                    <th scope="col">Jumlah</th>
+                                    <th scope="col">Bayar</th>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>

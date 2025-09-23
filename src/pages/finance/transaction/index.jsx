@@ -32,7 +32,10 @@ const Transaction = () => {
         number: "",
         name: "",
         amount: 0,
-        studentId: null,
+        student: {
+            value: null,
+            label: ''
+        },
     });
     const [modal, setModal] = useState({
         cashIn: false,
@@ -46,28 +49,28 @@ const Transaction = () => {
             selector: (row) => row.institutionAlias,
             sortable: false,
             // hide: 370,
-            // width: "300px",
+            width: "150px",
         },
         {
             name: "Tanggal",
             selector: (row) => row.date,
             sortable: false,
             // hide: 370,
-            // width: "300px",
+            width: "150px",
         },
         {
             name: "Nomor Transaksi",
             selector: (row) => row.number,
             sortable: false,
             // hide: 370,
-            // width: "300px",
+            width: "200px",
         },
         {
             name: "Keterangan",
             selector: (row) => row.name,
             sortable: false,
             // hide: 370,
-            // width: "200px",
+            width: "650px",
         },
         {
             name: "Jumlah",
