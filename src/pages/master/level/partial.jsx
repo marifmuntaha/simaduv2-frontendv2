@@ -2,8 +2,8 @@ import React, {useEffect, useState} from "react";
 import {Button, Modal, ModalBody, ModalHeader, Spinner} from "reactstrap";
 import {useForm} from "react-hook-form";
 import {Icon, RSelect} from "@/components";
-import {store as storeLevel, update as updateLevel} from "@/api/master/level"
-import {get as getLadder} from "@/api/master/ladder"
+import {store as storeLevel, update as updateLevel} from "@/api/master/level";
+import {get as getLadder} from "@/api/master/ladder";
 
 const Partial = ({modal, setModal, level, setLevel, setReloadData}) => {
     const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ const Partial = ({modal, setModal, level, setLevel, setReloadData}) => {
         setLevel({...level, [e.target.name]: e.target.value});
     }
     const onSubmit = () => {
-        level.id === '' ? onStore() : onUpdate();
+        level.id === null ? onStore() : onUpdate();
     }
     const onStore = async () => {
         setLoading(true);
@@ -43,11 +43,10 @@ const Partial = ({modal, setModal, level, setLevel, setReloadData}) => {
             setLoading(false);
         }
     }
-
     const handleReset = () => {
         setLevel({
-            id: "",
-            ladderId: "",
+            id: null,
+            ladderId: null,
             name: "",
             alias: "",
             description: "",
@@ -60,10 +59,10 @@ const Partial = ({modal, setModal, level, setLevel, setReloadData}) => {
     };
 
     useEffect(() => {
-        getLadder({type: 'select'}).then(data => {
-            setLadderOptions(data)
+        modal && getLadder({type: 'select'}).then(data => {
+            setLadderOptions(data);
         });
-    }, []);
+    }, [modal]);
 
     useEffect(() => {
         setValue('ladderId', level.ladderId);
@@ -79,7 +78,7 @@ const Partial = ({modal, setModal, level, setLevel, setReloadData}) => {
                     <Icon name="cross"/>
                 </button>
             }>
-                {level.id !== "" ? 'UBAH' : 'TAMBAH'}
+                {level.id === null ? 'TAMBAH' : 'UBAH'}
             </ModalHeader>
             <ModalBody>
                 <form className="is-alter" onSubmit={handleSubmit(onSubmit)}>

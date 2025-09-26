@@ -13,9 +13,9 @@ import {
     PreviewCard,
     ReactDataTable, Row, RSelect
 } from "@/components";
-import {get as getProgram, destroy as destroyProgram} from "@/api/institution/program"
-import {get as getYear} from "@/api/master/year"
-import {get as getInstitution} from "@/api/institution"
+import {get as getProgram, destroy as destroyProgram} from "@/api/institution/program";
+import {get as getYear} from "@/api/master/year";
+import {get as getInstitution} from "@/api/institution";
 import Partial from "@/pages/institution/program/partial";
 
 const Program = () => {
@@ -29,9 +29,9 @@ const Program = () => {
     const [modal, setModal] = useState(false);
     const [programs, setPrograms] = useState([]);
     const [program, setProgram] = useState({
-        id: "",
-        yearId: "",
-        institutionId: "",
+        id: null,
+        yearId: null,
+        institutionId: null,
         name: "",
         alias: ""
     });
@@ -45,7 +45,7 @@ const Program = () => {
         },
         {
             name: "Lembaga",
-            selector: (row) => row.institutionName,
+            selector: (row) => row.institutionAlias,
             sortable: false,
             // hide: 370,
 
@@ -180,8 +180,15 @@ const Program = () => {
                         </Row>
                         <ReactDataTable data={programs} columns={Column} pagination progressPending={loadData}/>
                     </PreviewCard>
-                    <Partial modal={modal} setModal={setModal} program={program} setProgram={setProgram}
-                             setLoadData={setLoadData}/>
+                    <Partial
+                        modal={modal}
+                        setModal={setModal}
+                        program={program}
+                        setProgram={setProgram}
+                        setLoadData={setLoadData}
+                        yearOptions={yearOptions}
+                        institutionOptions={institutionOptions}
+                    />
                 </Block>
             </Content>
         </React.Fragment>

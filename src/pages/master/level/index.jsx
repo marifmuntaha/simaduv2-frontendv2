@@ -12,7 +12,7 @@ import {
     PreviewCard,
     ReactDataTable
 } from "@/components";
-import {get as getLevel, destroy as destroyLevel} from "@/api/master/level"
+import {get as getLevel, destroy as destroyLevel} from "@/api/master/level";
 import Partial from "@/pages/master/level/partial";
 
 const Ladder = () => {
@@ -22,8 +22,8 @@ const Ladder = () => {
     const [modal, setModal] = useState(false);
     const [levels, setLevels] = useState([]);
     const [level, setLevel] = useState({
-        id: "",
-        ladderId: "",
+        id: null,
+        ladderId: null,
         name: "",
         alias: "",
         description: "",
@@ -83,10 +83,10 @@ const Ladder = () => {
 
     useEffect(() => {
         reloadData && getLevel({list: 'table'}).then((resp) => {
-            setLevels(resp)
+            setLevels(resp);
             setReloadData(false);
         }).catch(() => setLoading(false));
-    }, [reloadData])
+    }, [reloadData]);
     return (
         <React.Fragment>
             <Head title="Data Tingkat"/>

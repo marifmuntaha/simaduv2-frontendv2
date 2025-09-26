@@ -243,9 +243,6 @@ export const Add = () => {
         })
         methods.reset()
     }
-    useEffect(() => {
-        console.log(formData)
-    }, [formData]);
     return (
         <React.Fragment>
             <Head title="Tambah Siswa" />

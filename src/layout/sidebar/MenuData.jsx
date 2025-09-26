@@ -34,16 +34,20 @@ const RootMenu = [
         subMenu: [
             {
                 text: "Daftar Lembaga",
-                link: "/data-lembaga",
+                link: "/data-lembaga/daftar",
             },
             {
-                text: "Program",
+                text: "Data Program",
                 link: "/data-lembaga/program",
             },
             {
                 text: "Rombongan Belajar",
                 link: "/data-lembaga/rombongan-belajar",
             },
+            {
+                text: "Data Kamar",
+                link: "/data-lembaga/kamar-santri",
+            }
         ],
     },
     {
@@ -92,6 +96,11 @@ const RootMenu = [
                 ]
             }
         ],
+    },
+    {
+        icon: "user-list",
+        text: "Data Santri",
+        link: "/data-santri",
     },
     {
         icon: "cc-alt2",
@@ -149,6 +158,7 @@ const RootMenu = [
         link: "/data-pengguna",
     },
 ];
+
 const DefaultMenu = [
     {
         heading: "Use-case preview",
@@ -704,54 +714,4 @@ const DefaultMenu = [
         link: "/email-template",
     },
 ];
-const EcommerceMenu = [
-    {
-        icon: "dashboard-fill",
-        text: "Dashboard",
-        link: "/ecommerce/index",
-    },
-    {
-        icon: "bag-fill",
-        text: "Orders",
-        link: "/ecommerce/orders",
-    },
-    {
-        icon: "package-fill",
-        text: "Products",
-        link: "/ecommerce/products",
-    },
-    {
-        icon: "users-fill",
-        text: "Customers",
-        link: "/ecommerce/customer",
-    },
-    {
-        icon: "chat-fill",
-        text: "Support",
-        link: "/ecommerce/support",
-    },
-    {
-        icon: "opt-alt-fill",
-        text: "Settings",
-        link: "/ecommerce/settings",
-    },
-    {
-        icon: "server-fill",
-        text: "Integration",
-        link: "/ecommerce/integration",
-    },
-    {
-        heading: "Back To",
-    },
-    {
-        icon: "dashlite",
-        text: "Main Dashboard",
-        link: "/",
-    },
-    {
-        icon: "layers-fill",
-        text: "All Components",
-        link: "/components",
-    },
-];
-export {RootMenu, DefaultMenu, EcommerceMenu} ;
+export {RootMenu, DefaultMenu} ;

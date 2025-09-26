@@ -14,8 +14,8 @@ import {
     PreviewCard,
     ReactDataTable, Row, RSelect
 } from "@/components";
-import {get as getTeacher, destroy as destroyTeacher} from "@/api/teacher"
-import {get as getInstitution} from "@/api/institution"
+import {get as getTeacher, destroy as destroyTeacher} from "@/api/teacher";
+import {get as getInstitution} from "@/api/institution";
 import Partial from "@/pages/teacher/partial";
 import Upload from "@/pages/teacher/upload";
 
@@ -32,8 +32,8 @@ const Teacher = () => {
     const [statusSelected, setStatusSelected] = useState([]);
     const [teachers, setTeachers] = useState([]);
     const [teacher, setTeacher] = useState({
-        id: "",
-        userId: "",
+        id: null,
+        userId: null,
         institution: [],
         name: "",
         pageId: "",
@@ -144,7 +144,7 @@ const Teacher = () => {
     }, [])
     useEffect(() => {
         loadData && getTeacher(params()).then((resp) => {
-            setTeachers(resp)
+            setTeachers(resp);
             setLoadData(false);
         }).catch(() => setLoading(false));
     }, [loadData, params])
@@ -229,9 +229,20 @@ const Teacher = () => {
                         </Row>
                         <ReactDataTable data={teachers} columns={Column} pagination progressPending={loadData}/>
                     </PreviewCard>
-                    <Partial modal={modal} setModal={setModal} teacher={teacher} setTeacher={setTeacher}
-                             setLoadData={setLoadData}/>
-                    <Upload modal={modal} setModal={setModal} setLoadData={setLoadData}/>
+                    <Partial
+                        modal={modal}
+                        setModal={setModal}
+                        teacher={teacher}
+                        setTeacher={setTeacher}
+                        setLoadData={setLoadData}
+                        institutionOptions={institutionOptions}
+                    />
+                    <Upload
+                        modal={modal}
+                        setModal={setModal}
+                        setLoadData={setLoadData}
+                        institutionOptions={institutionOptions}
+                    />
                 </Block>
             </Content>
         </React.Fragment>

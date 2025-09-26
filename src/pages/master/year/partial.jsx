@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import {Button, Modal, ModalBody, ModalHeader, Spinner} from "reactstrap";
 import {useForm} from "react-hook-form";
 import {Icon, RSelect} from "@/components";
-import {store as storeYear, update as updateYear} from "@/api/master/year"
+import {store as storeYear, update as updateYear} from "@/api/master/year";
 
 const Partial = ({modal, setModal, year, setYear, setLoadData}) => {
     const [loading, setLoading] = useState(false);
@@ -21,7 +21,7 @@ const Partial = ({modal, setModal, year, setYear, setLoadData}) => {
         setYear({...year, [e.target.name] : e.target.value});
     }
     const onSubmit = () => {
-        year.id === '' ? onStore() : onUpdate();
+        year.id === null ? onStore() : onUpdate();
     }
     const onStore = async () => {
         setLoading(true);
@@ -45,10 +45,9 @@ const Partial = ({modal, setModal, year, setYear, setLoadData}) => {
             setLoading(false);
         }
     }
-
     const handleReset = () => {
         setYear({
-            id: '',
+            id: null,
             name: '',
             description: '',
             active: false
@@ -60,11 +59,10 @@ const Partial = ({modal, setModal, year, setYear, setLoadData}) => {
         handleReset();
     };
     useEffect(() => {
-        setValue('id', year.id)
-        setValue('name', year.name)
-        setValue('description', year.description)
-        setValue('active', year.active)
-    }, [year, setValue])
+        setValue('name', year.name);
+        setValue('description', year.description);
+        setValue('active', year.active);
+    }, [year, setValue]);
 
     return (
         <Modal isOpen={modal} toggle={toggle}>
@@ -73,7 +71,7 @@ const Partial = ({modal, setModal, year, setYear, setLoadData}) => {
                     <Icon name="cross"/>
                 </button>
             }>
-                {year.id !== '' ? 'UBAH' : 'TAMBAH'}
+                {year.id === null ? 'TAMBAH' : 'UBAH'}
             </ModalHeader>
             <ModalBody>
                 <form className="is-alter" onSubmit={handleSubmit(onSubmit)}>

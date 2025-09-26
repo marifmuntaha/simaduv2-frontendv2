@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import {Button, Modal, ModalBody, ModalHeader, Spinner} from "reactstrap";
 import {useForm} from "react-hook-form";
 import {Icon} from "@/components";
-import {store as storeLadder, update as updateLadder} from "@/api/master/ladder"
+import {store as storeLadder, update as updateLadder} from "@/api/master/ladder";
 
 const Partial = ({modal, setModal, ladder, setLadder, setReloadData}) => {
     const [loading, setLoading] = useState(false);
@@ -11,7 +11,7 @@ const Partial = ({modal, setModal, ladder, setLadder, setReloadData}) => {
         setLadder({...ladder, [e.target.name]: e.target.value});
     }
     const onSubmit = () => {
-        ladder.id === "" ? onStore() : onUpdate();
+        ladder.id === null ? onStore() : onUpdate();
     }
     const onStore = async () => {
         setLoading(true);
@@ -37,8 +37,7 @@ const Partial = ({modal, setModal, ladder, setLadder, setReloadData}) => {
     }
     const handleReset = () => {
         setLadder({
-            id: "",
-            ladderId: "",
+            id: null,
             name: "",
             alias: "",
             description: "",
@@ -55,7 +54,7 @@ const Partial = ({modal, setModal, ladder, setLadder, setReloadData}) => {
         setValue('name', ladder.name);
         setValue('alias', ladder.alias);
         setValue('description', ladder.description);
-    }, [ladder, setValue])
+    }, [ladder, setValue]);
 
     return (
         <Modal isOpen={modal} toggle={toggle}>
@@ -64,7 +63,7 @@ const Partial = ({modal, setModal, ladder, setLadder, setReloadData}) => {
                     <Icon name="cross"/>
                 </button>
             }>
-                {ladder.id !== "" ? 'UBAH' : 'TAMBAH'}
+                {ladder.id === null ? 'TAMBAH' : 'UBAH'}
             </ModalHeader>
             <ModalBody>
                 <form className="is-alter" onSubmit={handleSubmit(onSubmit)}>

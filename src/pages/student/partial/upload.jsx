@@ -4,9 +4,7 @@ import moment from "moment/moment";
 import {useForm} from "react-hook-form";
 import {Button, Input, Modal, ModalBody, ModalHeader, Progress, Spinner} from "reactstrap";
 import {Icon, Row, RSelect, RToast} from "@/components";
-import {get as getInstitution} from "@/api/institution";
 import {destroy as destroyUser, store as storeUser} from "@/api/user";
-import {get as getYear} from "@/api/master/year";
 import {get as getRombel} from "@/api/institution/rombel";
 import {get as getProgram} from "@/api/institution/program";
 import {get as getParent, store as storeParent} from "@/api/student/parent";
@@ -15,13 +13,17 @@ import {store as storeAddress, destroy as destroyAddress} from "@/api/student/ad
 import {store as storeActivity} from "@/api/student/activity";
 import {calcPercentage} from "@/utils";
 
-const Upload = ({modal, setModal, setRefreshData}) => {
+const Upload = ({modal, setModal, setRefreshData, yearOptions, institutionOptions}) => {
+    const {
+        handleSubmit,
+        register,
+        setValue,
+        formState: {errors}
+    } = useForm();
     const [loading, setLoading] = useState(false);
     const [dataStart, setDataStart] = useState(0);
     const [dataTotal, setDataTotal] = useState(0);
-    const [yearOptions, setYearOptions] = useState([]);
     const [yearSelected, setYearSelected] = useState([]);
-    const [institutionOptions, setInstitutionOptions] = useState([]);
     const [institutionSelected, setInstitutionSelected] = useState([]);
     const [rombelOptions, setRombelOptions] = useState([]);
     const [rombelSelected, setRombelSelected] = useState([]);
@@ -29,7 +31,6 @@ const Upload = ({modal, setModal, setRefreshData}) => {
     const [programSelected, setProgramSelected] = useState([]);
     const [errorsStudent, setErrorsStudent] = useState([]);
     const [file, setFile] = useState({});
-    const {handleSubmit, register, setValue, formState: {errors}} = useForm();
     const onSubmit = async () => {
         setLoading(true);
         const boardingId = (name) =>  {
@@ -260,11 +261,6 @@ const Upload = ({modal, setModal, setRefreshData}) => {
         setProgramSelected([]);
         setErrorsStudent([]);
     }
-
-    useEffect(() => {
-        getYear({type: 'select'}).then((resp) => setYearOptions(resp));
-        getInstitution({type: 'select', ladder: 'alias'}).then((resp) => setInstitutionOptions(resp));
-    }, []);
 
     useEffect(() => {
         if (institutionSelected.value !== undefined && yearSelected.value !== undefined) {

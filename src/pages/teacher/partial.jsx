@@ -2,19 +2,17 @@ import React, {useEffect, useState} from "react";
 import DatePicker, {registerLocale} from "react-datepicker";
 import {Button, Modal, ModalBody, ModalHeader, Spinner} from "reactstrap";
 import {useForm} from "react-hook-form";
-import moment from "moment";
-import id from "date-fns/locale/id"
+import moment from "moment/moment";
+import id from "date-fns/locale/id";
 import {Icon, Row, RSelect} from "@/components";
-import {store as storeTeacher, update as updateTeacher} from "@/api/teacher"
-import {store as storeUser, update as updateUser, destroy as destroyUser} from "@/api/user"
-import {get as getInstitution} from "@/api/institution"
+import {store as storeTeacher, update as updateTeacher} from "@/api/teacher";
+import {store as storeUser, update as updateUser, destroy as destroyUser} from "@/api/user";
 
-registerLocale("id", id)
+registerLocale("id", id);
 
-const Partial = ({modal, setModal, teacher, setTeacher, setLoadData}) => {
+const Partial = ({modal, setModal, teacher, setTeacher, setLoadData, institutionOptions}) => {
     const [loading, setLoading] = useState(false);
     const [birthdateSelected, setBirthdateSelected] = useState(new Date());
-    const [institutionOptions, setInstitutionOptions] = useState([]);
     const [institutionSelected, setInstitutionSelected] = useState([]);
     const genderOptions = [
         {value: 'L', label: 'Laki-laki'},
@@ -31,7 +29,7 @@ const Partial = ({modal, setModal, teacher, setTeacher, setLoadData}) => {
         setTeacher({...teacher, [e.target.name]: e.target.value});
     }
     const onSubmit = () => {
-        teacher.id === '' ? onStore() : onUpdate();
+        teacher.id === null ? onStore() : onUpdate();
     }
     const onStore = async () => {
         setLoading(true);
@@ -42,7 +40,7 @@ const Partial = ({modal, setModal, teacher, setTeacher, setLoadData}) => {
             password: teacher.birthplace,
             phone: teacher.phone,
             role: '4'
-        }).then(async (respUser) => {
+        },false).then(async (respUser) => {
             if (respUser === false) {
                 setLoading(false);
             } else {
@@ -65,7 +63,7 @@ const Partial = ({modal, setModal, teacher, setTeacher, setLoadData}) => {
                     setLoadData(true);
                     toggle()
                 } else {
-                    await destroyUser(respUser.id)
+                    await destroyUser(respUser.id);
                     setLoading(false);
                 }
             }
@@ -108,8 +106,8 @@ const Partial = ({modal, setModal, teacher, setTeacher, setLoadData}) => {
     }
     const handleReset = () => {
         setTeacher({
-            id: "",
-            userId: "",
+            id: null,
+            userId: null,
             institution: [],
             name: "",
             pageId: "",
@@ -133,10 +131,6 @@ const Partial = ({modal, setModal, teacher, setTeacher, setLoadData}) => {
         });
         handleReset();
     };
-
-    useEffect(() => {
-        getInstitution({type: "select", ladder: 'alias'}).then((resp) => setInstitutionOptions(resp));
-    }, []);
 
     useEffect(() => {
         setValue('id', teacher?.id);
@@ -165,7 +159,7 @@ const Partial = ({modal, setModal, teacher, setTeacher, setLoadData}) => {
                     <Icon name="cross"/>
                 </button>
             }>
-                {teacher === "" ? 'UBAH' : 'TAMBAH'}
+                {teacher.id === null ? 'TAMBAH' : 'UBAH'}
             </ModalHeader>
             <ModalBody>
                 <form className="is-alter" onSubmit={handleSubmit(onSubmit)}>

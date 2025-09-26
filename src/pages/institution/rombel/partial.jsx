@@ -2,21 +2,17 @@ import React, {useEffect, useState} from "react";
 import {Button, Modal, ModalBody, ModalHeader, Spinner} from "reactstrap";
 import {useForm} from "react-hook-form";
 import {Icon, Row, RSelect} from "@/components";
-import {store as storeRombel, update as updateRombel} from "@/api/institution/rombel"
-import {get as getYear} from "@/api/master/year"
-import {get as getInstitution} from "@/api/institution"
-import {get as getLevel} from "@/api/master/level"
-import {get as getMajor} from "@/api/master/major"
-import {get as getTeacher} from "@/api/teacher"
+import {store as storeRombel, update as updateRombel} from "@/api/institution/rombel";
+import {get as getLevel} from "@/api/master/level";
+import {get as getMajor} from "@/api/master/major";
+import {get as getTeacher} from "@/api/teacher";
 
-const Partial = ({modal, setModal, rombel, setRombel, setLoadData}) => {
+const Partial = ({modal, setModal, rombel, setRombel, setLoadData, yearOptions, institutionOptions}) => {
     const [loading, setLoading] = useState(false);
-    const [yearOptions, setYearOptions] = useState([]);
-    const [institutionOptions, setInstitutionOptions] = useState([]);
-    const [ladder, setLadder] = useState(0);
     const [levelOptions, setLevelOptions] = useState([]);
     const [majorOptions, setMajorOptions] = useState([]);
     const [teacherOptions, setTeacherOptions] = useState([]);
+    const [institutionSelected, setInstitutionSelected] = useState([]);
     const {
         reset,
         handleSubmit,
@@ -28,7 +24,7 @@ const Partial = ({modal, setModal, rombel, setRombel, setLoadData}) => {
         setRombel({...rombel, [e.target.name]: e.target.value});
     }
     const onSubmit = () => {
-        rombel.id === '' ? onStore() : onUpdate();
+        rombel.id === null ? onStore() : onUpdate();
     }
     const onStore = async () => {
         setLoading(true);
@@ -48,15 +44,16 @@ const Partial = ({modal, setModal, rombel, setRombel, setLoadData}) => {
     }
     const handleReset = () => {
         setRombel({
-            id: "",
-            yearId: "",
-            institutionId: "",
-            teacherId: "",
-            levelId: "",
-            majorId: "",
+            id: null,
+            yearId: null,
+            institutionId: null,
+            teacherId: null,
+            levelId: null,
+            majorId: null,
             name: "",
             alias: ""
         });
+        setInstitutionSelected([]);
         reset();
     }
     const toggle = () => {
@@ -65,17 +62,11 @@ const Partial = ({modal, setModal, rombel, setRombel, setLoadData}) => {
     };
 
     useEffect(() => {
-        getYear({type: 'select'}).then((resp) => setYearOptions(resp));
-        getInstitution({type: 'select', ladder: 'alias'}).then((resp) => setInstitutionOptions(resp));
-    }, [])
-
-    useEffect(() => {
-        getLevel({type: 'select', ladderId: ladder}).then((resp) => {
-            setLevelOptions(resp)
-        });
-        getMajor({type: 'select', ladderId: ladder}).then((resp) => setMajorOptions(resp));
-        getTeacher({type: 'select', institutionId: rombel.institutionId}).then((resp) => setTeacherOptions(resp));
-    }, [rombel, ladder])
+        const {value, ladder} = institutionSelected !== undefined ? institutionSelected : false;
+        value !== undefined && getLevel({type: 'select', ladderId: ladder.id}).then((resp) => setLevelOptions(resp));
+        value !== undefined && getMajor({type: 'select', ladderId: ladder.id}).then((resp) => setMajorOptions(resp));
+        value !== undefined && getTeacher({type: 'select', institutionId: value}).then((resp) => setTeacherOptions(resp));
+    }, [institutionSelected])
 
     useEffect(() => {
         setValue('id', rombel.id)
@@ -86,7 +77,8 @@ const Partial = ({modal, setModal, rombel, setRombel, setLoadData}) => {
         setValue('name', rombel.name)
         setValue('alias', rombel.alias)
         setValue('teacherId', rombel.teacherId)
-    }, [rombel, setValue])
+        setInstitutionSelected(institutionOptions.find((item) => item.value === rombel.institutionId));
+    }, [institutionOptions, rombel, setValue]);
 
     return (
         <Modal isOpen={modal} toggle={toggle}>
@@ -124,8 +116,8 @@ const Partial = ({modal, setModal, rombel, setRombel, setLoadData}) => {
                                     value={institutionOptions?.find((c) => c.value === rombel.institutionId)}
                                     onChange={(e) => {
                                         setRombel({...rombel, institutionId: e.value});
+                                        setInstitutionSelected(e);
                                         setValue('institutionId', e.value);
-                                        setLadder(e.ladderId)
                                     }}
                                     placeholder="Pilih Lembaga"
                                 />

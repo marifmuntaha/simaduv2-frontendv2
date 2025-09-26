@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {Button, ButtonGroup, Spinner} from "reactstrap";
+import {ButtonGroup, Spinner} from "reactstrap";
 import Head from "@/layout/head";
 import Content from "@/layout/content";
 import {
@@ -8,43 +8,64 @@ import {
     BlockHead,
     BlockHeadContent,
     BlockTitle,
-    Icon,
+    Button, Icon,
     PreviewCard,
     ReactDataTable
 } from "@/components";
-import {get as getLadder, destroy as destroyLadder} from "@/api/master/ladder";
-import Partial from "@/pages/master/ladder/partial";
+import {get as getInstitution, destroy as destroyInstitution} from "@/api/institution"
+import Partial from "@/pages/institution/list/partial";
 
-const Ladder = () => {
+const Major = () => {
     const [sm, updateSm] = useState(false);
+    const [loadData, setLoadData] = useState(true);
     const [loading, setLoading] = useState(false);
-    const [reloadData, setReloadData] = useState(true);
-    const [ladders, setLadders] = useState([]);
-    const [ladder, setLadder] = useState({
+    const [modal, setModal] = useState(false);
+    const [institutions, setInstitutions] = useState([]);
+    const [institution, setInstitution] = useState({
         id: null,
+        ladderId: null,
         name: "",
         alias: "",
-        description: "",
+        nsm: "",
+        npsn: "",
+        address: "",
+        phone: "",
+        email: "",
+        website: "",
+        image: "",
     });
-    const [modal, setModal] = useState(false);
-    const Columns = [
+    const Column = [
         {
-            name: "Nama Jenjang",
-            selector: (row) => row.name,
+            name: "Jenjang",
+            selector: (row) => row.ladderAlias,
             sortable: false,
             // hide: 370,
             // width: "300px",
+        },
+        {
+            name: "Nama",
+            selector: (row) => row.name,
+            sortable: false,
+            // hide: 370,
+
         },
         {
             name: "Alias",
             selector: (row) => row.alias,
             sortable: false,
             // hide: 370,
-            // width: "200px",
+
         },
         {
-            name: "Diskripsi",
-            selector: (row) => row.description,
+            name: "NSM",
+            selector: (row) => row.nsm,
+            sortable: false,
+            // hide: 370,
+
+        },
+        {
+            name: "NPSN",
+            selector: (row) => row.npsn,
             sortable: false,
             // hide: 370,
 
@@ -58,14 +79,14 @@ const Ladder = () => {
             cell: (row) => (
                 <ButtonGroup size="sm">
                     <Button outline color="warning" onClick={() => {
-                        setLadder(row);
+                        setInstitution(row);
                         setModal(true);
                     }}><Icon name="pen"/></Button>
                     <Button outline color="danger" onClick={() => {
                         setLoading(row.id)
-                        destroyLadder(row.id).then(() => {
+                        destroyInstitution(row.id).then(() => {
                             setLoading(false);
-                            setReloadData(true);
+                            setLoadData(true);
                         }).catch(() => setLoading(false))
                     }}>{loading === row.id ? <Spinner size="sm"/> : <Icon name="trash"/>}</Button>
                 </ButtonGroup>
@@ -74,25 +95,24 @@ const Ladder = () => {
     ];
 
     useEffect(() => {
-        reloadData && getLadder({list: 'table'}).then((resp) => {
-            setLadders(resp);
-            setReloadData(false);
-        }).catch(() => {
-            setReloadData(false);
-        })
-    }, [reloadData]);
+        loadData && getInstitution({list: 'table'}).then((resp) => {
+            setInstitutions(resp)
+            setLoadData(false);
+        }).catch(() => setLoading(false));
+    }, [loadData]);
+
     return (
         <React.Fragment>
-            <Head title="Data Jenjang"/>
-            <Content page="component">
+            <Head title="Data Lembaga"/>
+            <Content>
                 <Block size="lg">
                     <BlockHead>
                         <BlockBetween>
                             <BlockHeadContent>
-                                <BlockTitle tag="h4">Data Jenjang</BlockTitle>
+                                <BlockTitle tag="h5">Data Lembaga</BlockTitle>
                                 <p>
-                                    Just import <code>ReactDataTable</code> from <code>components</code>, it is built in
-                                    for react dashlite.
+                                    Textual form controls—like <code className="code-tag">&lt;input&gt;</code>s,{" "}
+                                    <code className="code-tag">&lt;select&gt;</code>s, and{" "}
                                 </p>
                             </BlockHeadContent>
                             <BlockHeadContent>
@@ -119,12 +139,13 @@ const Ladder = () => {
                         </BlockBetween>
                     </BlockHead>
                     <PreviewCard>
-                        <ReactDataTable data={ladders} columns={Columns} expandableRows pagination/>
+                        <ReactDataTable data={institutions} columns={Column} pagination progressPending={loadData}/>
                     </PreviewCard>
+                    <Partial modal={modal} setModal={setModal} institution={institution} setInstitution={setInstitution} setLoadData={setLoadData}/>
                 </Block>
-                <Partial modal={modal} setModal={setModal} ladder={ladder} setLadder={setLadder} setReloadData={setReloadData} />
             </Content>
         </React.Fragment>
     )
 }
-export default Ladder;
+
+export default Major;

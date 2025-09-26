@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import {Outlet} from "react-router-dom";
 import {RootMenu, DefaultMenu} from "./sidebar/MenuData";
 import Sidebar from "./sidebar";
@@ -20,10 +20,10 @@ const WithSidebar = ({title, ...props}) => {
             <Head title={!title && 'Loading'}/>
             <AppRoot>
                 <AppMain>
-                    <Sidebar menuData={user.role === '1' ? RootMenu : DefaultMenu} fixed/>
+                    <Sidebar menuData={user.role === '1' ? RootMenu : DefaultMenu} user={user} fixed/>
                     <AppWrap>
                         <Header fixed/>
-                        <Outlet/>
+                        <Outlet context={{user: user}}/>
                         <Footer/>
                     </AppWrap>
                 </AppMain>

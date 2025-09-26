@@ -16,6 +16,7 @@ import {ButtonGroup, Spinner} from "reactstrap";
 import {get as getRombel, destroy as destroyRombel} from "@/api/institution/rombel"
 import {get as getYear} from "@/api/master/year";
 import {get as getInstitution} from "@/api/institution";
+import {get as getLevel} from "@/api/master/level";
 import Partial from "@/pages/institution/rombel/partial";
 
 const Rombel = () => {
@@ -27,14 +28,16 @@ const Rombel = () => {
     const [yearSelected, setYearSelected] = useState([]);
     const [institutionOptions, setInstitutionOptions] = useState([]);
     const [institutionSelected, setInstitutionSelected] = useState([]);
+    const [levelOptions, setLevelOptions] = useState([]);
+    const [levelSelected, setLevelSelected] = useState([]);
     const [rombels, setRombels] = useState([]);
     const [rombel, setRombel] = useState({
-        id: "",
-        yearId: "",
-        institutionId: "",
-        teacherId: "",
-        levelId: "",
-        majorId: "",
+        id: null,
+        yearId: null,
+        institutionId: null,
+        teacherId: null,
+        levelId: null,
+        majorId: null,
         name: "",
         alias: ""
     });
@@ -48,7 +51,7 @@ const Rombel = () => {
         },
         {
             name: "Lembaga",
-            selector: (row) => row.institutionName,
+            selector: (row) => row.institutionAlias,
             sortable: false,
             // hide: 370,
 
@@ -124,8 +127,13 @@ const Rombel = () => {
 
     useEffect(() => {
         getYear({type: 'select'}).then(year => setYearOptions(year));
-        getInstitution({type: 'select', ladder: 'alias'}).then(institution => setInstitutionOptions(institution));
+        getInstitution({type: 'select', ladder: 'alias', with: 'ladder'}).then(institution => setInstitutionOptions(institution));
     }, []);
+
+    useEffect(() => {
+        const {value, ladder} = institutionSelected
+        value !== undefined && getLevel({type: 'select', ladderId: ladder.id}).then(level => setLevelOptions(level));
+    }, [institutionSelected]);
 
     useEffect(() => {
         loadData && getRombel(params()).then((resp) => {
@@ -138,11 +146,6 @@ const Rombel = () => {
         <React.Fragment>
             <Head title="Data Rombongan Belajar"/>
             <Content>
-                <BlockHeadContent>
-                    <BackTo link="/" icon="arrow-left">
-                        Beranda
-                    </BackTo>
-                </BlockHeadContent>
                 <Block size="lg">
                     <BlockHead>
                         <BlockBetween>
@@ -198,17 +201,39 @@ const Rombel = () => {
                                         value={institutionSelected}
                                         onChange={(val) => {
                                             setInstitutionSelected(val);
+                                            setLevelSelected([]);
                                             setLoadData(true);
                                         }}
                                         placeholder="Pilih Lembaga"
                                     />
                                 </div>
                             </div>
+                            <div className="form-group col-md-4">
+                                <div className="form-control-wrap">
+                                    <RSelect
+                                        options={levelOptions}
+                                        value={levelSelected}
+                                        onChange={(val) => {
+                                            setLevelSelected(val);
+                                            setLoadData(true);
+                                        }}
+                                        placeholder="Pilih Tingkat"
+                                    />
+                                </div>
+                            </div>
                         </Row>
                         <ReactDataTable data={rombels} columns={Column} pagination progressPending={loadData}/>
                     </PreviewCard>
-                    <Partial modal={modal} setModal={setModal} rombel={rombel} setRombel={setRombel}
-                             setLoadData={setLoadData}/>
+                    <Partial
+                        modal={modal}
+                        setModal={setModal}
+                        rombel={rombel}
+                        setRombel={setRombel}
+                        setLoadData={setLoadData}
+                        yearOptions={yearOptions}
+                        institutionOptions={institutionOptions}
+                        levelOptions={levelOptions}
+                    />
                 </Block>
             </Content>
         </React.Fragment>

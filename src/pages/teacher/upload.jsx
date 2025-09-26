@@ -3,16 +3,14 @@ import {Button, Input, Modal, ModalBody, ModalHeader, Progress, Spinner} from "r
 import * as xlsx from "xlsx";
 import moment from "moment";
 import {Icon, RSelect, RToast} from "@/components";
-import {get as getInstitution} from "@/api/institution"
 import {store as storeUser, destroy as destroyUser} from "@/api/user"
 import {store as storeTeacher} from "@/api/teacher";
 import {calcPercentage} from "@/utils";
 
-const Upload = ({modal, setModal, setLoadData}) => {
+const Upload = ({modal, setModal, setLoadData, institutionOptions}) => {
     const [loading, setLoading] = useState(false);
     const [dataStart, setDataStart] = useState(0);
     const [dataTotal, setDataTotal] = useState(0);
-    const [institutionOptions, setInstitutionOptions] = useState([]);
     const [institutionSelected, setInstitutionSelected] = useState([]);
     const [errorsTeacher, setErrorsTeacher] = useState([]);
     const [file, setFile] = useState({})
@@ -90,10 +88,6 @@ const Upload = ({modal, setModal, setLoadData}) => {
         setInstitutionSelected([]);
         setErrorsTeacher([]);
     }
-
-    useEffect(() => {
-        getInstitution({type: 'select', ladder: 'alias'}).then((resp) => setInstitutionOptions(resp));
-    }, []);
 
     return (
         <Modal isOpen={modal.upload} toggle={toggle} size="md">

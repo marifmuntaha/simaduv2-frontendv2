@@ -2,14 +2,10 @@ import React, {useEffect, useState} from "react";
 import {Button, Modal, ModalBody, ModalHeader, Spinner} from "reactstrap";
 import {useForm} from "react-hook-form";
 import {Icon, Row, RSelect} from "@/components";
-import {store as storeProgram, update as updateProgram} from "@/api/institution/program"
-import {get as getYear} from "@/api/master/year"
-import {get as getInstitution} from "@/api/institution"
+import {store as storeProgram, update as updateProgram} from "@/api/institution/program";
 
-const Partial = ({modal, setModal, program, setProgram, setLoadData}) => {
+const Partial = ({modal, setModal, program, setProgram, setLoadData, yearOptions, institutionOptions}) => {
     const [loading, setLoading] = useState(false);
-    const [yearOptions, setYearOptions] = useState([]);
-    const [institutionOptions, setInstitutionOptions] = useState([])
     const {
         reset,
         handleSubmit,
@@ -21,7 +17,7 @@ const Partial = ({modal, setModal, program, setProgram, setLoadData}) => {
         setProgram({...program, [e.target.name]: e.target.value});
     }
     const onSubmit = () => {
-        program.id === '' ? onStore() : onUpdate();
+        program.id === null ? onStore() : onUpdate();
     }
     const onStore = async () => {
         setLoading(true);
@@ -47,9 +43,9 @@ const Partial = ({modal, setModal, program, setProgram, setLoadData}) => {
     }
     const handleReset = () => {
         setProgram({
-            id: "",
-            yearId: "",
-            institutionId: "",
+            id: null,
+            yearId: null,
+            institutionId: null,
             name: "",
             alias: ""
         });
@@ -61,17 +57,12 @@ const Partial = ({modal, setModal, program, setProgram, setLoadData}) => {
     };
 
     useEffect(() => {
-        getYear({type: 'select'}).then((resp) => setYearOptions(resp));
-        getInstitution({type: 'select', ladder: 'alias'}).then((resp) => setInstitutionOptions(resp));
-    }, [])
-
-    useEffect(() => {
-        setValue('id', program.id)
-        setValue('yearId', program.yearId)
-        setValue('institutionId', program.institutionId)
-        setValue('name', program.name)
-        setValue('alias', program.alias)
-    }, [program, setValue])
+        setValue('id', program.id);
+        setValue('yearId', program.yearId);
+        setValue('institutionId', program.institutionId);
+        setValue('name', program.name);
+        setValue('alias', program.alias);
+    }, [program, setValue]);
 
     return (
         <Modal isOpen={modal} toggle={toggle}>
@@ -80,7 +71,7 @@ const Partial = ({modal, setModal, program, setProgram, setLoadData}) => {
                     <Icon name="cross"/>
                 </button>
             }>
-                {program ? 'UBAH' : 'TAMBAH'}
+                {program.id === null ? 'TAMBAH' : 'UBAH'}
             </ModalHeader>
             <ModalBody>
                 <form className="is-alter" onSubmit={handleSubmit(onSubmit)}>

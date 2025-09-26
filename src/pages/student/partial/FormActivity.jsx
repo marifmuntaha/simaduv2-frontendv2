@@ -47,7 +47,7 @@ const FormActivity = ({formData, setFormData, ...props}) => {
 
     useEffect(() => {
         getYear({type: 'select'}).then((resp) => setYearOptions(resp));
-        getInstitution({type: 'select', ladder: 'alias'}).then((resp) => setInstitutionOptions(resp));
+        getInstitution({type: 'select', with: 'ladderId', ladder: 'alias'}).then((resp) => setInstitutionOptions(resp));
     }, []);
 
     useEffect(() => {

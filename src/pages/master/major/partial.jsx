@@ -2,8 +2,8 @@ import React, {useEffect, useState} from "react";
 import {Button, Modal, ModalBody, ModalHeader, Spinner} from "reactstrap";
 import {useForm} from "react-hook-form";
 import {Icon, RSelect} from "@/components";
-import {store as storeMajor, update as updateMajor} from "@/api/master/major"
-import {get as getLadder} from "@/api/master/ladder"
+import {store as storeMajor, update as updateMajor} from "@/api/master/major";
+import {get as getLadder} from "@/api/master/ladder";
 
 const Partial = ({modal, setModal, major, setMajor, setLoadData}) => {
     const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ const Partial = ({modal, setModal, major, setMajor, setLoadData}) => {
         setMajor({...major, [e.target.name]: e.target.value});
     }
     const onSubmit = () => {
-        major.id === '' ? onStore() : onUpdate();
+        major.id === null ? onStore() : onUpdate();
     }
     const onStore = async () => {
         setLoading(true);
@@ -45,8 +45,8 @@ const Partial = ({modal, setModal, major, setMajor, setLoadData}) => {
     }
     const handleReset = () => {
         setMajor({
-            id: '',
-            ladderId: '',
+            id: null,
+            ladderId: null,
             name: '',
             alias: '',
             description: '',
@@ -59,7 +59,6 @@ const Partial = ({modal, setModal, major, setMajor, setLoadData}) => {
     };
 
     useEffect(() => {
-        setValue('id', major.id);
         setValue('ladderId', major.ladderId);
         setValue('name', major.name);
         setValue('alias', major.alias);
@@ -67,10 +66,10 @@ const Partial = ({modal, setModal, major, setMajor, setLoadData}) => {
     }, [major, setValue]);
 
     useEffect(() => {
-        getLadder({type: 'select'}).then(data => {
-            setLadderOptions(data)
+        modal && getLadder({type: 'select'}).then(data => {
+            setLadderOptions(data);
         });
-    }, []);
+    }, [modal]);
 
     return (
         <Modal isOpen={modal} toggle={toggle}>
@@ -79,7 +78,7 @@ const Partial = ({modal, setModal, major, setMajor, setLoadData}) => {
                     <Icon name="cross"/>
                 </button>
             }>
-                {major.id !== '' ? 'UBAH' : 'TAMBAH'}
+                {major.id === null ? 'TAMBAH' : 'UBAH'}
             </ModalHeader>
             <ModalBody>
                 <form className="is-alter" onSubmit={handleSubmit(onSubmit)}>

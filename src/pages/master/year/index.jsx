@@ -12,7 +12,7 @@ import {
     PreviewCard,
     ReactDataTable
 } from "@/components";
-import {get as getYear, destroy as destroyYear} from "@/api/master/year"
+import {get as getYear, destroy as destroyYear} from "@/api/master/year";
 import Partial from "@/pages/master/year/partial";
 
 const Major = () => {
@@ -22,7 +22,7 @@ const Major = () => {
     const [modal, setModal] = useState(false);
     const [years, setYears] = useState([]);
     const [year, setYear] = useState({
-        id: '',
+        id: null,
         name: '',
         description: '',
         active: false,

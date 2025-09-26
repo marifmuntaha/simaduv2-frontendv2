@@ -12,7 +12,7 @@ import {
     PreviewCard,
     ReactDataTable
 } from "@/components";
-import {get as getMajor, destroy as destroyMajor} from "@/api/master/major"
+import {get as getMajor, destroy as destroyMajor} from "@/api/master/major";
 import Partial from "@/pages/master/major/partial";
 
 const Major = () => {
@@ -22,8 +22,8 @@ const Major = () => {
     const [modal, setModal] = useState(false);
     const [majors, setMajors] = useState([]);
     const [major, setMajor] = useState({
-        id: '',
-        ladderId: '',
+        id: null,
+        ladderId: null,
         name: '',
         alias: '',
         description: '',
@@ -83,7 +83,7 @@ const Major = () => {
 
     useEffect(() => {
         loadData && getMajor({list: 'table'}).then((resp) => {
-            setMajors(resp)
+            setMajors(resp);
             setLoadData(false);
         }).catch(() => setLoading(false));
     }, [loadData])

@@ -19,7 +19,7 @@ const Partial = ({modal, setModal, institution, setInstitution, setLoadData}) =>
         setInstitution({...institution, [e.target.name]: e.target.value});
     }
     const onSubmit = () => {
-        institution.id === '' ? onStore() : onUpdate();
+        institution.id === null ? onStore() : onUpdate();
     }
     const onStore = async () => {
         setLoading(true);
@@ -45,8 +45,8 @@ const Partial = ({modal, setModal, institution, setInstitution, setLoadData}) =>
     }
     const handleReset = () => {
         setInstitution({
-            id: "",
-            ladderId: "",
+            id: null,
+            ladderId: null,
             name: "",
             alias: "",
             nsm: "",
@@ -65,22 +65,21 @@ const Partial = ({modal, setModal, institution, setInstitution, setLoadData}) =>
     };
 
     useEffect(() => {
-        setValue('id', institution.id)
-        setValue('ladderId', institution.ladderId)
-        setValue('name', institution.name)
-        setValue('alias', institution.alias)
-        setValue('nsm', institution.nsm)
-        setValue('npsn', institution.npsn)
-        setValue('address', institution.address)
-        setValue('phone', institution.phone)
-        setValue('email', institution.email)
-        setValue('website', institution.website)
-        setValue('image', institution.image)
-    }, [institution, setValue])
+        setValue('ladderId', institution.ladderId);
+        setValue('name', institution.name);
+        setValue('alias', institution.alias);
+        setValue('nsm', institution.nsm);
+        setValue('npsn', institution.npsn);
+        setValue('address', institution.address);
+        setValue('phone', institution.phone);
+        setValue('email', institution.email);
+        setValue('website', institution.website);
+        setValue('image', institution.image);
+    }, [institution, setValue]);
 
     useEffect(() => {
-        getLadder({type: 'select'}).then((data) => setLadderOptions(data));
-    }, []);
+        modal && getLadder({type: 'select'}).then((data) => setLadderOptions(data));
+    }, [modal]);
 
     return (
         <Modal isOpen={modal} toggle={toggle} size={"md"}>
@@ -89,7 +88,7 @@ const Partial = ({modal, setModal, institution, setInstitution, setLoadData}) =>
                     <Icon name="cross"/>
                 </button>
             }>
-                {institution ? 'UBAH' : 'TAMBAH'}
+                {institution === null ? 'TAMBAH' : 'UBAH'}
             </ModalHeader>
             <ModalBody>
                 <form className="is-alter" onSubmit={handleSubmit(onSubmit)}>

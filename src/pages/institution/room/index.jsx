@@ -1,8 +1,9 @@
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {ButtonGroup, Spinner} from "reactstrap";
 import Head from "@/layout/head";
 import Content from "@/layout/content";
 import {
+    BackTo,
     Block,
     BlockBetween,
     BlockHead,
@@ -10,34 +11,30 @@ import {
     BlockTitle,
     Button, Icon,
     PreviewCard,
-    ReactDataTable
+    ReactDataTable, Row, RSelect
 } from "@/components";
-import {get as getInstitution, destroy as destroyInstitution} from "@/api/institution"
-import Partial from "@/pages/institution/partial";
+import {get as getYear} from "@/api/master/year";
+import {get as getRoom, destroy as destroyRoom} from "@/api/institution/room";
+import Partial from "@/pages/institution/room/partial";
 
-const Major = () => {
+const Room = () => {
     const [sm, updateSm] = useState(false);
     const [loadData, setLoadData] = useState(true);
     const [loading, setLoading] = useState(false);
+    const [yearOptions, setYearOptions] = useState([]);
+    const [yearSelected, setYearSelected] = useState([]);
     const [modal, setModal] = useState(false);
-    const [institutions, setInstitutions] = useState([]);
-    const [institution, setInstitution] = useState({
-        id: "",
-        ladderId: "",
+    const [rooms, setRooms] = useState([]);
+    const [room, setRoom] = useState({
+        id: null,
+        yearId: null,
         name: "",
-        alias: "",
-        nsm: "",
-        npsn: "",
-        address: "",
-        phone: "",
-        email: "",
-        website: "",
-        image: "",
+        alias: ""
     });
     const Column = [
         {
-            name: "Jenjang",
-            selector: (row) => row.ladderAlias,
+            name: "Tahun Pelajaran",
+            selector: (row) => row.yearName,
             sortable: false,
             // hide: 370,
             // width: "300px",
@@ -57,15 +54,8 @@ const Major = () => {
 
         },
         {
-            name: "NSM",
-            selector: (row) => row.nsm,
-            sortable: false,
-            // hide: 370,
-
-        },
-        {
-            name: "NPSN",
-            selector: (row) => row.npsn,
+            name: "Santri",
+            selector: (row) => row.count,
             sortable: false,
             // hide: 370,
 
@@ -79,12 +69,12 @@ const Major = () => {
             cell: (row) => (
                 <ButtonGroup size="sm">
                     <Button outline color="warning" onClick={() => {
-                        setInstitution(row);
+                        setRoom(row);
                         setModal(true);
                     }}><Icon name="pen"/></Button>
                     <Button outline color="danger" onClick={() => {
                         setLoading(row.id)
-                        destroyInstitution(row.id).then(() => {
+                        destroyRoom(row.id).then(() => {
                             setLoading(false);
                             setLoadData(true);
                         }).catch(() => setLoading(false))
@@ -93,22 +83,37 @@ const Major = () => {
             )
         },
     ];
+    const params = useCallback(() => {
+        let query = {type: 'datatable'}
+        if (yearSelected.value !== undefined) {
+            query.yearId = yearSelected.value;
+        }
 
+        return query;
+    }, [yearSelected]);
     useEffect(() => {
-        loadData && getInstitution({list: 'table'}).then((resp) => {
-            setInstitutions(resp)
+        getYear({type: 'select'}).then(year => setYearOptions(year));
+    }, []);
+    useEffect(() => {
+        loadData && getRoom(params()).then((resp) => {
+            setRooms(resp)
             setLoadData(false);
         }).catch(() => setLoading(false));
-    }, [loadData])
+    }, [loadData, params])
     return (
         <React.Fragment>
-            <Head title="Data Lembaga"/>
-            <Content>
+            <Head title="Data Kamar Santri"/>
+            <Content page="component">
+                <BlockHeadContent>
+                    <BackTo link="/" icon="arrow-left">
+                        Beranda
+                    </BackTo>
+                </BlockHeadContent>
                 <Block size="lg">
                     <BlockHead>
                         <BlockBetween>
                             <BlockHeadContent>
-                                <BlockTitle tag="h5">Data Lembaga</BlockTitle>
+                                <BlockTitle tag="h5">Data Kamar Santri</BlockTitle>
                                 <p>
                                     Textual form controls—like <code className="code-tag">&lt;input&gt;</code>s,{" "}
                                     <code className="code-tag">&lt;select&gt;</code>s, and{" "}
@@ -138,13 +143,35 @@ const Major = () => {
                         </BlockBetween>
                     </BlockHead>
                     <PreviewCard>
-                        <ReactDataTable data={institutions} columns={Column} pagination progressPending={loadData}/>
+                        <Row className="mb-3">
+                            <div className="form-group col-md-12">
+                                <div className="form-control-wrap">
+                                    <RSelect
+                                        options={yearOptions}
+                                        value={yearSelected}
+                                        onChange={(val) => {
+                                            setYearSelected(val);
+                                            setLoadData(true);
+                                        }}
+                                        placeholder="Pilih Tahun Pelajaran"
+                                    />
+                                </div>
+                            </div>
+                        </Row>
+                        <ReactDataTable data={rooms} columns={Column} pagination progressPending={loadData}/>
                     </PreviewCard>
-                    <Partial modal={modal} setModal={setModal} institution={institution} setInstitution={setInstitution} setLoadData={setLoadData}/>
+                    <Partial
+                        modal={modal}
+                        setModal={setModal}
+                        room={room}
+                        setRoom={setRoom}
+                        setLoadData={setLoadData}
+                        yearOptions={yearOptions}
+                    />
                 </Block>
             </Content>
         </React.Fragment>
     )
 }
 
-export default Major;
+export default Room;

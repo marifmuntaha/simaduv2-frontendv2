@@ -15,7 +15,7 @@ import ResetPassword from "@/pages/auth/reset-password";
 import Level from "@/pages/master/level";
 import Major from "@/pages/master/major";
 import Year from "@/pages/master/year";
-import Institution from "@/pages/institution";
+import Institution from "@/pages/institution/list/index.jsx";
 import Program from "@/pages/institution/program";
 import Rombel from "@/pages/institution/rombel";
 import Teacher from "@/pages/teacher";
@@ -29,6 +29,7 @@ import Neraca from "@/pages/finance/report/neraca/index.jsx";
 import Invoice from "@/pages/finance/invoice/index.jsx";
 import Setting from "@/pages/setting/index.jsx";
 import Discount from "@/pages/finance/discount/index.jsx";
+import Room from "@/pages/institution/room/index.jsx";
 
 const ScrollToTop = (props) => {
     const location = useLocation();
@@ -55,9 +56,10 @@ const Router = () => {
                                     <Route path="tahun-pelajaran" element={<Year/>}/>
                                 </Route>
                                 <Route path="data-lembaga" >
-                                    <Route index element={<Institution/>}/>
+                                    <Route path="daftar" element={<Institution/>}/>
                                     <Route path="program" element={<Program/>}/>
                                     <Route path="rombongan-belajar" element={<Rombel/>}/>
+                                    <Route path="kamar-santri" element={<Room/>}/>
                                 </Route>
                                 <Route path="data-siswa">
                                     <Route index element={<ListStudent/>}/>

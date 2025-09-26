@@ -135,47 +135,37 @@ const List = () => {
     ]
     const navigate = useNavigate();
     const paramsStudent = useCallback(() => {
-        let params = {list: 'table'};
+        let params = {type: 'datatable'};
         if (yearSelected.value !== undefined) {
-            params = {
-                ...params,
-                yearId: yearSelected.value,
-            }
+            params.yearId = yearSelected.value
         }
         if (institutionSelected.value !== undefined) {
-            params = {
-                ...params,
-                institutionId: institutionSelected.value,
-            }
+            params.institutionId = institutionSelected.value
         }
         if (rombelSelected.value !== undefined) {
-            params = {
-                ...params,
-                rombelId: rombelSelected.value,
-            }
+            params.rombelId = rombelSelected.value
         }
         if (boardingSelected.value !== undefined) {
-            params = {
-                ...params,
-                boardingId: boardingSelected.value,
-            }
+            params.boardingId = boardingSelected.value
         }
 
         return params;
     }, [yearSelected, institutionSelected, rombelSelected, boardingSelected])
     useEffect(() => {
         getYear({type: 'select'}).then((resp) => setYearOptions(resp));
-        getInstitution({type: 'select', ladder: 'alias'}).then((resp) => setInstitutionOptions(resp));
+        getInstitution({type: 'select', ladder: 'alias'})
+            .then((resp) => setInstitutionOptions(resp));
     }, []);
 
     useEffect(() => {
         yearSelected.value !== undefined &&
         institutionSelected.value &&
-        getRombel({type: 'select', yearId: yearSelected.value, institutionId: institutionSelected.value}).then((resp) => setRombelOptions(resp));
+        getRombel({type: 'select', yearId: yearSelected.value, institutionId: institutionSelected.value})
+            .then((resp) => setRombelOptions(resp));
     }, [yearSelected, institutionSelected]);
     useEffect(() => {
         refreshData && getStudent(paramsStudent()).then((resp) => {
-            setStudents(resp)
+            setStudents(resp);
             setRefreshData(false);
         }).catch(() => setLoading(false));
     }, [refreshData, paramsStudent]);
@@ -280,7 +270,14 @@ const List = () => {
                         </Row>
                         <ReactDataTable data={students} columns={Column} pagination progressPending={refreshData}/>
                     </PreviewCard>
-                    <Upload modal={modal} setModal={setModal} setRefreshData={setRefreshData}/>
+                    <Upload
+                        modal={modal}
+                        setModal={setModal}
+                        setRefreshData={setRefreshData}
+                        yearOptions={yearOptions}
+                        institutionOptions={institutionOptions}
+                        rombelOptions={rombelOptions}
+                    />
                 </Block>
             </Content>
         </React.Fragment>
