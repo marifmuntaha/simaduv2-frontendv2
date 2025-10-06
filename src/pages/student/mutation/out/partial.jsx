@@ -3,16 +3,12 @@ import {Button, Input, Modal, ModalBody, ModalHeader, Spinner} from "reactstrap"
 import {useForm} from "react-hook-form";
 import {Icon, RSelect} from "@/components";
 import {get as getMutation, store as storeMutation, update as updateMutation} from "@/api/student/mutation";
-import {get as getYear} from "@/api/master/year";
-import {get as getInstitution} from "@/api/institution";
 import {get as getStudent} from "@/api/student";
 import {generateSecureToken, zeroPad} from "@/utils";
 
-const Partial = ({modal, setModal, mutation, setMutation, setReloadData}) => {
+const Partial = ({user, modal, setModal, mutation, setMutation, setReloadData, yearOptions, institutionOptions}) => {
     const [loading, setLoading] = useState(false);
-    const [yearOptions, setYearOptions] = useState([]);
     const [yearSelected, setYearSelected] = useState([]);
-    const [institutionOptions, setInstitutionOptions] = useState([]);
     const [institutionSelected, setInstitutionSelected] = useState([]);
     const [studentOptions, setStudentOptions] = useState([]);
     const [studentSelected, setStudentSelected] = useState([]);
@@ -60,10 +56,10 @@ const Partial = ({modal, setModal, mutation, setMutation, setReloadData}) => {
     }
     const handleReset = () => {
         setMutation({
-            id: "",
-            yearId: "",
-            institutionId: "",
-            studentId: "",
+            id: null,
+            yearId: user.yearId,
+            institutionId: user.role === '1' ? null : user.institutionId,
+            studentId: null,
             type: 1,
             token: '',
             numberLetter: '',
@@ -81,11 +77,6 @@ const Partial = ({modal, setModal, mutation, setMutation, setReloadData}) => {
     };
 
     useEffect(() => {
-        getYear({type: 'select'}).then(data => setYearOptions(data));
-        getInstitution({type: 'select', ladder: 'alias'}).then(data => setInstitutionOptions(data));
-    }, []);
-
-    useEffect(() => {
         yearSelected.value !== undefined && institutionSelected.value !== undefined && getStudent({
             type: 'select',
             yearSelected: yearSelected.value,
@@ -99,7 +90,15 @@ const Partial = ({modal, setModal, mutation, setMutation, setReloadData}) => {
         setValue('institutionId', mutation.institutionId);
         setValue('studentId', mutation.studentId);
         setValue('description', mutation.description);
-    }, [mutation, setValue])
+    }, [mutation, setValue]);
+
+    useEffect(() => {
+        modal && mutation.yearId !== null && mutation.institutionId !== null &&
+            getStudent({type: 'select', yearId: mutation.yearId, institutionId: mutation.institutionId})
+                .then(resp => {
+                    setStudentOptions(resp);
+                });
+    }, [modal, mutation]);
 
     return (
         <Modal isOpen={modal} toggle={toggle}>
@@ -108,7 +107,7 @@ const Partial = ({modal, setModal, mutation, setMutation, setReloadData}) => {
                     <Icon name="cross"/>
                 </button>
             }>
-                {mutation.id !== "" ? 'UBAH' : 'TAMBAH'}
+                {mutation.id !== null ? 'UBAH' : 'TAMBAH'}
             </ModalHeader>
             <ModalBody>
                 <form className="is-alter" onSubmit={handleSubmit(onSubmit)}>
@@ -117,7 +116,7 @@ const Partial = ({modal, setModal, mutation, setMutation, setReloadData}) => {
                         <div className="form-control-wrap">
                             <RSelect
                                 options={yearOptions}
-                                value={yearSelected}
+                                value={yearOptions.find((e) => e.value === mutation.yearId)}
                                 onChange={(e) => {
                                     setMutation({...mutation, yearId: e.value})
                                     setYearSelected(e);
@@ -129,23 +128,25 @@ const Partial = ({modal, setModal, mutation, setMutation, setReloadData}) => {
                             {errors.yearId && <span className="invalid">Kolom tidak boleh kosong.</span>}
                         </div>
                     </div>
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="institutionId">Pilih Lembaga</label>
-                        <div className="form-control-wrap">
-                            <RSelect
-                                options={institutionOptions}
-                                value={institutionSelected}
-                                onChange={(e) => {
-                                    setMutation({...mutation, institutionId: e.value})
-                                    setInstitutionSelected(e);
-                                    setValue('institutionId', e.value);
-                                }}
-                                placeholder="Pilih Lembaga"
-                            />
-                            <input type="hidden" className="form-control" id="institutionId" {...register('institutionId', {required: true})} />
-                            {errors.institutionId && <span className="invalid">Kolom tidak boleh kosong.</span>}
+                    {user.role === '1' && (
+                        <div className="form-group">
+                            <label className="form-label" htmlFor="institutionId">Pilih Lembaga</label>
+                            <div className="form-control-wrap">
+                                <RSelect
+                                    options={institutionOptions}
+                                    value={institutionOptions?.find((e) => e.value === mutation.institutionId)}
+                                    onChange={(e) => {
+                                        setMutation({...mutation, institutionId: e.value})
+                                        setInstitutionSelected(e);
+                                        setValue('institutionId', e.value);
+                                    }}
+                                    placeholder="Pilih Lembaga"
+                                />
+                                <input type="hidden" className="form-control" id="institutionId" {...register('institutionId', {required: true})} />
+                                {errors.institutionId && <span className="invalid">Kolom tidak boleh kosong.</span>}
+                            </div>
                         </div>
-                    </div>
+                    )}
                     <div className="form-group">
                         <label className="form-label" htmlFor="studentId">Pilih Siswa</label>
                         <div className="form-control-wrap">

@@ -7,8 +7,10 @@ import {get as getInstitution} from "@/api/institution";
 import {get as getLevel} from "@/api/master/level";
 import {get as getRombel} from "@/api/institution/rombel";
 import {get as getProgram} from "@/api/institution/program"
+import {useOutletContext} from "react-router";
 
 const FormActivity = ({formData, setFormData, ...props}) => {
+    const {user} = useOutletContext();
     const [yearOptions, setYearOptions] = useState([]);
     const [yearSelected, setYearSelected] = useState([]);
     const [institutionOptions, setInstitutionOptions] = useState([]);
@@ -47,11 +49,16 @@ const FormActivity = ({formData, setFormData, ...props}) => {
 
     useEffect(() => {
         getYear({type: 'select'}).then((resp) => setYearOptions(resp));
-        getInstitution({type: 'select', with: 'ladderId', ladder: 'alias'}).then((resp) => setInstitutionOptions(resp));
-    }, []);
+        getInstitution({type: 'select', with: 'ladder', ladder: 'alias'}).then((resp) => {
+            setInstitutionOptions(resp);
+            if (user.role !== '1') {
+                setInstitutionSelected(resp.find((c) => c.value === user.institutionId));
+            }
+        });
+    }, [user]);
 
     useEffect(() => {
-        institutionSelected !== undefined && getLevel({type: 'select', ladderId: institutionSelected.ladderId}).then((resp) => {
+        institutionSelected !== undefined && getLevel({type: 'select', ladderId: institutionSelected?.ladder?.id}).then((resp) => {
             setLevelOptions(resp);
         });
     }, [institutionSelected]);

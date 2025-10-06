@@ -25,8 +25,10 @@ import FormPersonal from "./partial/FormPersonal";
 import FormParent from "./partial/FormParent";
 import FormAddress from "./partial/FormAddress";
 import FormActivity from "./partial/FormActivity";
+import {useOutletContext} from "react-router";
 
 export const Add = () => {
+    const {user} = useOutletContext();
     const [sm, updateSm] = useState(false);
     const [formData, setFormData] = useState({
         studentId: '',
@@ -73,8 +75,8 @@ export const Add = () => {
         address: '',
         activityId: '',
         status: '',
-        yearId: '',
-        institutionId: '',
+        yearId: user.yearId,
+        institutionId: user.role === '1' ? null : user.institutionId,
         levelId: '',
         rombelId: '',
         programId: '',

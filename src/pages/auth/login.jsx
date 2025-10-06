@@ -18,21 +18,21 @@ import {
     PreviewCard,
 } from "@/components";
 import {login} from "@/api/auth";
-import {useGoogleReCaptcha} from "react-google-recaptcha-v3";
+// import {useGoogleReCaptcha} from "react-google-recaptcha-v3";
 
 const Login = () => {
     const [loading, setLoading] = useState(false);
     const [passState, setPassState] = useState(false);
-    const {executeRecaptcha} = useGoogleReCaptcha();
+    // const {executeRecaptcha} = useGoogleReCaptcha();
     const navigate = useNavigate();
 
     const onFormSubmit = async (formData) => {
         setLoading(true);
-        if (!executeRecaptcha) {
-            console.log('Execute recaptcha not yet available');
-            return;
-        }
-        formData["g-recaptcha-response"] = await executeRecaptcha('submit');
+        // if (!executeRecaptcha) {
+        //     console.log('Execute recaptcha not yet available');
+        //     return;
+        // }
+        // formData["g-recaptcha-response"] = await executeRecaptcha('submit');
         login(formData).then(() => {
             navigate("/");
             setLoading(false);

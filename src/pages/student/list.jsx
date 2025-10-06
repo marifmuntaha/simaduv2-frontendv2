@@ -1,5 +1,6 @@
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
+import {useOutletContext} from "react-router";
 import {Badge, ButtonGroup, Spinner} from "reactstrap";
 import 'moment/locale/id'
 import Head from "@/layout/head";
@@ -21,18 +22,21 @@ import {get as getRombel} from "@/api/institution/rombel";
 import Upload from "@/pages/student/partial/upload";
 
 const List = () => {
+    const {user} = useOutletContext();
     const [sm, updateSm] = useState(false);
     const [modal, setModal] = useState(false)
     const [refreshData, setRefreshData] = useState(true);
     const [loading, setLoading] = useState(false);
     const [students, setStudents] = useState([]);
+    const [student, setStudent] = useState({
+        yearId: user.yearId,
+        institutionId: user.role === '1' ? null : user.institutionId,
+        rombelId: null,
+        boardingId: null,
+    });
     const [yearOptions, setYearOptions] = useState([]);
-    const [yearSelected, setYearSelected] = useState([]);
     const [institutionOptions, setInstitutionOptions] = useState([]);
-    const [institutionSelected, setInstitutionSelected] = useState([]);
     const [rombelOptions, setRombelOptions] = useState([]);
-    const [rombelSelected, setRombelSelected] = useState([]);
-    const [boardingSelected, setBoardingSelected] = useState([]);
     const Column = [
         {
             name: "Jenjang",
@@ -134,23 +138,7 @@ const List = () => {
         {value: '3', label: 'Kitab'},
     ]
     const navigate = useNavigate();
-    const paramsStudent = useCallback(() => {
-        let params = {type: 'datatable'};
-        if (yearSelected.value !== undefined) {
-            params.yearId = yearSelected.value
-        }
-        if (institutionSelected.value !== undefined) {
-            params.institutionId = institutionSelected.value
-        }
-        if (rombelSelected.value !== undefined) {
-            params.rombelId = rombelSelected.value
-        }
-        if (boardingSelected.value !== undefined) {
-            params.boardingId = boardingSelected.value
-        }
 
-        return params;
-    }, [yearSelected, institutionSelected, rombelSelected, boardingSelected])
     useEffect(() => {
         getYear({type: 'select'}).then((resp) => setYearOptions(resp));
         getInstitution({type: 'select', ladder: 'alias'})
@@ -158,17 +146,24 @@ const List = () => {
     }, []);
 
     useEffect(() => {
-        yearSelected.value !== undefined &&
-        institutionSelected.value &&
-        getRombel({type: 'select', yearId: yearSelected.value, institutionId: institutionSelected.value})
+        const {yearId, institutionId} = student
+        getRombel({type: 'select', yearId: yearId, institutionId: institutionId})
             .then((resp) => setRombelOptions(resp));
-    }, [yearSelected, institutionSelected]);
+    }, [student]);
+
     useEffect(() => {
-        refreshData && getStudent(paramsStudent()).then((resp) => {
+        refreshData && getStudent({
+            type: 'datatable',
+            yearId: student.yearId,
+            institutionId: student.institutionId,
+            rombelId: student.rombelId,
+            boardingId: student.boardingId
+        }).then((resp) => {
             setStudents(resp);
             setRefreshData(false);
         }).catch(() => setLoading(false));
-    }, [refreshData, paramsStudent]);
+    }, [refreshData, student]);
+
     return (
         <React.Fragment>
             <Head title="Data Siswa"/>
@@ -219,9 +214,9 @@ const List = () => {
                                 <div className="form-control-wrap">
                                     <RSelect
                                         options={yearOptions}
-                                        value={yearSelected}
+                                        value={yearOptions?.find((item) => item.value === student.yearId)}
                                         onChange={(val) => {
-                                            setYearSelected(val);
+                                            setStudent({...student, yearId: val.value});
                                             setRefreshData(true);
                                         }}
                                         placeholder="Pilih Tahun Pelajaran"
@@ -232,9 +227,9 @@ const List = () => {
                                 <div className="form-control-wrap">
                                     <RSelect
                                         options={institutionOptions}
-                                        value={institutionSelected}
+                                        value={institutionOptions.find((item) => item.value === student.institutionId)}
                                         onChange={(val) => {
-                                            setInstitutionSelected(val);
+                                            setStudent({...student, institutionId: val.value});
                                             setRefreshData(true);
                                         }}
                                         placeholder="Pilih Lembaga"
@@ -245,9 +240,9 @@ const List = () => {
                                 <div className="form-control-wrap">
                                     <RSelect
                                         options={rombelOptions}
-                                        value={rombelSelected}
+                                        value={rombelOptions?.find((item) => item.value === student.rombelId)}
                                         onChange={(val) => {
-                                            setRombelSelected(val);
+                                            setStudent({...student, rombelId: val.value});
                                             setRefreshData(true);
                                         }}
                                         placeholder="Pilih Rombel"
@@ -258,9 +253,9 @@ const List = () => {
                                 <div className="form-control-wrap">
                                     <RSelect
                                         options={boardingOptions}
-                                        value={boardingSelected}
+                                        value={boardingOptions.find((item) => item.value === student.boardingId)}
                                         onChange={(val) => {
-                                            setBoardingSelected(val);
+                                            setStudent({...student, boardingId: val.value});
                                             setRefreshData(true);
                                         }}
                                         placeholder="Pilih Boarding"

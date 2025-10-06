@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {ButtonGroup, Spinner} from "reactstrap";
 import Head from "@/layout/head";
 import Content from "@/layout/content";
@@ -14,8 +14,10 @@ import {
 } from "@/components";
 import {get as getInstitution, destroy as destroyInstitution} from "@/api/institution"
 import Partial from "@/pages/institution/list/partial";
+import {useOutletContext} from "react-router";
 
-const Major = () => {
+const Institution = () => {
+    const {user} = useOutletContext();
     const [sm, updateSm] = useState(false);
     const [loadData, setLoadData] = useState(true);
     const [loading, setLoading] = useState(false);
@@ -93,13 +95,19 @@ const Major = () => {
             )
         },
     ];
-
+    const params = useCallback(() => {
+        let param = {type: 'datatable'}
+        if (user.role !== '1') {
+            param.institutionId = user.institutionId;
+        }
+        return param;
+    }, [user]);
     useEffect(() => {
-        loadData && getInstitution({list: 'table'}).then((resp) => {
+        loadData && getInstitution(params()).then((resp) => {
             setInstitutions(resp)
             setLoadData(false);
         }).catch(() => setLoading(false));
-    }, [loadData]);
+    }, [loadData, params]);
 
     return (
         <React.Fragment>
@@ -123,17 +131,19 @@ const Major = () => {
                                     >
                                         <Icon name="menu-alt-r"></Icon>
                                     </Button>
-                                    <div className="toggle-expand-content" style={{display: sm ? "block" : "none"}}>
-                                        <ul className="nk-block-tools g-3">
-                                            <li>
-                                                <Button color="primary" size={"sm"} outline className="btn-white"
-                                                        onClick={() => setModal(true)}>
-                                                    <Icon name="plus"></Icon>
-                                                    <span>TAMBAH</span>
-                                                </Button>
-                                            </li>
-                                        </ul>
-                                    </div>
+                                    {user.role === "1" && (
+                                        <div className="toggle-expand-content" style={{display: sm ? "block" : "none"}}>
+                                            <ul className="nk-block-tools g-3">
+                                                <li>
+                                                    <Button color="primary" size={"sm"} outline className="btn-white"
+                                                            onClick={() => setModal(true)}>
+                                                        <Icon name="plus"></Icon>
+                                                        <span>TAMBAH</span>
+                                                    </Button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    )}
                                 </div>
                             </BlockHeadContent>
                         </BlockBetween>
@@ -148,4 +158,4 @@ const Major = () => {
     )
 }
 
-export default Major;
+export default Institution;

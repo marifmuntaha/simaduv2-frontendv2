@@ -1,8 +1,7 @@
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import Head from "@/layout/head";
 import Content from "@/layout/content";
 import {
-    BackTo,
     Block,
     BlockBetween,
     BlockHead,
@@ -13,31 +12,31 @@ import {
     ReactDataTable, Row, RSelect
 } from "@/components";
 import {ButtonGroup, Spinner} from "reactstrap";
-import {get as getRombel, destroy as destroyRombel} from "@/api/institution/rombel"
+import {get as getRombel, destroy as destroyRombel} from "@/api/institution/rombel";
 import {get as getYear} from "@/api/master/year";
 import {get as getInstitution} from "@/api/institution";
 import {get as getLevel} from "@/api/master/level";
 import Partial from "@/pages/institution/rombel/partial";
+import {useOutletContext} from "react-router";
 
 const Rombel = () => {
+    const {user} = useOutletContext();
     const [sm, updateSm] = useState(false);
     const [loadData, setLoadData] = useState(true);
     const [loading, setLoading] = useState(false);
     const [modal, setModal] = useState(false);
     const [yearOptions, setYearOptions] = useState([]);
-    const [yearSelected, setYearSelected] = useState([]);
     const [institutionOptions, setInstitutionOptions] = useState([]);
     const [institutionSelected, setInstitutionSelected] = useState([]);
     const [levelOptions, setLevelOptions] = useState([]);
-    const [levelSelected, setLevelSelected] = useState([]);
     const [rombels, setRombels] = useState([]);
     const [rombel, setRombel] = useState({
         id: null,
-        yearId: null,
-        institutionId: null,
-        teacherId: null,
+        yearId: user.yearId,
+        institutionId: user.role === '1' ? null : user.institutionId,
         levelId: null,
         majorId: null,
+        teacherId: null,
         name: "",
         alias: ""
     });
@@ -114,21 +113,16 @@ const Rombel = () => {
             )
         },
     ];
-    const params = useCallback(() => {
-        let query = {list: 'table'}
-        if (yearSelected.value !== undefined) {
-            query.yearId = yearSelected.value;
-        }
-        if (institutionSelected.value !== undefined) {
-            query.institutionId = institutionSelected.value;
-        }
-        return query;
-    }, [yearSelected, institutionSelected]);
 
     useEffect(() => {
         getYear({type: 'select'}).then(year => setYearOptions(year));
-        getInstitution({type: 'select', ladder: 'alias', with: 'ladder'}).then(institution => setInstitutionOptions(institution));
-    }, []);
+        getInstitution({type: 'select', ladder: 'alias', with: 'ladder'}).then(institution => {
+            setInstitutionOptions(institution);
+            if (user.role !== '1') {
+                setInstitutionSelected(institution.find((item) => item.value === user.institutionId));
+            }
+        });
+    }, [user]);
 
     useEffect(() => {
         const {value, ladder} = institutionSelected
@@ -136,11 +130,16 @@ const Rombel = () => {
     }, [institutionSelected]);
 
     useEffect(() => {
-        loadData && getRombel(params()).then((resp) => {
-            setRombels(resp)
+        loadData && getRombel({
+            type: 'datatable',
+            yearId: rombel.yearId,
+            institutionId: rombel.institutionId,
+            levelId: rombel.levelId,
+        }).then((resp) => {
+            setRombels(resp);
             setLoadData(false);
         }).catch(() => setLoading(false));
-    }, [loadData, params])
+    }, [loadData, rombel])
 
     return (
         <React.Fragment>
@@ -181,50 +180,53 @@ const Rombel = () => {
                     </BlockHead>
                     <PreviewCard>
                         <Row className="gy-0">
-                            <div className="form-group col-md-4">
+                            <div className={`form-group col-md-${user.role === '1' ? '4' : '6'}`}>
                                 <div className="form-control-wrap">
                                     <RSelect
                                         options={yearOptions}
-                                        value={yearSelected}
+                                        value={yearOptions.find((item) => item.value === rombel.yearId)}
                                         onChange={(val) => {
-                                            setYearSelected(val);
+                                            setRombel({...rombel, yearId: val.value});
                                             setLoadData(true);
                                         }}
                                         placeholder="Pilih Tahun Pelajaran"
                                     />
                                 </div>
                             </div>
-                            <div className="form-group col-md-4">
-                                <div className="form-control-wrap">
-                                    <RSelect
-                                        options={institutionOptions}
-                                        value={institutionSelected}
-                                        onChange={(val) => {
-                                            setInstitutionSelected(val);
-                                            setLevelSelected([]);
-                                            setLoadData(true);
-                                        }}
-                                        placeholder="Pilih Lembaga"
-                                    />
+                            {user.role === '1' && (
+                                <div className="form-group col-md-4">
+                                    <div className="form-control-wrap">
+                                        <RSelect
+                                            options={institutionOptions}
+                                            value={institutionOptions.find((item) => item.value === rombel.institutionId)}
+                                            onChange={(val) => {
+                                                setRombel({...rombel, institutionId: val.value});
+                                                setInstitutionSelected(val);
+                                                setLoadData(true);
+                                            }}
+                                            placeholder="Pilih Lembaga"
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="form-group col-md-4">
+                            )}
+                            <div className={`form-group col-md-${user.role === '1' ? '4' : '6'}`}>
                                 <div className="form-control-wrap">
                                     <RSelect
                                         options={levelOptions}
-                                        value={levelSelected}
+                                        value={levelOptions.find((item) => item.value === rombel.levelId)}
                                         onChange={(val) => {
-                                            setLevelSelected(val);
+                                            setRombel({...rombel, levelId: val.value});
                                             setLoadData(true);
                                         }}
                                         placeholder="Pilih Tingkat"
                                     />
                                 </div>
                             </div>
+                            <ReactDataTable data={rombels} columns={Column} pagination progressPending={loadData}/>
                         </Row>
-                        <ReactDataTable data={rombels} columns={Column} pagination progressPending={loadData}/>
                     </PreviewCard>
                     <Partial
+                        user={user}
                         modal={modal}
                         setModal={setModal}
                         rombel={rombel}

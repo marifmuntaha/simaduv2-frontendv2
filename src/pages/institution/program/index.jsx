@@ -1,9 +1,8 @@
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {ButtonGroup, Spinner} from "reactstrap";
 import Head from "@/layout/head";
 import Content from "@/layout/content";
 import {
-    BackTo,
     Block,
     BlockBetween,
     BlockHead,
@@ -17,21 +16,21 @@ import {get as getProgram, destroy as destroyProgram} from "@/api/institution/pr
 import {get as getYear} from "@/api/master/year";
 import {get as getInstitution} from "@/api/institution";
 import Partial from "@/pages/institution/program/partial";
+import {useOutletContext} from "react-router";
 
 const Program = () => {
+    const {user} = useOutletContext();
     const [sm, updateSm] = useState(false);
     const [loadData, setLoadData] = useState(true);
     const [loading, setLoading] = useState(false);
     const [yearOptions, setYearOptions] = useState([]);
-    const [yearSelected, setYearSelected] = useState([]);
     const [institutionOptions, setInstitutionOptions] = useState([]);
-    const [institutionSelected, setInstitutionSelected] = useState([])
     const [modal, setModal] = useState(false);
     const [programs, setPrograms] = useState([]);
     const [program, setProgram] = useState({
         id: null,
-        yearId: null,
-        institutionId: null,
+        yearId: user.yearId,
+        institutionId: user.role === '1' ? null :user.institutionId,
         name: "",
         alias: ""
     });
@@ -87,35 +86,30 @@ const Program = () => {
             )
         },
     ];
-    const params = useCallback(() => {
-        let query = {list: 'table'}
-        if (yearSelected.value !== undefined) {
-            query.yearId = yearSelected.value;
-        }
-        if (institutionSelected.value !== undefined) {
-            query.institutionId = institutionSelected.value;
-        }
-        return query;
-    }, [yearSelected, institutionSelected]);
+
     useEffect(() => {
-        getYear({type: 'select'}).then(year => setYearOptions(year));
-        getInstitution({type: 'select', ladder: 'alias'}).then(institution => setInstitutionOptions(institution));
-    }, []);
+        getYear({type: 'select'}).then(year => {
+            setYearOptions(year);
+        });
+        getInstitution({type: 'select', ladder: 'alias'}).then(institution => {
+            setInstitutionOptions(institution);
+        });
+    }, [user]);
+
     useEffect(() => {
-        loadData && getProgram(params()).then((resp) => {
+        loadData && getProgram({
+            type: 'datatable',
+            yearId: program.yearId,
+            institutionId: program.institutionId,
+        }).then((resp) => {
             setPrograms(resp)
             setLoadData(false);
         }).catch(() => setLoading(false));
-    }, [loadData, params])
+    }, [loadData, program]);
     return (
         <React.Fragment>
             <Head title="Data Program"/>
             <Content page="component">
-                <BlockHeadContent>
-                    <BackTo link="/" icon="arrow-left">
-                        Beranda
-                    </BackTo>
-                </BlockHeadContent>
                 <Block size="lg">
                     <BlockHead>
                         <BlockBetween>
@@ -151,36 +145,39 @@ const Program = () => {
                     </BlockHead>
                     <PreviewCard>
                         <Row className="gy-0">
-                            <div className="form-group col-md-6">
+                            <div className={`form-group col-md-${user.role === '1' ? '6' : '12'}`}>
                                 <div className="form-control-wrap">
                                     <RSelect
                                         options={yearOptions}
-                                        value={yearSelected}
+                                        value={yearOptions?.find((item) => item.value === program.yearId)}
                                         onChange={(val) => {
-                                            setYearSelected(val);
+                                            setProgram({...program, yearId:val.value});
                                             setLoadData(true);
                                         }}
                                         placeholder="Pilih Tahun Pelajaran"
                                     />
                                 </div>
                             </div>
-                            <div className="form-group col-md-6">
-                                <div className="form-control-wrap">
-                                    <RSelect
-                                        options={institutionOptions}
-                                        value={institutionSelected}
-                                        onChange={(val) => {
-                                            setInstitutionSelected(val);
-                                            setLoadData(true);
-                                        }}
-                                        placeholder="Pilih Lembaga"
-                                    />
+                            {user.role === '1' && (
+                                <div className="form-group col-md-6">
+                                    <div className="form-control-wrap">
+                                        <RSelect
+                                            options={institutionOptions}
+                                            value={institutionOptions.find((item) => item.value === program.institutionId)}
+                                            onChange={(val) => {
+                                                setProgram({...program, institutionId:val.value});
+                                                setLoadData(true);
+                                            }}
+                                            placeholder="Pilih Lembaga"
+                                        />
+                                    </div>
                                 </div>
-                            </div>
+                            )}
+                            <ReactDataTable data={programs} columns={Column} pagination progressPending={loadData}/>
                         </Row>
-                        <ReactDataTable data={programs} columns={Column} pagination progressPending={loadData}/>
                     </PreviewCard>
                     <Partial
+                        user={user}
                         modal={modal}
                         setModal={setModal}
                         program={program}

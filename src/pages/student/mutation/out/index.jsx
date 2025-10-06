@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from "react";
+import {useOutletContext} from "react-router";
 import {Badge, Button, ButtonGroup, Spinner} from "reactstrap";
 import Head from "@/layout/head";
 import Content from "@/layout/content";
@@ -10,27 +11,32 @@ import {
     BlockTitle,
     Icon,
     PreviewCard,
-    ReactDataTable
+    ReactDataTable, Row, RSelect
 } from "@/components";
+import {get as getYear} from "@/api/master/year";
+import {get as getInstitution} from "@/api/institution";
 import {get as getMutation, destroy as destroyMutation} from "@/api/student/mutation";
 import Partial from "./partial";
 
 const MutationOut = () => {
+    const {user} = useOutletContext();
     const [sm, updateSm] = useState(false);
     const [loading, setLoading] = useState(false);
     const [reloadData, setReloadData] = useState(true);
     const [mutations, setMutations] = useState([]);
     const [mutation, setMutation] = useState({
-        id: "",
-        yearId: "",
-        institutionId: "",
-        studentId: "",
+        id: null,
+        yearId: user.yearId,
+        institutionId: user.role === '1' ? null : user.institutionId,
+        studentId: null,
         type: 1,
         token: '',
         numberLetter: '',
         description: "",
         letterEmis: "",
     });
+    const [yearOptions, setYearOptions] = useState([]);
+    const [institutionOptions, setInstitutionOptions] = useState([]);
     const [modal, setModal] = useState(false);
     const Columns = [
         {
@@ -97,13 +103,19 @@ const MutationOut = () => {
     ];
 
     useEffect(() => {
-        reloadData && getMutation({list: 'table'}).then((resp) => {
+        reloadData && getMutation({type: 'datatable'}).then((resp) => {
             setMutations(resp);
             setReloadData(false);
         }).catch(() => {
             setReloadData(false);
         })
     }, [reloadData]);
+
+    useEffect(() => {
+        getYear({type: 'select'}).then(data => setYearOptions(data));
+        getInstitution({type: 'select', ladder: 'alias'}).then(data => setInstitutionOptions(data));
+    }, []);
+
     return (
         <React.Fragment>
             <Head title="Mutasi Keluar Siswa"/>
@@ -142,10 +154,49 @@ const MutationOut = () => {
                         </BlockBetween>
                     </BlockHead>
                     <PreviewCard>
-                        <ReactDataTable data={mutations} columns={Columns} expandableRows pagination/>
+                        <Row className="gy-0">
+                            <div className={`form-group col-md-${user.role === '1' ? '6' : '12'}`}>
+                                <label className="form-label" htmlFor="yearId">Pilih Tahun Pelajaran</label>
+                                <div className="form-control-wrap">
+                                    <RSelect
+                                        options={yearOptions}
+                                        value={yearOptions.find((e) => e.value === user.yearId)}
+                                        onChange={(e) => {
+                                            setMutation({...mutation, yearId: e.value})
+                                        }}
+                                        placeholder="Pilih Tahun Pelajaran"
+                                    />
+                                </div>
+                            </div>
+                            {user.role === '1' && (
+                                <div className="form-group col-md-6">
+                                    <label className="form-label" htmlFor="institutionId">Pilih Lembaga</label>
+                                    <div className="form-control-wrap">
+                                        <RSelect
+                                            options={institutionOptions}
+                                            value={institutionOptions?.find((e) => e.value === user.institutionId)}
+                                            onChange={(e) => {
+                                                setMutation({...mutation, institutionId: e.value});
+                                            }}
+                                            placeholder="Pilih Lembaga"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                            <ReactDataTable data={mutations} columns={Columns} expandableRows pagination/>
+                        </Row>
                     </PreviewCard>
                 </Block>
-                <Partial modal={modal} setModal={setModal} mutation={mutation} setMutation={setMutation} setReloadData={setReloadData} />
+                <Partial
+                    user={user}
+                    modal={modal}
+                    setModal={setModal}
+                    mutation={mutation}
+                    setMutation={setMutation}
+                    setReloadData={setReloadData}
+                    yearOptions={yearOptions}
+                    institutionOptions={institutionOptions}
+                />
             </Content>
         </React.Fragment>
     )

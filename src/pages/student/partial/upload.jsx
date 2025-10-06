@@ -12,8 +12,10 @@ import {store as storeStudent, destroy as destroyStudent} from "@/api/student";
 import {store as storeAddress, destroy as destroyAddress} from "@/api/student/address";
 import {store as storeActivity} from "@/api/student/activity";
 import {calcPercentage} from "@/utils";
+import {useOutletContext} from "react-router";
 
 const Upload = ({modal, setModal, setRefreshData, yearOptions, institutionOptions}) => {
+    const {user} = useOutletContext();
     const {
         handleSubmit,
         register,
@@ -21,14 +23,18 @@ const Upload = ({modal, setModal, setRefreshData, yearOptions, institutionOption
         formState: {errors}
     } = useForm();
     const [loading, setLoading] = useState(false);
+    const [upload, setUpload] = useState({
+        yearId: user.yearId,
+        institutionId: user.role === '1' ? null : user.institutionId,
+        rombelId: null,
+        programId: null
+    })
     const [dataStart, setDataStart] = useState(0);
     const [dataTotal, setDataTotal] = useState(0);
-    const [yearSelected, setYearSelected] = useState([]);
     const [institutionSelected, setInstitutionSelected] = useState([]);
     const [rombelOptions, setRombelOptions] = useState([]);
     const [rombelSelected, setRombelSelected] = useState([]);
     const [programOptions, setProgramOptions] = useState([]);
-    const [programSelected, setProgramSelected] = useState([]);
     const [errorsStudent, setErrorsStudent] = useState([]);
     const [file, setFile] = useState({});
     const onSubmit = async () => {
@@ -223,11 +229,11 @@ const Upload = ({modal, setModal, setRefreshData, yearOptions, institutionOption
                         const paramActivity = {
                             status: '1',
                             studentId: student.id,
-                            yearId: yearSelected.value,
-                            institutionId: institutionSelected.value,
+                            yearId: upload.yearId,
+                            institutionId: upload.institutionId,
                             levelId: rombelSelected.levelId,
                             rombelId: rombelSelected.value,
-                            programId: programSelected.value,
+                            programId: upload.programId,
                             boardingId: boardingId(item['Boarding']),
                         }
                         const activity = await storeActivity(paramActivity, false);
@@ -256,31 +262,31 @@ const Upload = ({modal, setModal, setRefreshData, yearOptions, institutionOption
     const toggle = () => {
         setModal(false);
         setInstitutionSelected([]);
-        setYearSelected([]);
         setRombelSelected([]);
-        setProgramSelected([]);
         setErrorsStudent([]);
     }
 
     useEffect(() => {
-        if (institutionSelected.value !== undefined && yearSelected.value !== undefined) {
-            getRombel({
-                type: 'select',
-                institutionId: institutionSelected.value,
-                yearId: yearSelected.value,
-                with: 'level'
-            }).then((resp) => {
-                setRombelOptions(resp);
-            });
-            getProgram({
-                type: 'select',
-                institutionId: institutionSelected.value,
-                yearId: yearSelected.value,
-            }).then((resp) => {
-                setProgramOptions(resp);
-            });
-        }
-    }, [institutionSelected, yearSelected]);
+        modal && upload.institutionId !== null && getRombel({
+            type: 'select',
+            yearId: upload.yearId,
+            institutionId: upload.institutionId,
+            with: 'level'
+        }).then((resp) => {
+            setRombelOptions(resp);
+        });
+        modal && upload.institutionId !== null && getProgram({
+            type: 'select',
+            yearId: upload.yearId,
+            institutionId: upload.institutionId,
+        }).then((resp) => {
+            setProgramOptions(resp);
+        });
+    }, [modal, upload.institutionId, upload.yearId]);
+    useEffect(() => {
+        setValue('yearId', upload.yearId);
+        setValue('institutionId', upload.institutionId);
+    }, [upload, setValue]);
 
     return (
         <Modal isOpen={modal} toggle={toggle} size="md">
@@ -292,32 +298,14 @@ const Upload = ({modal, setModal, setRefreshData, yearOptions, institutionOption
             <ModalBody>
                 <form className="is-alter" onSubmit={handleSubmit(onSubmit)}>
                     <Row className="gy-0">
-                        <div className="form-group col-md-6">
-                            <label className="form-label" htmlFor="institutionId">Pilih Lembaga</label>
-                            <div className="form-control-wrap">
-                                <RSelect
-                                    options={institutionOptions}
-                                    value={institutionSelected}
-                                    onChange={(val) => {
-                                        setInstitutionSelected(val);
-                                        setValue('institutionId', val.value)
-                                    }}
-                                    placeholder="Pilih Lembaga"
-                                />
-                                <input type="hidden" id="institutionId" className="form-control" {
-                                    ...register("institutionId", {required: true, value: institutionSelected})
-                                } />
-                                {errors.institutionId && <span className="invalid">Kolom tidak boleh kosong.</span>}
-                            </div>
-                        </div>
-                        <div className="form-group col-md-6">
+                        <div className={`form-group col-md-${user.role === '1' ? '6' : '12'}`}>
                             <label className="form-label" htmlFor="yearId">Pilih Tahun Pelajaran</label>
                             <div className="form-control-wrap">
                                 <RSelect
                                     options={yearOptions}
-                                    value={yearSelected}
+                                    value={yearOptions?.find((e) => e.value === upload.yearId)}
                                     onChange={(val) => {
-                                        setYearSelected(val);
+                                        setUpload({...upload, yearId: val.value});
                                         setValue('yearId', val.value)
                                     }}
                                     placeholder="Pilih Tahun Pelajaran"
@@ -327,13 +315,34 @@ const Upload = ({modal, setModal, setRefreshData, yearOptions, institutionOption
                                 {errors.yearId && <span className="invalid">Kolom tidak boleh kosong.</span>}
                             </div>
                         </div>
+                        {user.role === '1' && (
+                            <div className="form-group col-md-6">
+                                <label className="form-label" htmlFor="institutionId">Pilih Lembaga</label>
+                                <div className="form-control-wrap">
+                                    <RSelect
+                                        options={institutionOptions}
+                                        value={institutionOptions?.find((e) => e.value === upload.institutionId)}
+                                        onChange={(val) => {
+                                            setUpload({...upload, institutionId: val.value});
+                                            setValue('institutionId', val.value)
+                                        }}
+                                        placeholder="Pilih Lembaga"
+                                    />
+                                    <input type="hidden" id="institutionId" className="form-control" {
+                                        ...register("institutionId", {required: true, value: institutionSelected})
+                                    } />
+                                    {errors.institutionId && <span className="invalid">Kolom tidak boleh kosong.</span>}
+                                </div>
+                            </div>
+                        )}
                         <div className="form-group col-md-6">
                             <label className="form-label" htmlFor="rombelId">Pilih Rombel</label>
                             <div className="form-control-wrap">
                                 <RSelect
                                     options={rombelOptions}
-                                    value={rombelSelected}
+                                    value={rombelOptions.find((e) => e.value === upload.rombelId)}
                                     onChange={(val) => {
+                                        setUpload({...upload, rombelId: val.value});
                                         setRombelSelected(val);
                                         setValue('rombelId', val.value)
                                     }}
@@ -349,9 +358,9 @@ const Upload = ({modal, setModal, setRefreshData, yearOptions, institutionOption
                             <div className="form-control-wrap">
                                 <RSelect
                                     options={programOptions}
-                                    value={programSelected}
+                                    value={programOptions.find((e) => e.value === upload.programId)}
                                     onChange={(val) => {
-                                        setProgramSelected(val);
+                                        setUpload({...upload, programId: val.value});
                                         setValue('programId', val.value)
                                     }}
                                     placeholder="Pilih Program"

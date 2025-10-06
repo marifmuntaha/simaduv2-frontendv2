@@ -7,7 +7,7 @@ import {get as getLevel} from "@/api/master/level";
 import {get as getMajor} from "@/api/master/major";
 import {get as getTeacher} from "@/api/teacher";
 
-const Partial = ({modal, setModal, rombel, setRombel, setLoadData, yearOptions, institutionOptions}) => {
+const Partial = ({user, modal, setModal, rombel, setRombel, setLoadData, yearOptions, institutionOptions}) => {
     const [loading, setLoading] = useState(false);
     const [levelOptions, setLevelOptions] = useState([]);
     const [majorOptions, setMajorOptions] = useState([]);
@@ -45,11 +45,11 @@ const Partial = ({modal, setModal, rombel, setRombel, setLoadData, yearOptions, 
     const handleReset = () => {
         setRombel({
             id: null,
-            yearId: null,
-            institutionId: null,
-            teacherId: null,
+            yearId: user.yearId,
+            institutionId: user.role === '1' ? null : user.institutionId,
             levelId: null,
             majorId: null,
+            teacherId: null,
             name: "",
             alias: ""
         });
@@ -63,10 +63,10 @@ const Partial = ({modal, setModal, rombel, setRombel, setLoadData, yearOptions, 
 
     useEffect(() => {
         const {value, ladder} = institutionSelected !== undefined ? institutionSelected : false;
-        value !== undefined && getLevel({type: 'select', ladderId: ladder.id}).then((resp) => setLevelOptions(resp));
-        value !== undefined && getMajor({type: 'select', ladderId: ladder.id}).then((resp) => setMajorOptions(resp));
-        value !== undefined && getTeacher({type: 'select', institutionId: value}).then((resp) => setTeacherOptions(resp));
-    }, [institutionSelected])
+        modal && value !== undefined && getLevel({type: 'select', ladderId: ladder.id}).then((resp) => setLevelOptions(resp));
+        modal && value !== undefined && getMajor({type: 'select', ladderId: ladder.id}).then((resp) => setMajorOptions(resp));
+        modal && value !== undefined && getTeacher({type: 'select', institutionId: value}).then((resp) => setTeacherOptions(resp));
+    }, [modal, institutionSelected]);
 
     useEffect(() => {
         setValue('id', rombel.id)
@@ -92,7 +92,7 @@ const Partial = ({modal, setModal, rombel, setRombel, setLoadData, yearOptions, 
             <ModalBody>
                 <form className="is-alter" onSubmit={handleSubmit(onSubmit)}>
                     <Row className="gy-0">
-                        <div className="form-group col-md-6">
+                        <div className={`form-group col-md-${user.role === '1' ? '6' : '12'}`}>
                             <label className="form-label" htmlFor="yearId">Tahun Pelajaran</label>
                             <div className="form-control-wrap">
                                 <RSelect
@@ -108,25 +108,25 @@ const Partial = ({modal, setModal, rombel, setRombel, setLoadData, yearOptions, 
                                 {errors.yearId && <span className="invalid">Kolom tidak boleh kosong.</span>}
                             </div>
                         </div>
-                        <div className="form-group col-md-6">
-                            <label className="form-label" htmlFor="institutionId">Lembaga</label>
-                            <div className="form-control-wrap">
-                                <RSelect
-                                    options={institutionOptions}
-                                    value={institutionOptions?.find((c) => c.value === rombel.institutionId)}
-                                    onChange={(e) => {
-                                        setRombel({...rombel, institutionId: e.value});
-                                        setInstitutionSelected(e);
-                                        setValue('institutionId', e.value);
-                                    }}
-                                    placeholder="Pilih Lembaga"
-                                />
-                                <input type="hidden" id="institutionId" className="form-control" {...register("institutionId", {required: true})}/>
-                                {errors.institutionId && <span className="invalid">Kolom tidak boleh kosong.</span>}
+                        {user.role === '1' && (
+                            <div className="form-group col-md-6">
+                                <label className="form-label" htmlFor="institutionId">Lembaga</label>
+                                <div className="form-control-wrap">
+                                    <RSelect
+                                        options={institutionOptions}
+                                        value={institutionOptions?.find((c) => c.value === rombel.institutionId)}
+                                        onChange={(e) => {
+                                            setRombel({...rombel, institutionId: e.value});
+                                            setInstitutionSelected(e);
+                                            setValue('institutionId', e.value);
+                                        }}
+                                        placeholder="Pilih Lembaga"
+                                    />
+                                    <input type="hidden" id="institutionId" className="form-control" {...register("institutionId", {required: true})}/>
+                                    {errors.institutionId && <span className="invalid">Kolom tidak boleh kosong.</span>}
+                                </div>
                             </div>
-                        </div>
-                    </Row>
-                    <Row className="gy-0">
+                        )}
                         <div className="form-group col-md-4">
                             <label className="form-label" htmlFor="levelId">Tingkat</label>
                             <div className="form-control-wrap">
@@ -175,44 +175,44 @@ const Partial = ({modal, setModal, rombel, setRombel, setLoadData, yearOptions, 
                                 {errors.name && <span className="invalid">Kolom tidak boleh kosong</span>}
                             </div>
                         </div>
+                        <div className="form-group">
+                            <label className="form-label" htmlFor="alias">Alias</label>
+                            <div className="form-control-wrap">
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    id="alias"
+                                    placeholder="Ex. XII.IPA.2"
+                                    {...register("alias", {
+                                        required: true,
+                                        onChange: (e) => handleChange(e)
+                                    })}
+                                />
+                                {errors.alias && <span className="invalid">Kolom tidak boleh kosong</span>}
+                            </div>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label" htmlFor="teacherId">Walikelas</label>
+                            <div className="form-control-wrap">
+                                <RSelect
+                                    options={teacherOptions}
+                                    value={teacherOptions?.find((c) => c.value === rombel.teacherId)}
+                                    onChange={(e) => {
+                                        setRombel({...rombel, teacherId: e.value});
+                                        setValue('teacherId', e.value)
+                                    }}
+                                    placeholder="Pilih Walikelas"
+                                />
+                                <input type="hidden" id="teacherId" className="form-control" {...register("teacherId", {required: true})} />
+                                {errors.teacherId && <span className="invalid">Kolom tidak boleh kosong.</span>}
+                            </div>
+                        </div>
+                        <div className="form-group">
+                            <Button color="primary" type="submit" size="md">
+                                {loading ? <Spinner size="sm"/> : 'SIMPAN'}
+                            </Button>
+                        </div>
                     </Row>
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="alias">Alias</label>
-                        <div className="form-control-wrap">
-                            <input
-                                type="text"
-                                className="form-control"
-                                id="alias"
-                                placeholder="Ex. XII.IPA.2"
-                                {...register("alias", {
-                                    required: true,
-                                    onChange: (e) => handleChange(e)
-                                })}
-                            />
-                            {errors.alias && <span className="invalid">Kolom tidak boleh kosong</span>}
-                        </div>
-                    </div>
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="teacherId">Walikelas</label>
-                        <div className="form-control-wrap">
-                            <RSelect
-                                options={teacherOptions}
-                                value={teacherOptions?.find((c) => c.value === rombel.teacherId)}
-                                onChange={(e) => {
-                                    setRombel({...rombel, teacherId: e.value});
-                                    setValue('teacherId', e.value)
-                                }}
-                                placeholder="Pilih Walikelas"
-                            />
-                            <input type="hidden" id="teacherId" className="form-control" {...register("teacherId", {required: true})} />
-                            {errors.teacherId && <span className="invalid">Kolom tidak boleh kosong.</span>}
-                        </div>
-                    </div>
-                    <div className="form-group">
-                        <Button color="primary" type="submit" size="md">
-                            {loading ? <Spinner size="sm"/> : 'SIMPAN'}
-                        </Button>
-                    </div>
                 </form>
             </ModalBody>
         </Modal>

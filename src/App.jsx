@@ -3,9 +3,9 @@ import {GoogleReCaptchaProvider} from "react-google-recaptcha-v3";
 
 const App = () => {
     return (
-        <GoogleReCaptchaProvider reCaptchaKey="6LdRcLgrAAAAAMi5nlelWwrH-c8ShS3viUdomc9i">
+        // <GoogleReCaptchaProvider reCaptchaKey="6LdRcLgrAAAAAMi5nlelWwrH-c8ShS3viUdomc9i">
             <Router />
-        </GoogleReCaptchaProvider>
+        // </GoogleReCaptchaProvider>
     );
 };
 export default App;
