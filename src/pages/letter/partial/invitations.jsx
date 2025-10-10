@@ -1,13 +1,22 @@
-import React from "react";
+import React, {useEffect} from "react";
 import {useForm} from "react-hook-form";
 
 const Invitations = ({letter, setLetter}) => {
-    const {register, formState: {errors}} = useForm();
+    const {register, setValue, formState: {errors}} = useForm();
     const handleChange = (e) => {
         setLetter({...letter, data: {
         ...letter.data, [e.target.name]: e.target.value}
         });
     }
+
+    useEffect(() => {
+        setValue('to', letter.data.to)
+        setValue('date', letter.data.date)
+        setValue('time', letter.data.time)
+        setValue('place', letter.data.place)
+        setValue('event', letter.data.event)
+        setValue('description', letter.data.description)
+    }, [letter, setValue])
     return (
         <React.Fragment>
             <div className="form-group">

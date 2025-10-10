@@ -31,6 +31,7 @@ import Setting from "@/pages/setting/index.jsx";
 import Discount from "@/pages/finance/discount/index.jsx";
 import Room from "@/pages/institution/room/index.jsx";
 import Letter from "@/pages/letter/index.jsx";
+import Certificate from "@/pages/signature/certificate/index.jsx";
 
 const ScrollToTop = (props) => {
     const location = useLocation();
@@ -76,6 +77,9 @@ const Router = () => {
                                 </Route>
                                 <Route path="data-surat">
                                     <Route path="masuk" element={<Letter/>}/>
+                                </Route>
+                                <Route path="tanda-tangan">
+                                    <Route path="buat" element={<Certificate/>}/>
                                 </Route>
                                 <Route path="keuangan">
                                     <Route path="data-rekening" element={<Account/>}/>

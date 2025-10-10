@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {Button, ButtonGroup, Spinner} from "reactstrap";
-import Head from "@/layout/head";
-import Content from "@/layout/content";
+import Head from "@/layout/head/index.jsx";
+import Content from "@/layout/content/index.jsx";
 import {
     Block,
     BlockBetween,
@@ -11,65 +11,43 @@ import {
     Icon,
     PreviewCard,
     ReactDataTable
-} from "@/components";
-import {get as getLetter, destroy as destroyLetter} from "@/api/letter";
-import Partial from "@/pages/letter/partial";
+} from "@/components/index.jsx";
+import {get as getCertificate, store as storeCertificate, destroy as destroyCertificate} from "@/api/certificate";
 import {useOutletContext} from "react-router";
+import moment from "moment/moment";
 
-const Letter = () => {
+const Certificate = () => {
     const {user} = useOutletContext();
     const [sm, updateSm] = useState(false);
     const [loading, setLoading] = useState(false);
     const [reloadData, setReloadData] = useState(true);
-    const [letters, setLetters] = useState([]);
-    const [letter, setLetter] = useState({
-        id: null,
-        yearId: user.yearId,
-        institutionId: user.role === '1' ? null : user.institutionId,
-        number: "",
-        type: "",
-        data: "",
-        signature: '',
+    const [certificates, setCertificates] = useState([]);
+    const [certificate, setCertificate] = useState({
+        name: "",
+        alias: "",
+        description: "",
     });
     const [modal, setModal] = useState(false);
-    const typeLetter = (type) => {
-        switch (type) {
-            case "1.01":
-                return "Surat Keterangan"
-            case "1.02":
-                return "Surat Keterangan Aktif"
-            case "1.03":
-                return "Surat Pindah Sekolah"
-            case "1.04":
-                return "Surat Undangan"
-            default:
-                return ""
-        }
-    }
     const Columns = [
         {
-            name: "Nomor Surat",
-            selector: (row) => row.number,
+            name: "Nama",
+            selector: (row) => row.data['issuer']['commonName'],
             sortable: false,
             // hide: 370,
-            width: "250px",
+            // width: "300px",
         },
         {
-            name: "Tipe Surat",
-            selector: (row) => typeLetter(row.type),
+            name: "Serial Number",
+            selector: (row) => row.data['serialNumberHex'],
             sortable: false,
             // hide: 370,
-            width: "200px",
+            // width: "200px",
         },
         {
-            name: "Diskripsi",
-            selector: (row) => row.data,
+            name: "Aktif Sampai",
+            selector: (row) => moment.unix(row.data['validTo_time_t']).format("DD/MM/YYYY"),
             sortable: false,
             // hide: 370,
-            cell: (row) => {
-                const data = row.data;
-                return ("Penerima: " + data.to + " Acara: " + data.event)
-            }
 
         },
         {
@@ -80,17 +58,9 @@ const Letter = () => {
             width: "150px",
             cell: (row) => (
                 <ButtonGroup size="sm">
-                    <Button outline color="info" onClick={() => {
-                        setLetter(row);
-                        setModal(true);
-                    }}><Icon name="printer"/></Button>
-                    <Button outline color="warning" onClick={() => {
-                        setLetter(row);
-                        setModal(true);
-                    }}><Icon name="pen"/></Button>
                     <Button outline color="danger" onClick={() => {
                         setLoading(row.id)
-                        destroyLetter(row.id).then(() => {
+                        destroyCertificate(row.id).then(() => {
                             setLoading(false);
                             setReloadData(true);
                         }).catch(() => setLoading(false))
@@ -99,25 +69,30 @@ const Letter = () => {
             )
         },
     ];
+    const handleSubmit = async () => {
+        setLoading(true);
+        const certificate = await storeCertificate(user);
+        console.log(certificate);
+        setLoading(false);
+    }
 
     useEffect(() => {
-        reloadData && getLetter({type: 'datatable', yearId: user.yearId, institutionId: user.institutionId})
-            .then((resp) => {
-                setLetters(resp);
-                setReloadData(false);
-            }).catch(() => {
-                setReloadData(false);
-            });
-    }, [reloadData, user]);
+        reloadData && getCertificate({type: 'datatable'}).then((resp) => {
+            setCertificates(resp);
+            setReloadData(false);
+        }).catch(() => {
+            setReloadData(false);
+        })
+    }, [reloadData]);
     return (
         <React.Fragment>
-            <Head title="Data Jenjang"/>
-            <Content>
+            <Head title="Data Sertifikat"/>
+            <Content page="component">
                 <Block size="lg">
                     <BlockHead>
                         <BlockBetween>
                             <BlockHeadContent>
-                                <BlockTitle tag="h4">Data Surat Masuk</BlockTitle>
+                                <BlockTitle tag="h4">Data Sertifikat</BlockTitle>
                                 <p>
                                     Just import <code>ReactDataTable</code> from <code>components</code>, it is built in
                                     for react dashlite.
@@ -134,10 +109,13 @@ const Letter = () => {
                                     <div className="toggle-expand-content" style={{display: sm ? "block" : "none"}}>
                                         <ul className="nk-block-tools g-3">
                                             <li>
-                                                <Button color="primary" size={"sm"} outline className="btn-white"
-                                                        onClick={() => setModal(true)}>
-                                                    <Icon name="plus"></Icon>
-                                                    <span>TAMBAH</span>
+                                                <Button color="danger" size={"sm"} outline className="btn-white" onClick={() => handleSubmit()}>
+                                                    {loading
+                                                        ? <Spinner size="sm"/>
+                                                        : <React.Fragment>
+                                                            <Icon name="reload"></Icon>
+                                                            <span>GENERATE</span>
+                                                        </React.Fragment>}
                                                 </Button>
                                             </li>
                                         </ul>
@@ -147,19 +125,12 @@ const Letter = () => {
                         </BlockBetween>
                     </BlockHead>
                     <PreviewCard>
-                        <ReactDataTable data={letters} columns={Columns} expandableRows pagination/>
+                        <ReactDataTable data={certificates} columns={Columns} expandableRows pagination/>
                     </PreviewCard>
                 </Block>
-                <Partial
-                    user={user}
-                    modal={modal}
-                    setModal={setModal}
-                    letter={letter}
-                    setLetter={setLetter}
-                    setReloadData={setReloadData}
-                />
+                {/*<Partial modal={modal} setModal={setModal} setReloadData={setReloadData} />*/}
             </Content>
         </React.Fragment>
     )
 }
-export default Letter;
+export default Certificate;

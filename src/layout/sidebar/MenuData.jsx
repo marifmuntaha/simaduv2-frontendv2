@@ -301,7 +301,43 @@ const OperatorMenu = [
         link: "/data-pengguna",
     },
 ];
-
+const HeadMenu = [
+    {
+        icon: "monitor",
+        text: "Dashboard",
+        link: "/",
+    },
+    {
+        icon: "building",
+        text: "Data Lembaga",
+        active: false,
+        subMenu: [
+            {
+                text: "Daftar Lembaga",
+                link: "/data-lembaga/daftar",
+            },
+            {
+                text: "Data Program",
+                link: "/data-lembaga/program",
+            },
+            {
+                text: "Rombongan Belajar",
+                link: "/data-lembaga/rombongan-belajar",
+            },
+        ],
+    },
+    {
+        icon: "edit-alt",
+        text: "Tanda Tangan",
+        active: false,
+        subMenu: [
+            {
+                text: "Buat",
+                link: "/tanda-tangan/buat",
+            },
+        ],
+    },
+]
 const DefaultMenu = [
     {
         heading: "Use-case preview",
@@ -857,4 +893,4 @@ const DefaultMenu = [
         link: "/email-template",
     },
 ];
-export {RootMenu, DefaultMenu, OperatorMenu} ;
+export {RootMenu, DefaultMenu, OperatorMenu, HeadMenu} ;

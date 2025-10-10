@@ -1,6 +1,6 @@
 import React from "react";
 import {Outlet} from "react-router-dom";
-import {RootMenu, DefaultMenu, OperatorMenu} from "./sidebar/MenuData";
+import {RootMenu, DefaultMenu, OperatorMenu, HeadMenu} from "./sidebar/MenuData";
 import Sidebar from "./sidebar";
 import Head from "./head";
 import Header from "./header";
@@ -17,8 +17,10 @@ const WithSidebar = ({title, ...props}) => {
         switch (user.role) {
             case '1':
                 return RootMenu
-            case  '2':
+            case '2':
                 return OperatorMenu
+            case '6':
+                return HeadMenu
             default:
                 return DefaultMenu;
         }

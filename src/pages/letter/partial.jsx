@@ -66,12 +66,11 @@ const Partial = ({user, modal, setModal, letter, setLetter, setReloadData}) => {
         setValue('yearId', letter.yearId);
         setValue('institutionId', letter.institutionId);
         setValue('type', letter.type);
-        setValue('data', letter.data);
         setValue('signature', letter.signature);
     }, [letter, setValue]);
 
     return (
-        <Modal isOpen={modal} toggle={toggle}>
+        <Modal isOpen={modal} toggle={toggle} size="lg">
             <ModalHeader toggle={toggle} close={
                 <button className="close" onClick={toggle}>
                     <Icon name="cross"/>
@@ -103,7 +102,7 @@ const Partial = ({user, modal, setModal, letter, setLetter, setReloadData}) => {
                         <div className="form-control-wrap">
                             <RSelect
                                 options={signatureOptions}
-                                value={signatureOptions?.find((c) => c.value === letter.signature)}
+                                value={signatureOptions?.find((c) => parseInt(c.value) === letter.signature)}
                                 onChange={(e) => {
                                     setLetter({...letter, signature: e.value});
                                     setValue('type', e.value);
