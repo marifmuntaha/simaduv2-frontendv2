@@ -1,7 +1,9 @@
 import React, {useEffect, useState} from "react";
+import moment from "moment/moment";
 import {Button, ButtonGroup, Spinner} from "reactstrap";
-import Head from "@/layout/head/index.jsx";
-import Content from "@/layout/content/index.jsx";
+import {useOutletContext} from "react-router";
+import Head from "@/layout/head";
+import Content from "@/layout/content";
 import {
     Block,
     BlockBetween,
@@ -11,10 +13,8 @@ import {
     Icon,
     PreviewCard,
     ReactDataTable
-} from "@/components/index.jsx";
+} from "@/components";
 import {get as getCertificate, store as storeCertificate, destroy as destroyCertificate} from "@/api/certificate";
-import {useOutletContext} from "react-router";
-import moment from "moment/moment";
 
 const Certificate = () => {
     const {user} = useOutletContext();
@@ -22,26 +22,20 @@ const Certificate = () => {
     const [loading, setLoading] = useState(false);
     const [reloadData, setReloadData] = useState(true);
     const [certificates, setCertificates] = useState([]);
-    const [certificate, setCertificate] = useState({
-        name: "",
-        alias: "",
-        description: "",
-    });
-    const [modal, setModal] = useState(false);
     const Columns = [
         {
             name: "Nama",
             selector: (row) => row.data['issuer']['commonName'],
             sortable: false,
             // hide: 370,
-            // width: "300px",
+            width: "200px",
         },
         {
             name: "Serial Number",
             selector: (row) => row.data['serialNumberHex'],
             sortable: false,
             // hide: 370,
-            // width: "200px",
+            width: "400px",
         },
         {
             name: "Aktif Sampai",
@@ -60,7 +54,7 @@ const Certificate = () => {
                 <ButtonGroup size="sm">
                     <Button outline color="danger" onClick={() => {
                         setLoading(row.id)
-                        destroyCertificate(row.id).then(() => {
+                        destroyCertificate(user.id).then(() => {
                             setLoading(false);
                             setReloadData(true);
                         }).catch(() => setLoading(false))
@@ -72,8 +66,12 @@ const Certificate = () => {
     const handleSubmit = async () => {
         setLoading(true);
         const certificate = await storeCertificate(user);
-        console.log(certificate);
-        setLoading(false);
+        if (!certificate) {
+            setLoading(false);
+        } else {
+            setReloadData(true);
+            setLoading(false);
+        }
     }
 
     useEffect(() => {
@@ -84,6 +82,7 @@ const Certificate = () => {
             setReloadData(false);
         })
     }, [reloadData]);
+
     return (
         <React.Fragment>
             <Head title="Data Sertifikat"/>
@@ -128,7 +127,6 @@ const Certificate = () => {
                         <ReactDataTable data={certificates} columns={Columns} expandableRows pagination/>
                     </PreviewCard>
                 </Block>
-                {/*<Partial modal={modal} setModal={setModal} setReloadData={setReloadData} />*/}
             </Content>
         </React.Fragment>
     )

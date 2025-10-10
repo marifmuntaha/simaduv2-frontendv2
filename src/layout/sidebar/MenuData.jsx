@@ -332,7 +332,7 @@ const HeadMenu = [
         active: false,
         subMenu: [
             {
-                text: "Buat",
+                text: "Buat Signature",
                 link: "/tanda-tangan/buat",
             },
         ],

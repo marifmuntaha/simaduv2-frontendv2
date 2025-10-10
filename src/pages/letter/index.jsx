@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from "react";
+import {useOutletContext} from "react-router";
 import {Button, ButtonGroup, Spinner} from "reactstrap";
 import Head from "@/layout/head";
 import Content from "@/layout/content";
@@ -12,9 +13,8 @@ import {
     PreviewCard,
     ReactDataTable
 } from "@/components";
-import {get as getLetter, destroy as destroyLetter} from "@/api/letter";
+import {get as getLetter, print as printLetter, destroy as destroyLetter} from "@/api/letter";
 import Partial from "@/pages/letter/partial";
-import {useOutletContext} from "react-router";
 
 const Letter = () => {
     const {user} = useOutletContext();
@@ -32,20 +32,6 @@ const Letter = () => {
         signature: '',
     });
     const [modal, setModal] = useState(false);
-    const typeLetter = (type) => {
-        switch (type) {
-            case "1.01":
-                return "Surat Keterangan"
-            case "1.02":
-                return "Surat Keterangan Aktif"
-            case "1.03":
-                return "Surat Pindah Sekolah"
-            case "1.04":
-                return "Surat Undangan"
-            default:
-                return ""
-        }
-    }
     const Columns = [
         {
             name: "Nomor Surat",
@@ -68,7 +54,7 @@ const Letter = () => {
             // hide: 370,
             cell: (row) => {
                 const data = row.data;
-                return ("Penerima: " + data.to + " Acara: " + data.event)
+                return ("Penerima: " + data?.to + " Acara: " + data?.event)
             }
 
         },
@@ -81,9 +67,10 @@ const Letter = () => {
             cell: (row) => (
                 <ButtonGroup size="sm">
                     <Button outline color="info" onClick={() => {
-                        setLetter(row);
-                        setModal(true);
-                    }}><Icon name="printer"/></Button>
+                        printLetter(row.id).then((resp) => {
+                            window.location.href = String(resp);
+                        });
+                    }}>{loading === row.id ? <Spinner size="sm"/> : <Icon name="printer"/>}</Button>
                     <Button outline color="warning" onClick={() => {
                         setLetter(row);
                         setModal(true);
@@ -99,6 +86,20 @@ const Letter = () => {
             )
         },
     ];
+    const typeLetter = (type) => {
+        switch (type) {
+            case "1.01":
+                return "Surat Keterangan"
+            case "1.02":
+                return "Surat Keterangan Aktif"
+            case "1.03":
+                return "Surat Pindah Sekolah"
+            case "1.04":
+                return "Surat Undangan"
+            default:
+                return ""
+        }
+    }
 
     useEffect(() => {
         reloadData && getLetter({type: 'datatable', yearId: user.yearId, institutionId: user.institutionId})
@@ -109,6 +110,7 @@ const Letter = () => {
                 setReloadData(false);
             });
     }, [reloadData, user]);
+
     return (
         <React.Fragment>
             <Head title="Data Jenjang"/>

@@ -10,12 +10,13 @@ const Invitations = ({letter, setLetter}) => {
     }
 
     useEffect(() => {
-        setValue('to', letter.data.to)
-        setValue('date', letter.data.date)
-        setValue('time', letter.data.time)
-        setValue('place', letter.data.place)
-        setValue('event', letter.data.event)
-        setValue('description', letter.data.description)
+        setValue('to', letter?.data?.to)
+        setValue('date', letter?.data?.date)
+        setValue('time', letter?.data?.time)
+        setValue('place', letter?.data?.place)
+        setValue('event', letter?.data?.event)
+        setValue('costume', letter?.data?.costume)
+        setValue('description', letter?.data?.description)
     }, [letter, setValue])
     return (
         <React.Fragment>

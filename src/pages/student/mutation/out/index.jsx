@@ -30,8 +30,6 @@ const MutationOut = () => {
         institutionId: user.role === '1' ? null : user.institutionId,
         studentId: null,
         type: 1,
-        token: '',
-        numberLetter: '',
         description: "",
         letterEmis: "",
     });
@@ -44,7 +42,7 @@ const MutationOut = () => {
             selector: (row) => row.institution,
             sortable: false,
             // hide: 370,
-            // width: "300px",
+            width: "100px",
         },
         {
             name: "Nomor Surat",
@@ -86,6 +84,10 @@ const MutationOut = () => {
             width: "150px",
             cell: (row) => (
                 <ButtonGroup size="sm">
+                    <Button outline color="info" onClick={() => {
+                        setMutation(row);
+                        setModal(true);
+                    }}><Icon name="printer"/></Button>
                     <Button outline color="warning" onClick={() => {
                         setMutation(row);
                         setModal(true);

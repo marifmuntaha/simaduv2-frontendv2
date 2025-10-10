@@ -1,10 +1,11 @@
 import React, {useEffect, useState} from "react";
+import moment from "moment/moment";
 import {Button, Input, Modal, ModalBody, ModalHeader, Spinner} from "reactstrap";
 import {useForm} from "react-hook-form";
 import {Icon, RSelect} from "@/components";
-import {get as getMutation, store as storeMutation, update as updateMutation} from "@/api/student/mutation";
+import {store as storeMutation, update as updateMutation} from "@/api/student/mutation";
 import {get as getStudent} from "@/api/student";
-import {generateSecureToken, zeroPad} from "@/utils";
+import {store as storeLetter} from "@/api/letter";
 
 const Partial = ({user, modal, setModal, mutation, setMutation, setReloadData, yearOptions, institutionOptions}) => {
     const [loading, setLoading] = useState(false);
@@ -23,28 +24,39 @@ const Partial = ({user, modal, setModal, mutation, setMutation, setReloadData, y
         setMutation({...mutation, [e.target.name]: e.target.value});
     }
     const onSubmit = () => {
-        mutation.id === "" ? onStore() : onUpdate();
+        mutation.id === null ? onStore() : onUpdate();
     }
-    const onStore = () => {
+    const onStore = async () => {
         setLoading(true);
-        getMutation({latest: 'number'}).then((resp) => {
-            const formData = {
-                yearId: mutation.yearId,
-                institutionId: mutation.institutionId,
-                studentId: mutation.studentId,
-                type: 1,
-                token: generateSecureToken(16),
-                numberLetter: zeroPad(resp[0]?.numberLetter !== undefined ? resp[0]?.numberLetter + 1 : 1, 3),
-                description: mutation.description,
-                file: mutation.file,
-            }
+        const store = await storeMutation(mutation);
+        if (!store) {
             setLoading(false);
-            storeMutation(formData).then(() => {
+        } else {
+            const formData = {
+                yearId: user.yearId,
+                institutionId: user.role === '1' ? null : user.institutionId,
+                number: store.numberLetter,
+                type: "1.03",
+                data: JSON.stringify({
+                    name: store.student.name,
+                    birthdate: store.student.birthplace + ', ' + moment(store.student.birthdate).format('DD MMMM YYYY'),
+                    level: store.student.activity.rombel.level.name,
+                    nisn: store.student.nisn,
+                    gender: store.student.gender === 'L' ? 'Laki-laki' : 'Perempuan',
+                    guardName: store.student.parent.guardName,
+                    address: store.student.address,
+                    description: store.description,
+                }),
+                signature: '2',
+            }
+            const letter = await storeLetter(formData);
+            if (!letter) {
                 setLoading(false);
+            } else {
                 setReloadData(true);
-                toggle();
-            }).catch(() => setLoading(false));
-        });
+                setLoading(false);
+            }
+        }
     }
     const onUpdate = () => {
         setLoading(true);
@@ -98,7 +110,7 @@ const Partial = ({user, modal, setModal, mutation, setMutation, setReloadData, y
                 .then(resp => {
                     setStudentOptions(resp);
                 });
-    }, [modal, mutation]);
+    }, [modal, mutation.yearId, mutation.institutionId]);
 
     return (
         <Modal isOpen={modal} toggle={toggle}>

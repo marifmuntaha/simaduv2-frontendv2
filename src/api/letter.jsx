@@ -25,5 +25,6 @@ async function destroy(id) {
 
 async function print(id) {
     const baseUrl = `/letter/print/${id}`
+    return await api.create(baseUrl).then((resp) => resp);
 }
-export {get, store, update, destroy}
+export {get, store, update, destroy, print}

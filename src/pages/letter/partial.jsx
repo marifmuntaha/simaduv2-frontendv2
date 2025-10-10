@@ -26,7 +26,8 @@ const Partial = ({user, modal, setModal, letter, setLetter, setReloadData}) => {
     }
     const onUpdate = async () => {
         setLoading(true);
-        const update = await updateLetter(letter);
+        const formData = {...letter, data: JSON.stringify(letter.data)}
+        const update = await updateLetter(formData);
         if (update) {
             setLoading(false);
             setReloadData(true);
@@ -62,11 +63,11 @@ const Partial = ({user, modal, setModal, letter, setLetter, setReloadData}) => {
     ]
 
     useEffect(() => {
-        setValue('id', letter.id);
-        setValue('yearId', letter.yearId);
-        setValue('institutionId', letter.institutionId);
-        setValue('type', letter.type);
-        setValue('signature', letter.signature);
+        setValue('id', letter?.id);
+        setValue('yearId', letter?.yearId);
+        setValue('institutionId', letter?.institutionId);
+        setValue('type', letter?.type);
+        setValue('signature', letter?.signature);
     }, [letter, setValue]);
 
     return (

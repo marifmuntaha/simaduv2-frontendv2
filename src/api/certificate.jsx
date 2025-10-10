@@ -10,12 +10,7 @@ async function get(params) {
 
 async function store(params) {
     const baseUrl = '/certificate'
-    return await api.createWithFile(baseUrl, params).then((resp) => resp);
-}
-
-async function update(params) {
-    const baseUrl = `/certificate/${params.id}`
-    return await api.updateWithFile(baseUrl, params).then((resp) => resp);
+    return await api.create(baseUrl, params).then((resp) => resp);
 }
 
 async function destroy(id) {
@@ -23,4 +18,4 @@ async function destroy(id) {
     return await api.delete(baseUrl).then((resp) => resp);
 }
 
-export {get, store, update, destroy}
+export {get, store, destroy}
