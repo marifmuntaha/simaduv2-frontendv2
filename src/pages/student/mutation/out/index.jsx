@@ -16,6 +16,7 @@ import {
 import {get as getYear} from "@/api/master/year";
 import {get as getInstitution} from "@/api/institution";
 import {get as getMutation, destroy as destroyMutation} from "@/api/student/mutation";
+import {get as geActivity, update as updateActivity} from "@/api/student/activity";
 import Partial from "./partial";
 
 const MutationOut = () => {
@@ -31,6 +32,7 @@ const MutationOut = () => {
         studentId: null,
         type: 1,
         description: "",
+        statusCode: 2,
         letterEmis: "",
     });
     const [yearOptions, setYearOptions] = useState([]);

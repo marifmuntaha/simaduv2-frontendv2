@@ -139,7 +139,7 @@ const List = () => {
     ]
     const navigate = useNavigate();
     const paramsStudent = useCallback(() => {
-        let params = {type: 'datatable', status: 1}
+        let params = {type: 'datatable'}
         if (student.yearId !== null) {
             params.yearId = student.yearId;
         }

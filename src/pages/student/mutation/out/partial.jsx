@@ -34,7 +34,7 @@ const Partial = ({user, modal, setModal, mutation, setMutation, setReloadData, y
             setLoading(false);
         } else {
             const formDataActivity = store.student.activity;
-            formDataActivity.status = 2;
+            formDataActivity.statusCode = 2;
             await storeActivity(formDataActivity, false);
             const formData = {
                 yearId: user.yearId,
@@ -46,7 +46,8 @@ const Partial = ({user, modal, setModal, mutation, setMutation, setReloadData, y
                     birthdate: store.student.birthplace + ', ' + moment(store.student.birthdate).format('DD MMMM YYYY'),
                     level: store.student.activity.rombel.level.name,
                     nisn: store.student.nisn,
-                    gender: store.student.gender === 'L' ? 'Laki-laki' : 'Perempuan',
+                    gender: store.student.gender === 'L' ? 'Laki-laki' :
+                        'Perempuan',
                     guardName: store.student.parent.guardName,
                     address: store.student.address,
                     description: store.description,
@@ -111,7 +112,7 @@ const Partial = ({user, modal, setModal, mutation, setMutation, setReloadData, y
 
     useEffect(() => {
         modal && mutation.yearId !== null && mutation.institutionId !== null &&
-            getStudent({type: 'select', yearId: mutation.yearId, institutionId: mutation.institutionId, status: 1})
+            getStudent({type: 'select', yearId: mutation.yearId, institutionId: mutation.institutionId, statusCode: 1})
                 .then(resp => {
                     setStudentOptions(resp);
                 });

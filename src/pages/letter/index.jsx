@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {useOutletContext} from "react-router";
 import {Button, ButtonGroup, Spinner} from "reactstrap";
 import Head from "@/layout/head";
@@ -11,7 +11,7 @@ import {
     BlockTitle,
     Icon,
     PreviewCard,
-    ReactDataTable
+    ReactDataTable, Row, RSelect
 } from "@/components";
 import {get as getLetter, print as printLetter, destroy as destroyLetter} from "@/api/letter";
 import Partial from "@/pages/letter/partial";
@@ -21,6 +21,8 @@ const Letter = () => {
     const [sm, updateSm] = useState(false);
     const [loading, setLoading] = useState(false);
     const [reloadData, setReloadData] = useState(true);
+    const [yearOptions, setYearOptions] = useState([]);
+    const [institutionOptions, setInstitutionOptions] = useState([]);
     const [letters, setLetters] = useState([]);
     const [letter, setLetter] = useState({
         id: null,
@@ -49,14 +51,9 @@ const Letter = () => {
         },
         {
             name: "Diskripsi",
-            selector: (row) => row.data,
+            selector: (row) => description(row.type, row.data),
             sortable: false,
             // hide: 370,
-            cell: (row) => {
-                const data = row.data;
-                return ("Penerima: " + data?.to + " Acara: " + data?.event)
-            }
-
         },
         {
             name: "Aksi",
@@ -100,16 +97,40 @@ const Letter = () => {
                 return ""
         }
     }
+    const paramsLetter = useCallback(() => {
+        const params = {type: 'datatable'}
+        if (letter.yearId !== null) {
+            params.yearId = letter.yearId;
+        }
+        if (letter.institutionId !== null) {
+            params.institutionId = letter.institutionId;
+        }
+        return params;
+    }, [letter.yearId, letter.institutionId]);
+    const description = (type, data) => {
+        switch (type) {
+            case "1.01":
+                return ("Penerima: " + data?.to + " Acara: " + data?.event)
+            case "1.02":
+                return "Surat Keterangan Aktif"
+            case "1.03":
+                return ("Nama: " + data?.name + " NISN: " + data?.nisn + " Wali: " + data?.guardName + " Keterangan: " + data.description)
+            case "1.04":
+                return "Surat Undangan"
+            default:
+                return ""
+        }
+    }
 
     useEffect(() => {
-        reloadData && getLetter({type: 'datatable', yearId: user.yearId, institutionId: user.institutionId})
+        reloadData && getLetter(paramsLetter())
             .then((resp) => {
                 setLetters(resp);
                 setReloadData(false);
             }).catch(() => {
                 setReloadData(false);
             });
-    }, [reloadData, user]);
+    }, [reloadData, paramsLetter]);
 
     return (
         <React.Fragment>
@@ -149,7 +170,35 @@ const Letter = () => {
                         </BlockBetween>
                     </BlockHead>
                     <PreviewCard>
-                        <ReactDataTable data={letters} columns={Columns} expandableRows pagination/>
+                        <Row className="gy-0">
+                            <div className="form-group col-md-6">
+                                <div className="form-control-wrap">
+                                    <RSelect
+                                        options={yearOptions}
+                                        value={yearOptions?.find((item) => item.value === letter.yearId)}
+                                        onChange={(val) => {
+                                            setLetter({...letter, yearId: val.value});
+                                            setReloadData(true);
+                                        }}
+                                        placeholder="Pilih Tahun Pelajaran"
+                                    />
+                                </div>
+                            </div>
+                            <div className="form-group col-md-6">
+                                <div className="form-control-wrap">
+                                    <RSelect
+                                        options={institutionOptions}
+                                        value={institutionOptions.find((item) => item.value === letter.institutionId)}
+                                        onChange={(val) => {
+                                            setLetter({...letter, institutionId: val.value});
+                                            setReloadData(true);
+                                        }}
+                                        placeholder="Pilih Lembaga"
+                                    />
+                                </div>
+                            </div>
+                            <ReactDataTable data={letters} columns={Columns} expandableRows pagination/>
+                        </Row>
                     </PreviewCard>
                 </Block>
                 <Partial

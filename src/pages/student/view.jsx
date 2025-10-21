@@ -551,7 +551,7 @@ const View = () => {
                                                     <tr key={idx}>
                                                         <td>{moment(item.created_at).format('D/MM/yyyy')}</td>
                                                         <td>{item.institution.ladder.alias +". "+ item.institution.name}</td>
-                                                        <td>{studentStatus(item.status)}</td>
+                                                        <td>{studentStatus(item.statusCode)}</td>
                                                         <td>{item?.rombel?.level?.name}</td>
                                                         <td>{item?.rombel?.major?.alias}</td>
                                                         <td>{item?.rombel?.alias}</td>
