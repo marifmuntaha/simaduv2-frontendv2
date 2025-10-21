@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {useOutletContext} from "react-router";
 import {Badge, ButtonGroup, Spinner} from "reactstrap";
@@ -138,6 +138,23 @@ const List = () => {
         {value: '3', label: 'Kitab'},
     ]
     const navigate = useNavigate();
+    const paramsStudent = useCallback(() => {
+        let params = {type: 'datatable', status: 1}
+        if (student.yearId !== null) {
+            params.yearId = student.yearId;
+        }
+        if (student.institutionId !== null) {
+            params.institutionId = student.institutionId;
+        }
+        if (student.rombelId !== null) {
+            params.rombelId = student.rombelId;
+        }
+        if (student.boardingId !== null) {
+            params.boardingId = student.boardingId;
+        }
+        return params
+    }, [student.yearId, student.institutionId, student.rombelId, student.boardingId]);
+
 
     useEffect(() => {
         getYear({type: 'select'}).then((resp) => setYearOptions(resp));
@@ -146,23 +163,17 @@ const List = () => {
     }, []);
 
     useEffect(() => {
-        const {yearId, institutionId} = student
-        getRombel({type: 'select', yearId: yearId, institutionId: institutionId})
+        student.yearId !== null && student.institutionId !== null  &&
+        getRombel({type: 'select', yearId: student.yearId, institutionId: student.institutionId})
             .then((resp) => setRombelOptions(resp));
-    }, [student]);
+    }, [student.yearId, student.institutionId]);
 
     useEffect(() => {
-        refreshData && getStudent({
-            type: 'datatable',
-            yearId: student.yearId,
-            institutionId: student.institutionId,
-            rombelId: student.rombelId,
-            boardingId: student.boardingId
-        }).then((resp) => {
+        refreshData && getStudent(paramsStudent()).then((resp) => {
             setStudents(resp);
             setRefreshData(false);
         }).catch(() => setLoading(false));
-    }, [refreshData, student]);
+    }, [refreshData, paramsStudent]);
 
     return (
         <React.Fragment>

@@ -103,6 +103,21 @@ const RootMenu = [
         link: "/data-santri",
     },
     {
+        icon: "template",
+        text: "Surat Menyurat",
+        active: false,
+        subMenu: [
+            {
+                text: "Surat Masuk",
+                link: "/data-surat/masuk",
+            },
+            {
+                text: "Surat Keluar",
+                link: "/data-surat/Keluar",
+            },
+        ],
+    },
+    {
         icon: "cc-alt2",
         text: "Keuangan",
         active: false,

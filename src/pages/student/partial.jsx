@@ -166,7 +166,8 @@ export const Add = () => {
                 });
                 if (address !== null) {
                     const activity = await storeActivity({
-                        status: formData.status,
+                        status: 1,
+                        statusCode: formData.status,
                         studentId: student.id,
                         yearId: formData.yearId,
                         institutionId: formData.institutionId,

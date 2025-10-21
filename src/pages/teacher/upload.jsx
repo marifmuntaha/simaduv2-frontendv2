@@ -1,13 +1,16 @@
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import {Button, Input, Modal, ModalBody, ModalHeader, Progress, Spinner} from "reactstrap";
+import {useOutletContext} from "react-router";
 import * as xlsx from "xlsx";
 import moment from "moment";
 import {Icon, RSelect, RToast} from "@/components";
 import {store as storeUser, destroy as destroyUser} from "@/api/user"
-import {store as storeTeacher} from "@/api/teacher";
+import {get as getTeacher, store as storeTeacher} from "@/api/teacher";
+import {store as storeActivity} from "@/api/teacher/activity";
 import {calcPercentage} from "@/utils";
 
 const Upload = ({modal, setModal, setLoadData, institutionOptions}) => {
+    const {user} = useOutletContext();
     const [loading, setLoading] = useState(false);
     const [dataStart, setDataStart] = useState(0);
     const [dataTotal, setDataTotal] = useState(0);
@@ -27,40 +30,16 @@ const Upload = ({modal, setModal, setLoadData, institutionOptions}) => {
         setDataTotal(jsonData.length);
         let start = 0;
         for await (let item of jsonData) {
-            const userTeacher = await storeUser({
-                name: item['Nama Lengkap'],
-                email: item['Email'],
-                username: item['PegId'],
-                password: item['Tempat Lahir'],
-                phone: item['Nomor HP'],
-                role: '4'
-            }, false)
-            if (userTeacher === false) {
-                start++;
-                setDataStart(start);
-                setErrorsTeacher(errorsTeacher => [...errorsTeacher, {
-                    name: item['Nama Lengkap'],
-                    pegId: item['PegId'],
-                    status: 'Gagal ditambahkan'
-                }]);
-            } else {
-                const teacher = await storeTeacher({
-                    userId: userTeacher.id,
-                    institution: [institutionSelected.value],
-                    name: item['Nama Lengkap'],
-                    pegId: item['PegId'],
-                    birthplace: item['Tempat Lahir'],
-                    birthdate: moment(item['Tanggal Lahir'], 'DD/MM/YYYY').format('YYYY-MM-DD'),
-                    gender: item['Jenis Kelamin'],
-                    frontTitle: item['Gelar Depan'],
-                    backTitle: item['Gelar Belakang'],
-                    phone: item['Nomor HP'],
-                    email: item['Email'],
-                    address: item['Alamat'],
-
+            const check = await getTeacher({pegId: item['PegId']})
+            if (check.length > 0) {
+                const activity = await storeActivity({
+                    yearId: user.yearId,
+                    institutionId: institutionSelected.value,
+                    teacherId: check[0].id,
+                    statusCode: 5,
+                    status: 1
                 }, false);
-                if (teacher === false) {
-                    await destroyUser(userTeacher.id, false);
+                if (activity === false) {
                     start++;
                     setDataStart(start);
                     setErrorsTeacher(errorsTeacher => [...errorsTeacher, {
@@ -71,6 +50,70 @@ const Upload = ({modal, setModal, setLoadData, institutionOptions}) => {
                 } else {
                     start++;
                     setDataStart(start);
+                }
+            } else {
+                const userTeacher = await storeUser({
+                    name: item['Nama Lengkap'],
+                    email: item['Email'],
+                    username: item['PegId'],
+                    password: item['Tempat Lahir'],
+                    phone: item['Nomor HP'],
+                    role: '4'
+                }, false)
+                if (userTeacher === false) {
+                    start++;
+                    setDataStart(start);
+                    setErrorsTeacher(errorsTeacher => [...errorsTeacher, {
+                        name: item['Nama Lengkap'],
+                        pegId: item['PegId'],
+                        status: 'Gagal ditambahkan'
+                    }]);
+                } else {
+                    const teacher = await storeTeacher({
+                        userId: userTeacher.id,
+                        institution: [institutionSelected.value],
+                        name: item['Nama Lengkap'],
+                        pegId: item['PegId'],
+                        birthplace: item['Tempat Lahir'],
+                        birthdate: moment(item['Tanggal Lahir'], 'DD/MM/YYYY').format('YYYY-MM-DD'),
+                        gender: item['Jenis Kelamin'],
+                        frontTitle: item['Gelar Depan'],
+                        backTitle: item['Gelar Belakang'],
+                        phone: item['Nomor HP'],
+                        email: item['Email'],
+                        address: item['Alamat'],
+
+                    }, false);
+                    if (teacher === false) {
+                        await destroyUser(userTeacher.id, false);
+                        start++;
+                        setDataStart(start);
+                        setErrorsTeacher(errorsTeacher => [...errorsTeacher, {
+                            name: item['Nama Lengkap'],
+                            pegId: item['PegId'],
+                            status: 'Gagal ditambahkan'
+                        }]);
+                    } else {
+                        const activity = await storeActivity({
+                            yearId: user.yearId,
+                            institutionId: institutionSelected.value,
+                            teacherId: teacher.id,
+                            statusCode: 5,
+                            status: 1
+                        }, false);
+                        if (activity === false) {
+                            start++;
+                            setDataStart(start);
+                            setErrorsTeacher(errorsTeacher => [...errorsTeacher, {
+                                name: item['Nama Lengkap'],
+                                pegId: item['PegId'],
+                                status: 'Gagal ditambahkan'
+                            }]);
+                        } else {
+                            start++;
+                            setDataStart(start);
+                        }
+                    }
                 }
             }
             if(start === jsonData.length) {

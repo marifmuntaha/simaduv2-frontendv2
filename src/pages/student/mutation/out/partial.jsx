@@ -6,6 +6,7 @@ import {Icon, RSelect} from "@/components";
 import {store as storeMutation, update as updateMutation} from "@/api/student/mutation";
 import {get as getStudent} from "@/api/student";
 import {store as storeLetter} from "@/api/letter";
+import {store as storeActivity} from "@/api/student/activity";
 
 const Partial = ({user, modal, setModal, mutation, setMutation, setReloadData, yearOptions, institutionOptions}) => {
     const [loading, setLoading] = useState(false);
@@ -32,9 +33,12 @@ const Partial = ({user, modal, setModal, mutation, setMutation, setReloadData, y
         if (!store) {
             setLoading(false);
         } else {
+            const formDataActivity = store.student.activity;
+            formDataActivity.status = 2;
+            await storeActivity(formDataActivity, false);
             const formData = {
                 yearId: user.yearId,
-                institutionId: user.role === '1' ? null : user.institutionId,
+                institutionId: user.role === '1' ? institutionSelected.value : user.institutionId,
                 number: store.numberLetter,
                 type: "1.03",
                 data: JSON.stringify({
@@ -49,12 +53,13 @@ const Partial = ({user, modal, setModal, mutation, setMutation, setReloadData, y
                 }),
                 signature: '2',
             }
-            const letter = await storeLetter(formData);
+            const letter = await storeLetter(formData, false);
             if (!letter) {
                 setLoading(false);
             } else {
                 setReloadData(true);
                 setLoading(false);
+                toggle();
             }
         }
     }
@@ -106,7 +111,7 @@ const Partial = ({user, modal, setModal, mutation, setMutation, setReloadData, y
 
     useEffect(() => {
         modal && mutation.yearId !== null && mutation.institutionId !== null &&
-            getStudent({type: 'select', yearId: mutation.yearId, institutionId: mutation.institutionId})
+            getStudent({type: 'select', yearId: mutation.yearId, institutionId: mutation.institutionId, status: 1})
                 .then(resp => {
                     setStudentOptions(resp);
                 });

@@ -1,16 +1,19 @@
 import React, {useEffect, useState} from "react";
 import DatePicker, {registerLocale} from "react-datepicker";
+import {useOutletContext} from "react-router";
 import {Button, Modal, ModalBody, ModalHeader, Spinner} from "reactstrap";
 import {useForm} from "react-hook-form";
 import moment from "moment/moment";
 import id from "date-fns/locale/id";
-import {Icon, Row, RSelect} from "@/components";
-import {store as storeTeacher, update as updateTeacher} from "@/api/teacher";
+import {Icon, Row, RSelect, RToast} from "@/components";
+import {store as storeActivity} from "@/api/teacher/activity";
+import {store as storeTeacher, update as updateTeacher, destroy as destroyTeacher} from "@/api/teacher";
 import {store as storeUser, update as updateUser, destroy as destroyUser} from "@/api/user";
 
 registerLocale("id", id);
 
 const Partial = ({modal, setModal, teacher, setTeacher, setLoadData, institutionOptions}) => {
+    const {user} = useOutletContext();
     const [loading, setLoading] = useState(false);
     const [birthdateSelected, setBirthdateSelected] = useState(new Date());
     const [institutionSelected, setInstitutionSelected] = useState([]);
@@ -41,32 +44,43 @@ const Partial = ({modal, setModal, teacher, setTeacher, setLoadData, institution
             phone: teacher.phone,
             role: '4'
         },false).then(async (respUser) => {
-            if (respUser === false) {
+            await storeTeacher({
+                userId: respUser.id,
+                name: teacher.name,
+                pegId: teacher.pegId,
+                birthplace: teacher.birthplace,
+                birthdate: moment(teacher.birthdate).format('YYYY-MM-DD'),
+                gender: teacher.gender,
+                frontTitle: teacher.frontTitle,
+                backTitle: teacher.backTitle,
+                phone: teacher.phone,
+                email: teacher.email,
+                address: teacher.address,
+            }, false).then(async (respTeacher) => {
+                institutionSelected.map(async (i) => {
+                    const store = await storeActivity({
+                        yearId: user.yearId,
+                        institutionId: i.value,
+                        teacherId: respTeacher.id,
+                        statusCode: 5,
+                        status: 1
+                    }, false);
+                    if (store === false) {
+                        await destroyTeacher(respTeacher.id);
+                        await destroyUser(respUser.id);
+                        setLoading(false);
+                    } else {
+                        RToast('Data guru berhasil ditambahkan.', 'success');
+                        setLoading(false);
+                        setLoadData(true);
+                        toggle();
+                    }
+                })
+            }).catch(() => {
+                destroyUser(respUser.id);
                 setLoading(false);
-            } else {
-                const store = await storeTeacher({
-                    userId: respUser.id,
-                    institution: institutionSelected.map((i) => i.value),
-                    name: teacher.name,
-                    pegId: teacher.pegId,
-                    birthplace: teacher.birthplace,
-                    birthdate: moment(teacher.birthdate).format('YYYY-MM-DD'),
-                    gender: teacher.gender,
-                    frontTitle: teacher.frontTitle,
-                    backTitle: teacher.backTitle,
-                    phone: teacher.phone,
-                    email: teacher.email,
-                    address: teacher.address,
-                });
-                if (store !== false) {
-                    setLoading(false);
-                    setLoadData(true);
-                    toggle()
-                } else {
-                    await destroyUser(respUser.id);
-                    setLoading(false);
-                }
-            }
+            });
+
         }).catch(() => setLoading(false));
     }
     const onUpdate = async () => {
@@ -79,11 +93,10 @@ const Partial = ({modal, setModal, teacher, setTeacher, setLoadData, institution
             password: teacher.birthplace,
             phone: teacher.phone,
             role: '4'
-        }).then(async (respUser) => {
+        }, false).then(async (respUser) => {
             const update = await updateTeacher({
                 id: teacher.id,
                 userId: respUser.id,
-                institution: institutionSelected.map((i) => i.value),
                 name: teacher.name,
                 pegId: teacher.pegId,
                 birthplace: teacher.birthplace,
@@ -177,7 +190,7 @@ const Partial = ({modal, setModal, teacher, setTeacher, setLoadData, institution
                                 }}
                                 placeholder="Pilih Lembaga"
                             />
-                            <input type="hidden" id="institution" className="form-control" {...register('institution', {required: true})}/>
+                            <input type="hidden" id="institution" className="form-control" {...register('institution', {required: teacher.id === null})}/>
                             {errors.institution && <span className="invalid">Kolom tidak boleh kosong.</span>}
                         </div>
                     </div>

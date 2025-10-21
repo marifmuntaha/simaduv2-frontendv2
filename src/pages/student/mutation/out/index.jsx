@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {useOutletContext} from "react-router";
 import {Badge, Button, ButtonGroup, Spinner} from "reactstrap";
 import Head from "@/layout/head";
@@ -103,15 +103,25 @@ const MutationOut = () => {
             )
         },
     ];
+    const params = useCallback(() => {
+        let param = {type: 'datatable'}
+        if (mutation.yearId !== null) {
+            param.yearId = mutation.yearId;
+        }
+        if (mutation.institutionId !== null) {
+            param.institutionId = mutation.institutionId;
+        }
+        return param;
+    }, [mutation])
 
     useEffect(() => {
-        reloadData && getMutation({type: 'datatable'}).then((resp) => {
+        reloadData && getMutation(params()).then((resp) => {
             setMutations(resp);
             setReloadData(false);
         }).catch(() => {
             setReloadData(false);
         })
-    }, [reloadData]);
+    }, [reloadData, params]);
 
     useEffect(() => {
         getYear({type: 'select'}).then(data => setYearOptions(data));
@@ -162,9 +172,10 @@ const MutationOut = () => {
                                 <div className="form-control-wrap">
                                     <RSelect
                                         options={yearOptions}
-                                        value={yearOptions.find((e) => e.value === user.yearId)}
+                                        value={yearOptions.find((e) => e.value === mutation.yearId)}
                                         onChange={(e) => {
-                                            setMutation({...mutation, yearId: e.value})
+                                            setMutation({...mutation, yearId: e.value});
+                                            setReloadData(true);
                                         }}
                                         placeholder="Pilih Tahun Pelajaran"
                                     />
@@ -176,9 +187,10 @@ const MutationOut = () => {
                                     <div className="form-control-wrap">
                                         <RSelect
                                             options={institutionOptions}
-                                            value={institutionOptions?.find((e) => e.value === user.institutionId)}
+                                            value={institutionOptions?.find((e) => e.value === mutation.institutionId)}
                                             onChange={(e) => {
                                                 setMutation({...mutation, institutionId: e.value});
+                                                setReloadData(true);
                                             }}
                                             placeholder="Pilih Lembaga"
                                         />

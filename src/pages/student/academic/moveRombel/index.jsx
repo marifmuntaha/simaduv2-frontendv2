@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import Head from "@/layout/head/index.jsx";
 import Content from "@/layout/content/index.jsx";
 import {
@@ -46,7 +46,7 @@ const MoveRombel = () => {
                 programId: item.programId,
                 boardingId: item.boardingId,
             }
-            storeActivity(params).then((resp) => {
+            storeActivity(params, false).then(() => {
                 RToast(`Siswa ${item.name} berhasil dipindahkan`, 'success')
             })
         })

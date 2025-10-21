@@ -14,6 +14,7 @@ import {
     PreviewCard,
     ReactDataTable, Row, RSelect
 } from "@/components";
+import {destroy as destroyUser} from "@/api/user";
 import {get as getTeacher, destroy as destroyTeacher} from "@/api/teacher";
 import {get as getInstitution} from "@/api/institution";
 import Partial from "@/pages/teacher/partial";
@@ -53,7 +54,7 @@ const Teacher = () => {
             sortable: false,
             // hide: 370,
             cell: (row) => {
-                return row.institution.map((item) => {
+                return row.institution?.map((item) => {
                     return item.alias + ' '
                 });
             }
@@ -116,9 +117,11 @@ const Teacher = () => {
                     }}><Icon name="pen"/></Button>
                     <Button outline color="danger" onClick={() => {
                         setLoading(row.id)
-                        destroyTeacher(row.id).then(() => {
-                            setLoading(false);
-                            setLoadData(true);
+                        destroyTeacher(row.id).then((resp) => {
+                            destroyUser(resp.userId, false).then(() => {
+                                setLoading(false);
+                                setLoadData(true);
+                            }).catch(() => setLoading(false));
                         }).catch(() => setLoading(false))
                     }}>{loading === row.id ? <Spinner size="sm"/> : <Icon name="trash"/>}</Button>
                 </ButtonGroup>

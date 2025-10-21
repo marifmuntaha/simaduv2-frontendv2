@@ -1,11 +1,12 @@
 import React, {useEffect, useState} from "react";
 import {Button, Modal, ModalBody, ModalHeader, Spinner} from "reactstrap";
 import {useForm} from "react-hook-form";
-import {Icon, Row, RSelect} from "@/components";
+import {Icon, Row, RSelect, RToast} from "@/components";
 import {store as storeRombel, update as updateRombel} from "@/api/institution/rombel";
 import {get as getLevel} from "@/api/master/level";
 import {get as getMajor} from "@/api/master/major";
 import {get as getTeacher} from "@/api/teacher";
+import {store as storeActivity} from "@/api/teacher/activity";
 
 const Partial = ({user, modal, setModal, rombel, setRombel, setLoadData, yearOptions, institutionOptions}) => {
     const [loading, setLoading] = useState(false);
@@ -28,10 +29,21 @@ const Partial = ({user, modal, setModal, rombel, setRombel, setLoadData, yearOpt
     }
     const onStore = async () => {
         setLoading(true);
-        await storeRombel(rombel).then(() => {
-            setLoading(false)
-            setLoadData(true)
-            toggle()
+        await storeRombel(rombel).then(async () => {
+            const store = await storeActivity({
+                yearId: user.yearId,
+                institutionId: rombel.institutionId,
+                teacherId: rombel.teacherId,
+                statusCode: 4,
+                status: 1
+            }, false);
+            if (store === false) {
+                setLoading(false);
+            } else {
+                setLoading(false);
+                setLoadData(true);
+                toggle();
+            }
         }).catch(() => setLoading(false));
     }
     const onUpdate = async () => {
@@ -63,10 +75,13 @@ const Partial = ({user, modal, setModal, rombel, setRombel, setLoadData, yearOpt
 
     useEffect(() => {
         const {value, ladder} = institutionSelected !== undefined ? institutionSelected : false;
-        modal && value !== undefined && getLevel({type: 'select', ladderId: ladder.id}).then((resp) => setLevelOptions(resp));
-        modal && value !== undefined && getMajor({type: 'select', ladderId: ladder.id}).then((resp) => setMajorOptions(resp));
-        modal && value !== undefined && getTeacher({type: 'select', institutionId: value}).then((resp) => setTeacherOptions(resp));
-    }, [modal, institutionSelected]);
+        modal && value !== undefined && getLevel({type: 'select', ladderId: ladder.id})
+            .then((resp) => setLevelOptions(resp));
+        modal && value !== undefined && getMajor({type: 'select', ladderId: ladder.id})
+            .then((resp) => setMajorOptions(resp));
+        modal && value !== undefined && getTeacher({type: 'select', yearId: user.yearId, institutionId: value})
+            .then((resp) => setTeacherOptions(resp));
+    }, [modal, institutionSelected, user]);
 
     useEffect(() => {
         setValue('id', rombel.id)

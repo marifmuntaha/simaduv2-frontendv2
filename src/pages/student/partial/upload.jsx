@@ -227,7 +227,8 @@ const Upload = ({modal, setModal, setRefreshData, yearOptions, institutionOption
                         await destroyUser(userStudent.id, false);
                     } else {
                         const paramActivity = {
-                            status: '1',
+                            status: 1,
+                            statusCode: 1,
                             studentId: student.id,
                             yearId: upload.yearId,
                             institutionId: upload.institutionId,
