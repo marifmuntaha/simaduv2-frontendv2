@@ -1,0 +1,31 @@
+import {apiCore} from './apiCore';
+
+const api = new apiCore()
+
+async function get(params, message) {
+    const baseUrl = '/student'
+    const result = await api.get(baseUrl, params, message).then((resp) => resp);
+    return result !== false ? result : [];
+}
+
+async function store(params, message) {
+    const baseUrl = '/student'
+    return await api.create(baseUrl, params, message).then((resp) => resp);
+}
+
+async function show(params, message) {
+    const baseUrl = `/student/${params}`
+    return await api.get(baseUrl, params, message).then((resp) => resp);
+}
+
+async function update(params, message) {
+    const baseUrl = `/student/${params.id}`
+    return await api.update(baseUrl, params, message).then((resp) => resp);
+}
+
+async function destroy(id, message) {
+    const baseUrl = `/student/${id}`
+    return await api.delete(baseUrl, message).then((resp) => resp);
+}
+
+export {get, store, show, update, destroy}

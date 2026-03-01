@@ -13,3 +13,4 @@ export type TeacherType = {
     address: string
     status: number
 }
+export * from "./activity"

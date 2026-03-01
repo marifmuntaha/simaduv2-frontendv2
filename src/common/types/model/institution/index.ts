@@ -15,3 +15,6 @@ export type InstitutionType = {
     image?: File | null;
     ladder?: LadderType;
 }
+
+export * from "./program"
+export * from "./rombel"

@@ -1,30 +1,12 @@
 import { createContext, use } from "react";
-import type { UserType } from "@/common/types";
+import type { YearType } from "@/common/types";
 
-interface UseAuthContextInterface {
-    isLogged: boolean;
-    setIsLogged(isLogged: boolean): void;
-    user?: UserType;
-    setUser(user: UserType): void;
-}
+export const YearContext = createContext<YearType|undefined>(undefined);
 
-const INIT: UseAuthContextInterface = {
-    isLogged: false,
-    setIsLogged(isLogged: boolean) {
-        return isLogged
-    },
-    user: undefined,
-    setUser(user: UserType) {
-        return user
-    }
-}
-
-export const AuthContext = createContext<UseAuthContextInterface>(INIT);
-
-export function useAuthContext() {
-    const context = use(AuthContext)
+export function useYearContext(): YearType | undefined {
+    const context = use(YearContext)
     if (!context) {
-        throw new Error("useAuthContext must be used within AuthContext");
+        throw new Error("useYearContext must be used within YearContext");
     }
     return context;
 }
