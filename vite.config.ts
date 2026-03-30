@@ -13,6 +13,7 @@ export default defineConfig({
         devSourcemap: true
     },
     resolve: {
+        dedupe: ['react', 'react-dom'],
         alias: {
             '@': path.resolve(__dirname, './src'),
             '@fonts': path.resolve(__dirname, './src/assets/fonts'),
@@ -22,6 +23,9 @@ export default defineConfig({
         commonjsOptions: {
             transformMixedEsModules: true
         }
+    },
+    optimizeDeps: {
+        include: ['react', 'react-dom', 'react/jsx-runtime']
     },
     server: {
         allowedHosts: true

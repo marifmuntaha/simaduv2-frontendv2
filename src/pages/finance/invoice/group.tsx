@@ -10,7 +10,7 @@ import {get as getRombel} from "@/common/api/institution/rombel";
 import {get as getProgram} from "@/common/api/institution/program";
 import {get as getStudent} from "@/common/api/student";
 import {store as storeInvoice} from "@/common/api/finance/invoice";
-import {numberFormat} from "@/utils/index.tsx";
+import {numberFormat} from "@/lib/index.tsx";
 import {get as getSetting} from "@/common/api/setting.tsx";
 import moment from "moment/moment";
 import "moment/locale/id";

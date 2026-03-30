@@ -32,6 +32,8 @@ import Discount from "@/pages/finance/discount";
 import Room from "@/pages/institution/room";
 import Letter from "@/pages/letter";
 import Certificate from "@/pages/signature/certificate";
+import Position from "@/pages/master/position";
+import User from "@/pages/user";
 
 const ScrollToTop = (props: { children: React.ReactNode }) => {
     const location = useLocation();
@@ -56,6 +58,7 @@ const Router = () => {
                                     <Route path="tingkat" element={<Level />} />
                                     <Route path="jurusan" element={<Major />} />
                                     <Route path="tahun-pelajaran" element={<Year />} />
+                                    <Route path="jabatan-struktural" element={<Position />} />
                                 </Route>
                                 <Route path="data-lembaga" >
                                     <Route path="daftar" element={<Institution />} />
@@ -93,6 +96,7 @@ const Router = () => {
                                 </Route>
                                 <Route path="data-guru" element={<Teacher />} />
                                 <Route path="pengaturan/:institutionId" element={<Setting />} />
+                                <Route path="data-pengguna" element={<User/>}/>
                             </Route>
                         </Route>
                         <Route element={<NoSidebar />}>

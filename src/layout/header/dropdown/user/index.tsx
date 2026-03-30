@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { DropdownToggle, DropdownMenu, Dropdown } from "reactstrap";
 import { LinkList, LinkItem, UserAvatar } from "@/components";
 import { useTheme, useThemeUpdate } from "@/common/hooks/useThemeContext";
-import { role } from "@/utils";
+import { role } from "@/lib";
 import { logout } from "@/common/api/auth";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "@/common/hooks/useAuthContext";

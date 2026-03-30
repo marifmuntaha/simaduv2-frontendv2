@@ -6,7 +6,7 @@ import {get as getAccount} from "@/common/api/finance/account";
 import {store as storeTransaction} from "@/common/api/finance/transaction";
 import {get as getInstitution} from "@/common/api/institution";
 import {get as getSetting} from "@/common/api/setting.tsx";
-import {numberFormat} from "@/utils/index.tsx";
+import {numberFormat} from "@/lib/index.tsx";
 import {useAuthContext} from "@/common/hooks/useAuthContext";
 
 const CashOut = ({modal, setModal, transaction, setTransaction, setReloadData}) => {

@@ -2,11 +2,13 @@ import React from "react";
 import classNames from "classnames";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    children?: React.ReactNode;
     color?: string;
     size?: string;
     className?: string;
     outline?: boolean;
     disabled?: boolean;
+    onClick?: React.MouseEventHandler<HTMLButtonElement> | (() => void) | any;
 }
 
 const Button = ({ color, size, className, outline, disabled, ...props }: ButtonProps) => {

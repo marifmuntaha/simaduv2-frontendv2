@@ -7,6 +7,7 @@ export type UserType = {
     username: string;
     password: string;
     password_confirmation?: string;
+    phone: string;
     role: number;
     created_by?: number;
     updated_by?: number;

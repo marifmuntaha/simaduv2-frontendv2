@@ -1,26 +1,27 @@
 import {apiCore} from '@/common/api/apiCore'
+import {ApiParams, UserType} from "@/common/types";
 
 const api = new apiCore();
 
-async function get(params, message) {
+async function get<T>(params: ApiParams) {
     const baseUrl = '/user'
-    const result =  await api.get(baseUrl, params, message).then((resp) => resp);
-    return result !== false ? result : [];
+    const result =  await api.get<T[]>(baseUrl, params);
+    return result.status === 'success' ? result.result : [];
 }
 
-async function store(params, message) {
+async function store(params: UserType, message: boolean = true) {
     const baseUrl = '/user'
-    return await api.create(baseUrl, params, message).then((resp) => resp);
+    return await api.create<UserType>(baseUrl, params, message);
 }
 
-async function update(params, message) {
+async function update(params: UserType, message: boolean = true) {
     const baseUrl = `/user/${params.id}`
-    return await api.update(baseUrl, params, message).then((resp) => resp);
+    return await api.update<UserType>(baseUrl, params, message);
 }
 
-async function destroy(id, message) {
+async function destroy(id: number|undefined, message:boolean = true) {
     const baseUrl = `/user/${id}`
-    return await api.delete(baseUrl, message).then((resp) => resp);
+    return await api.delete<UserType>(baseUrl, message);
 }
 
 export {get, store, update, destroy}

@@ -7,7 +7,7 @@ import {Icon, RSelect, RToast} from "@/components";
 import {store as storeUser, destroy as destroyUser} from "@/common/api/user"
 import {get as getTeacher, store as storeTeacher} from "@/common/api/teacher";
 import {store as storeActivity} from "@/common/api/teacher/activity";
-import {calcPercentage} from "@/utils";
+import {calcPercentage} from "@/lib";
 
 const Upload = ({modal, setModal, setLoadData, institutionOptions}) => {
     const {user} = useOutletContext();

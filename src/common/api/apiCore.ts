@@ -16,7 +16,7 @@ class apiCore {
     }
 
     async get<T>(url: string, params?: ApiParams, notification: boolean = false): Promise<ApiResponse<T>> {
-        const response = await axios.get(url, { params });
+        const response: AxiosResponse | AxiosError = await axios.get(url, { params }).catch((error) => error);
         return this.handleResponse<T>(response, notification);
     }
 
@@ -44,13 +44,9 @@ class apiCore {
         return this.handleResponse<T>(response, message);
     }
 
-    delete = async (url: string, message: boolean = true) => {
-        try {
-            const response = await axios.delete(url);
-            return this.handleResponse(response, message);
-        } catch (error: any) {
-            return this.handleResponse(error, message);
-        }
+    async delete<T>(url: string, message: boolean = true){
+        const response = await axios.delete(url);
+        return this.handleResponse<T>(response, message);
     }
 
     private prepareFormData = (data: ApiData) => {
@@ -136,7 +132,11 @@ class apiCore {
                     switch (response.status) {
                         case 401:
                             if(notification) RToast(response.data?.statusMessage ? response.data.statusMessage : "Sesi anda telah berakhir: Silakan masuk lagi.");
-                            return {status: 'error', statusMessage: "Sesi anda telah berakhir: Silakan masuk lagi.", result: null as T};
+                            localStorage.removeItem('__SIMADU_USER_TOKEN__');
+                            if (!window.location.pathname.includes('/auth/masuk')) {
+                                window.location.href = '/auth/masuk';
+                            }
+                            return {status: 'error', statusMessage: response.data?.statusMessage ? response.data.statusMessage : "Sesi anda telah berakhir: Silakan masuk lagi.", result: null as T};
                         case 403:
                             if(notification) RToast("Anda tidak memiliki izin untuk mengakses sumber daya ini.");
                             return {status: 'error', statusMessage: "Anda tidak memiliki izin untuk mengakses sumber daya ini.", result: null as T};

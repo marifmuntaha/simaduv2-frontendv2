@@ -3,7 +3,7 @@ import classNames from "classnames";
 import { NavLink, useLocation } from "react-router";
 import { useThemeUpdate } from '@/common/hooks/useThemeContext';
 import Icon from "@/components/icon";
-import { slideUp, slideDown, getParents } from "@/utils";
+import { slideUp, slideDown, getParents } from "@/lib";
 
 interface MenuItem {
     text: string;

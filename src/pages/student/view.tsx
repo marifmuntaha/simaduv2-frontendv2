@@ -16,7 +16,7 @@ import {
     Sidebar,
     UserAvatar
 } from "@/components";
-import {findUpper, role} from "@/utils";
+import {findUpper, role} from "@/lib";
 import {show as showStudent} from "@/common/api/student";
 import {get as getActivity} from "@/common/api/student/activity";
 

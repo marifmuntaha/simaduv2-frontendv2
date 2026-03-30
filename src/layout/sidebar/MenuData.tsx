@@ -25,6 +25,10 @@ const RootMenu = [
                 text: "Tahun Pelajaran",
                 link: "/master-data/tahun-pelajaran",
             },
+            {
+                text: "Jabatan Struktural",
+                link: "/master-data/jabatan-struktural",
+            },
         ],
     },
     {

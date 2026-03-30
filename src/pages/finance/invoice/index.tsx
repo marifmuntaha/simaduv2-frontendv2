@@ -14,7 +14,7 @@ import {
 } from "@/components";
 import {get as getInvoice, destroy as destroyInvoice} from "@/common/api/finance/invoice"
 import Group from "@/pages/finance/invoice/group.tsx";
-import {numberFormat} from "@/utils";
+import {numberFormat} from "@/lib";
 import Individual from "@/pages/finance/invoice/individual.tsx";
 
 const Invoice = () => {

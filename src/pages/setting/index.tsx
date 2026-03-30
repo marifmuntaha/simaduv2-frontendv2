@@ -6,7 +6,7 @@ import {Button, Col, PreviewCard, Row, RSelect} from "@/components/index.tsx";
 import {useForm} from "react-hook-form";
 import {get as getSetting, store as storeSetting, update as updateSetting} from "@/common/api/setting"
 import {get as getAccount} from "@/common/api/finance/account";
-import {monthOptions} from "@/utils/index.tsx";
+import {monthOptions} from "@/lib/index.tsx";
 
 const Setting = () => {
     const {institutionId} = useParams();

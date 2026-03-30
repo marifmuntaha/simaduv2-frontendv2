@@ -5,7 +5,7 @@ import {Icon, Row, RSelect} from "@/components";
 import {get as getAccount} from "@/common/api/finance/account";
 import {store as storeTransaction} from "@/common/api/finance/transaction";
 import {get as getInstitution} from "@/common/api/institution";
-import {numberFormat} from "@/utils";
+import {numberFormat} from "@/lib";
 import {get as getSetting} from "@/common/api/setting";
 import {get as getStudent} from "@/common/api/student";
 import {get as getInvoice} from "@/common/api/finance/invoice";

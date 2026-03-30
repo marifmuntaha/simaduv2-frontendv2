@@ -14,7 +14,7 @@ import {
 } from "@/components";
 import {get as getDiscount, destroy as destroyDiscount} from "@/common/api/finance/discount";
 import Partial from "@/pages/finance/discount/partial";
-import {numberFormat} from "@/utils";
+import {numberFormat} from "@/lib";
 
 const Discount = () => {
     const [sm, updateSm] = useState(false);

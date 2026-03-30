@@ -62,22 +62,7 @@ export const getParents = (el, selector, filter) => {
     return parents;
 }
 
-export const role = (roleId) => {
-    switch (roleId) {
-        case '1':
-            return "Administrator";
-        case '2':
-            return "Operator Madrasah";
-        case '3':
-            return "Bendahara"
-        case '4':
-            return "Teller"
-        case '5':
-            return "Siswa"
-        default:
-            return "Pengunjung"
-    }
-}
+
 
 export const calcPercentage = (str1, str2) => {
     let result = Number(str2) / Number(str1);
@@ -131,3 +116,5 @@ export const monthOptions = [
     {value: '12', label: "Desember"},
 
 ]
+
+export * from './role'

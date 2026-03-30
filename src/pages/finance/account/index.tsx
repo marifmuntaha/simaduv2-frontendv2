@@ -14,7 +14,7 @@ import {
 } from "@/components";
 import {get as getAccount, destroy as destroyAccount} from "@/common/api/finance/account";
 import Partial from "@/pages/finance/account/partial";
-import {numberFormat} from "@/utils";
+import {numberFormat} from "@/lib";
 
 const Account = () => {
     const [sm, updateSm] = useState(false);

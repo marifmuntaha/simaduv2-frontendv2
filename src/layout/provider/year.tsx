@@ -1,8 +1,8 @@
 import {ReactNode, useEffect, useState} from "react";
 import {YearType} from "@/common/types";
-import {get as getYear} from "@/common/api/master/year";
 import {Loading} from "@/components";
 import {YearContext} from "@/common/hooks/useYearContext";
+import {getYear} from "@/common/api/public";
 
 export const YearProvider = ({children}: {children?: ReactNode}) => {
     const [loading, setLoading] = useState(true)
@@ -12,7 +12,7 @@ export const YearProvider = ({children}: {children?: ReactNode}) => {
         const fetchData = async () => {
             setLoading(true)
             try {
-                await getYear<YearType>({active: true}).then((resp) => setYear(resp[0]))
+                await getYear({active: true}).then((resp) => setYear(resp[0]))
             } catch (error) {
                 console.log(error)
             } finally {

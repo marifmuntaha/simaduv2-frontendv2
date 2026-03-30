@@ -15,7 +15,7 @@ import {
 import {get as getTransaction, destroy as destroyTransaction} from "@/common/api/finance/transaction"
 import CashIn from "@/pages/finance/transaction/cash-in";
 import CashOut from "@/pages/finance/transaction/cash-out";
-import {numberFormat} from "@/utils";
+import {numberFormat} from "@/lib";
 import Payment from "@/pages/finance/transaction/payment.tsx";
 
 const Transaction = () => {

@@ -1,4 +1,4 @@
-import { createContext, use } from "react";
+import { createContext, useContext } from "react";
 import type { UserType } from "@/common/types";
 
 interface UseAuthContextInterface {
@@ -22,7 +22,7 @@ const INIT: UseAuthContextInterface = {
 export const AuthContext = createContext<UseAuthContextInterface>(INIT);
 
 export function useAuthContext() {
-    const context = use(AuthContext)
+    const context = useContext(AuthContext)
     if (!context) {
         throw new Error("useAuthContext must be used within AuthContext");
     }

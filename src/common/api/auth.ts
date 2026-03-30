@@ -1,20 +1,20 @@
 import { apiCore } from './apiCore'
-import {ApiData, ApiResponse, LoggedInUser} from '../types/api';
-import {UserType} from "@/common/types";
-import {RToast} from "@/components";
+import { ApiData, ApiResponse, LoggedInUser } from '../types/api';
+import { UserType } from "@/common/types";
+import { RToast } from "@/components";
 
 const api = new apiCore()
 
-async function login(params: ApiData): Promise<LoggedInUser|undefined> {
+async function login(params: ApiData): Promise<LoggedInUser | undefined> {
     const baseUrl = '/auth/login'
     return await api.create<LoggedInUser>(baseUrl, params)
         .then((resp: ApiResponse<LoggedInUser>) => {
-        if (resp.status === 'success') {
-            api.setLoggedInToken(resp.result)
-            return {user: resp.result.user, token: resp.result.token};
-        }
-        return undefined
-    })
+            if (resp.status === 'success') {
+                api.setLoggedInToken(resp.result)
+                return { user: resp.result.user, token: resp.result.token };
+            }
+            return undefined
+        })
 }
 
 async function logout() {
@@ -48,9 +48,10 @@ async function profile(): Promise<UserType | undefined> {
             }
             else {
                 RToast(resp.statusMessage)
-                setTimeout(() => {
-                    api.setLoggedInToken(undefined)
-                }, 2000)
+                api.setLoggedInToken(undefined)
+                if (!window.location.pathname.includes('/auth/masuk')) {
+                    window.location.href = '/auth/masuk';
+                }
             }
         })
 }

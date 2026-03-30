@@ -11,7 +11,7 @@ import {get as getParent, store as storeParent} from "@/common/api/student/paren
 import {store as storeStudent, destroy as destroyStudent} from "@/common/api/student";
 import {store as storeAddress, destroy as destroyAddress} from "@/common/api/student/address";
 import {store as storeActivity} from "@/common/api/student/activity";
-import {calcPercentage} from "@/utils";
+import {calcPercentage} from "@/lib";
 import {useOutletContext} from "react-router";
 
 const Upload = ({modal, setModal, setRefreshData, yearOptions, institutionOptions}) => {
