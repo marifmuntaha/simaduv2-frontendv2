@@ -1,26 +1,27 @@
 import {apiCore} from '@/common/api/apiCore';
+import {ApiParams, TeacherType} from "@/common/types";
 
 const api = new apiCore()
 
-async function get(params, message) {
+async function get<T>(params: ApiParams) {
     const baseUrl = '/teacher'
-    const result = await api.get(baseUrl, params, message).then((resp) => resp);
-    return result !== false ? result : [];
+    const fetch = await api.get<T[]>(baseUrl, params)
+    return fetch.status === 'success' ? fetch.result : [];
 }
 
-async function store(params, message) {
+async function store(params: TeacherType, message:boolean = true) {
     const baseUrl = '/teacher'
-    return await api.create(baseUrl, params, message).then((resp) => resp);
+    return await api.create<TeacherType>(baseUrl, params, message);
 }
 
-async function update(params, message) {
+async function update(params: TeacherType, message: boolean = true) {
     const baseUrl = `/teacher/${params.id}`
-    return await api.update(baseUrl, params, message).then((resp) => resp);
+    return await api.update<TeacherType>(baseUrl, params, message);
 }
 
-async function destroy(id, message) {
+async function destroy(id: number|undefined, message: boolean = true) {
     const baseUrl = `/teacher/${id}`
-    return await api.delete(baseUrl, message).then((resp) => resp);
+    return await api.delete(baseUrl, message);
 }
 
 export {get, store, update, destroy}

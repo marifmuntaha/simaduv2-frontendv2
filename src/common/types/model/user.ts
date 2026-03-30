@@ -13,6 +13,6 @@ export type UserType = {
     updated_by?: number;
     created_at?: string;
     updated_at?: string;
-    institution?: InstitutionType;
+    institution?: Partial<InstitutionType>[];
     year?: YearType;
 }

@@ -116,5 +116,5 @@ export const monthOptions = [
     {value: '12', label: "Desember"},
 
 ]
-
+export * from './gender'
 export * from './role'

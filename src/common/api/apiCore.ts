@@ -152,7 +152,7 @@ class apiCore {
                     }
                 } else {
                     if(notification) RToast("Kesalahan Jaringan: Tidak ada respons dari server");
-                    return {status: 'error', statusMessage: 'Kesalahan Jaringan: Tidak ada respon dari server', result: null as T};
+                    return {status: 'error', statusMessage: 'Kesalahan Jaringan: Tidak ada response dari server', result: null as T};
                 }
             }
         }

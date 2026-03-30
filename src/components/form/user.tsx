@@ -1,31 +1,32 @@
 import React, {useEffect, useState} from "react"
 import {Controller, UseFormReturn, useWatch} from "react-hook-form";
-import {OptionsType, UserType} from "@/common/types";
+import {OptionsType} from "@/common/types";
 import {Icon, Row, RSelect} from "@/components";
 import {useAuthContext} from "@/common/hooks/useAuthContext";
 import {ROLE_OPTIONS} from "@/lib";
 import {get as getInstitution} from "@/common/api/institution";
+import {UserFormInterface} from "@/pages/user/partial";
 
 interface UserForm {
-    methods: UseFormReturn<UserType>
+    methods: UseFormReturn<UserFormInterface>
 }
 const UserForm = ({methods} : UserForm) => {
     const { user } = useAuthContext()
     const {control, formState: {errors}, register} = methods;
-    const [passState, setPassState] = useState(true);
-    const [confmState, setConfmState] = useState(true);
-    const [institutionOptions, setInstitutionOptions] = useState<OptionsType[]>();
+    const [passState, setPassState] = useState(false);
+    const [confmState, setConfmState] = useState(false);
+    const [institutionOptions, setInstitutionOptions] = useState<OptionsType[]>([]);
     const id = useWatch({ control, name: 'id' });
-    const role = useWatch({control, name: 'role'});
 
     useEffect(() => {
         const fetchData = async () => {
-            const institution = await getInstitution<OptionsType>({type: 'select', with: 'ladder'})
+            const institution = await getInstitution<OptionsType>({type: 'select', ladder: 'alias', with: 'ladder'})
             setInstitutionOptions(institution)
         }
 
         fetchData();
     }, [])
+
     return (
         <Row className="gy-0">
             <div className="form-group">
@@ -132,52 +133,51 @@ const UserForm = ({methods} : UserForm) => {
                 </div>
             </div>
             {user?.role === 1 && (
-                <div className="form-group col-md-6">
-                    <label className="form-label" htmlFor="role">Hak Akses</label>
-                    <div className="form-control-wrap">
-                        <Controller
-                            control={control}
-                            name="role"
-                            rules={{ required: "Pilih Hak Akses" }}
-                            render={({ field: { value, onChange } }) => (
-                                <React.Fragment>
-                                    <RSelect
-                                        options={ROLE_OPTIONS}
-                                        value={ROLE_OPTIONS.find((item) => item.value === value)}
-                                        onChange={(val) => onChange(val?.value)}
-                                        placeholder="Pilih Hak Akses"
-                                    />
-                                    <input type="hidden" id="role" className="form-control" />
-                                    {errors.role && <span className="invalid">Kolom tidak boleh kosong.</span>}
-                                </React.Fragment>
-                            )
-                            } />
+                <React.Fragment>
+                    <div className="form-group col-md-6">
+                        <label className="form-label" htmlFor="role">Hak Akses</label>
+                        <div className="form-control-wrap">
+                            <Controller
+                                control={control}
+                                name="role"
+                                rules={{ required: "Pilih Hak Akses" }}
+                                render={({ field: { value, onChange } }) => (
+                                    <React.Fragment>
+                                        <RSelect
+                                            options={ROLE_OPTIONS}
+                                            value={ROLE_OPTIONS.find((item) => item.value === value)}
+                                            onChange={(val) => onChange(val?.value)}
+                                            placeholder="Pilih Hak Akses"
+                                        />
+                                        <input type="hidden" id="role" className="form-control" />
+                                        {errors.role && <span className="invalid">Kolom tidak boleh kosong.</span>}
+                                    </React.Fragment>
+                                )
+                                } />
+                        </div>
                     </div>
-                </div>
-            )}
-            {role === 2 || role === 3 && (
-                <div className="form-group">
-                    <label className="form-label" htmlFor="role">Hak Akses</label>
-                    <div className="form-control-wrap">
-                        <Controller
-                            control={control}
-                            name="role"
-                            rules={{ required: "Pilih Hak Akses" }}
-                            render={({ field: { value, onChange } }) => (
-                                <React.Fragment>
-                                    <RSelect
-                                        options={ROLE_OPTIONS}
-                                        value={ROLE_OPTIONS.find((item) => item.value === value)}
-                                        onChange={(val) => onChange(val?.value)}
-                                        placeholder="Pilih Hak Akses"
-                                    />
-                                    <input type="hidden" id="role" className="form-control" />
-                                    {errors.role && <span className="invalid">Kolom tidak boleh kosong.</span>}
-                                </React.Fragment>
-                            )
-                            } />
+                    <div className="form-group mb-4">
+                        <label className="form-label" htmlFor="institution">Lembaga</label>
+                        <div className="form-control-wrap">
+                            <Controller
+                                control={control}
+                                name="institutionSelected"
+                                rules={{ required: false }}
+                                render={({ field: { value, onChange } }) => (
+                                    <React.Fragment>
+                                        <RSelect
+                                            options={institutionOptions}
+                                            value={value}
+                                            onChange={(val) => onChange(val)}
+                                            placeholder="Pilih Lembaga"
+                                            isMulti
+                                        />
+                                    </React.Fragment>
+                                )
+                                } />
+                        </div>
                     </div>
-                </div>
+                </React.Fragment>
             )}
         </Row>
     )

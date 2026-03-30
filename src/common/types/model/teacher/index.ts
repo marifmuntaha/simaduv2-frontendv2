@@ -1,6 +1,7 @@
 export type TeacherType = {
     id?: number;
     userId?: number
+    fullName?: string
     name: string
     pegId: string
     birthplace: string

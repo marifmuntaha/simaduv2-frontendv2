@@ -3,10 +3,12 @@ import {Button, Modal, ModalBody, ModalHeader, Spinner} from "reactstrap";
 import {useForm} from "react-hook-form";
 import {Icon} from "@/components";
 import {store as storeUser, update as updateUser} from "@/common/api/user";
-import {InstitutionType, PartialModalProps, UserType, YearType} from "@/common/types";
+import {OptionsType, PartialModalProps, UserType} from "@/common/types";
 import UserForm from "@/components/form/user";
 
-
+export interface UserFormInterface extends UserType {
+    institutionSelected: OptionsType[]
+}
 const Partial = ({
                      modal,
                      setModal,
@@ -15,16 +17,29 @@ const Partial = ({
                      setReloadData
 } : PartialModalProps<UserType>) => {
     const [loading, setLoading] = useState(false);
-    const methods = useForm<UserType>();
+    const methods = useForm<UserFormInterface>();
     const {reset, handleSubmit, setValue} = methods;
 
-    const onSubmit = (values: UserType) => {
-        data.id === undefined ? onStore(values) : onUpdate(values);
+    const onSubmit = (values: UserFormInterface) => {
+        const formData: UserType = {
+            id: values.id,
+            name: values.name,
+            email: values.email,
+            username: values.username,
+            password: values.password,
+            password_confirmation: values.password_confirmation,
+            phone: values.phone,
+            role: values.role,
+            institution: values.institutionSelected.map((item) => {
+                return {id: item.value}
+            }),
+        }
+        data.id === undefined ? onStore(formData) : onUpdate(formData);
     }
     const onStore = async (formData: UserType) => {
         setLoading(true);
         const store = await storeUser(formData).then((resp) => resp);
-        if (store) {
+        if (store.status === 'success') {
             setLoading(false);
             setReloadData(true);
             toggle();
@@ -53,6 +68,7 @@ const Partial = ({
             password_confirmation: '',
             phone: '',
             role: 0,
+            institution: []
         });
         reset();
     }
@@ -61,12 +77,16 @@ const Partial = ({
         handleReset();
     };
     useEffect(() => {
+        const institutionSelected: OptionsType[]|undefined = data.institution?.map((item): OptionsType => {
+            return {value: item?.id ? item.id : 0, label: item.name ? item.name : ''}
+        })
         setValue('id', data.id);
         setValue('name', data.name);
         setValue('email', data.email);
         setValue('username', data?.username);
         setValue('role', data.role);
         setValue('phone', data.phone);
+        setValue('institutionSelected', institutionSelected !== undefined ? institutionSelected : [])
     }, [data, setValue]);
 
     return (

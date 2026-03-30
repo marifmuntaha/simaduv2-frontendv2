@@ -18,47 +18,50 @@ import {destroy as destroyUser} from "@/common/api/user";
 import {get as getTeacher, destroy as destroyTeacher} from "@/common/api/teacher";
 import {get as getInstitution} from "@/common/api/institution";
 import Partial from "@/pages/teacher/partial";
-import Upload from "@/pages/teacher/upload";
+// import Upload from "@/pages/teacher/upload";
+import {ColumnType, InstitutionType, OptionsType, TeacherType} from "@/common/types";
+import {gender} from "@/lib";
+import {TEACHER_STATUS_OPTIONS, teacherStatus} from "@/common/constants";
 
 const Teacher = () => {
     const [sm, updateSm] = useState(false);
     const [loadData, setLoadData] = useState(true);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState<boolean|number|undefined>(false);
     const [modal, setModal] = useState({
         partial: false,
         upload: false,
     });
-    const [institutionOptions, setInstitutionOptions] = useState([]);
-    const [institutionSelected, setInstitutionSelected] = useState([]);
-    const [statusSelected, setStatusSelected] = useState([]);
-    const [teachers, setTeachers] = useState([]);
-    const [teacher, setTeacher] = useState({
-        id: null,
-        userId: null,
-        institution: [],
+    const [institutionOptions, setInstitutionOptions] = useState<OptionsType[]>([]);
+    const [institutionSelected, setInstitutionSelected] = useState<OptionsType|null>();
+    const [statusSelected, setStatusSelected] = useState<OptionsType|null>();
+    const [teachers, setTeachers] = useState<TeacherType[]>([]);
+    const [teacher, setTeacher] = useState<TeacherType>({
+        id: undefined,
+        userId: undefined,
         name: "",
-        pageId: "",
+        pegId: "",
         birthplace: "",
-        birthdate: new Date(),
-        gender: "",
+        birthdate: "",
+        gender: 0,
         frontTitle: "",
         backTitle: "",
         phone: "",
         email: "",
         address: "",
+        status: 0,
     });
-    const Column = [
-        {
-            name: "Lembaga",
-            selector: (row) => row.institution,
-            sortable: false,
-            // hide: 370,
-            cell: (row) => {
-                return row.institution?.map((item) => {
-                    return item.alias + ' '
-                });
-            }
-        },
+    const Column: ColumnType<TeacherType>[] = [
+        // {
+        //     name: "Lembaga",
+        //     selector: (row) => row.institution,
+        //     sortable: false,
+        //     // hide: 370,
+        //     cell: (row) => {
+        //         return row.institution?.map((item) => {
+        //             return item.alias + ' '
+        //         });
+        //     }
+        // },
         {
             name: "PegID",
             selector: (row) => row.pegId,
@@ -82,21 +85,16 @@ const Teacher = () => {
         },
         {
             name: "Jenis Kelamin",
-            selector: (row) => row.gender,
+            selector: (row) => gender(row.gender),
             sortable: false,
-            // hide: 370,
-            // width: "300px",
-            cell: (row) => {
-                return row.gender === 'L' ? 'Laki-laki' : 'Perempuan'
-            }
         },
         {
-            name: "Aktif",
+            name: "Status",
             selector: (row) => row.status,
             sortable: false,
             // hide: 370,
             cell: (row) => (
-                <Badge pill color={row.status ? 'success' : 'danger'}> {row.status ? 'Ya' : 'Tidak'}</Badge>
+                <Badge pill color={teacherStatus(row.status)?.color}> {teacherStatus(row.status)?.name}</Badge>
             )
 
         },
@@ -117,39 +115,46 @@ const Teacher = () => {
                     }}><Icon name="pen"/></Button>
                     <Button outline color="danger" onClick={() => {
                         setLoading(row.id)
-                        destroyTeacher(row.id).then((resp) => {
-                            destroyUser(resp.userId, false).then(() => {
-                                setLoading(false);
-                                setLoadData(true);
-                            }).catch(() => setLoading(false));
-                        }).catch(() => setLoading(false))
+                        destroyTeacher(row.id).finally(() => setLoading(false))
                     }}>{loading === row.id ? <Spinner size="sm"/> : <Icon name="trash"/>}</Button>
                 </ButtonGroup>
             )
         },
     ];
-    const statusOptions = [
-        {value: 1, label: "Aktif"},
-        {value: 0, label: "Tidak Aktif"},
+
+    const statusOptions: OptionsType[] = [
+        {value: 0, label: 'Semua'},
+        ...TEACHER_STATUS_OPTIONS
     ]
+
     const params = useCallback(() => {
-        let query = {list: 'table'}
-        if (institutionSelected.value !== undefined) {
-            query.institutionId = institutionSelected.value;
+        let query: any = {list: 'table'}
+        if (institutionSelected?.value !== 0) {
+            query.institutionId = institutionSelected?.value;
         }
-        if (statusSelected.value !== undefined) {
-            query.status = statusSelected.value;
+        if (statusSelected?.value !== 0) {
+            query.status = statusSelected?.value;
         }
         return query;
     }, [institutionSelected, statusSelected]);
+
     useEffect(() => {
-        getInstitution({type: 'select', ladder: 'alias'}).then(resp => setInstitutionOptions(resp));
+        const fetchData = async () => {
+            const institutions = await getInstitution<OptionsType>({type: 'select', ladder: 'alias'})
+            setInstitutionOptions([
+                {value: 0, label: 'Semua'},
+                ...institutions
+            ])
+        }
+        fetchData()
     }, [])
     useEffect(() => {
-        loadData && getTeacher(params()).then((resp) => {
+        loadData && getTeacher<TeacherType>(params()).then((resp) => {
             setTeachers(resp);
+        }).finally(() => {
+            setLoading(false);
             setLoadData(false);
-        }).catch(() => setLoading(false));
+        });
     }, [loadData, params])
     return (
         <React.Fragment>
@@ -240,12 +245,12 @@ const Teacher = () => {
                         setLoadData={setLoadData}
                         institutionOptions={institutionOptions}
                     />
-                    <Upload
-                        modal={modal}
-                        setModal={setModal}
-                        setLoadData={setLoadData}
-                        institutionOptions={institutionOptions}
-                    />
+                    {/*<Upload*/}
+                    {/*    modal={modal}*/}
+                    {/*    setModal={setModal}*/}
+                    {/*    setLoadData={setLoadData}*/}
+                    {/*    institutionOptions={institutionOptions}*/}
+                    {/*/>*/}
                 </Block>
             </Content>
         </React.Fragment>

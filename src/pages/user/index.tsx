@@ -15,6 +15,7 @@ import {
 import { get as getUser, destroy as destroyUser } from "@/common/api/user";
 import {ColumnType, UserType} from "@/common/types";
 import Partial from "@/pages/user/partial";
+import {role} from "@/lib";
 
 const User = () => {
     const [sm, updateSm] = useState(false);
@@ -30,8 +31,23 @@ const User = () => {
         password: '',
         password_confirmation: '',
         role: 0,
+        phone: ''
     });
     const Column: ColumnType<UserType>[] = [
+        {
+            name: "Lembaga",
+            selector: (row) => row.id,
+            sortable: false,
+            cell: (row) => {
+                let institution: string = '';
+                row.institution?.map((item) => {
+                    institution += item.alias + ' | '
+                })
+                return institution.slice(0, -2);
+            }
+            // hide: 370,
+            // width: "300px",
+        },
         {
             name: "Nama",
             selector: (row) => row.name,
@@ -49,6 +65,18 @@ const User = () => {
         {
             name: "Alamat Email",
             selector: (row) => row.email,
+            sortable: false,
+            // hide: 370,
+        },
+        {
+            name: "Hak Akses",
+            selector: (row) => role(row.role),
+            sortable: false,
+            // hide: 370,
+        },
+        {
+            name: "Nomor WA",
+            selector: (row) => row.phone,
             sortable: false,
             // hide: 370,
         },
@@ -86,7 +114,7 @@ const User = () => {
     return (
         <React.Fragment>
             <Head title="Data Pengguna" />
-            <Content page="component">
+            <Content>
                 <Block size="lg">
                     <BlockHead>
                         <BlockBetween>
