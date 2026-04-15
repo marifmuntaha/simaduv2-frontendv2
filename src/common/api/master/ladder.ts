@@ -17,10 +17,10 @@ async function store(params: LadderType) {
 
 async function update(params: LadderType) {
     const baseUrl = `/master/ladder/${params.id}`
-    return await api.update(baseUrl, params);
+    return await api.update<LadderType>(baseUrl, params);
 }
 
-async function destroy(id: number|undefined) {
+async function destroy(id: number | undefined) {
     const baseUrl = `/master/ladder/${id}`
     return await api.delete(baseUrl);
 }

@@ -17,7 +17,7 @@ async function store(params: LevelType) {
 
 async function update(params: LevelType) {
     const baseUrl = `/master/level/${params.id}`
-    return await api.update(baseUrl, params);
+    return await api.update<LevelType>(baseUrl, params);
 }
 
 async function destroy(id: number | undefined) {

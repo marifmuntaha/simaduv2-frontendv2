@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import DataTable from "react-data-table-component";
 import exportFromJSON from "export-from-json";
 import CopyToClipboard from "react-copy-to-clipboard";
@@ -113,9 +113,25 @@ const ReactDataTable: React.FC<ReactDataTableProps> = ({
     const [rowsPerPageS, setRowsPerPage] = useState(10);
     const [mobileView, setMobileView] = useState<boolean>(false);
 
+    // Track current page to preserve it across data changes
+    const currentPageRef = useRef(1);
+    const [paginationDefaultPage, setPaginationDefaultPage] = useState(1);
+    const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
+
     useEffect(() => {
-        setTableData(data)
-    }, [data]);
+        setTableData(data);
+
+        // When data changes, restore the current page
+        // by setting paginationDefaultPage to tracked page and toggling reset
+        if (currentPageRef.current > 1) {
+            // Calculate max page for new data
+            const maxPage = Math.ceil(data.length / rowsPerPageS);
+            const targetPage = Math.min(currentPageRef.current, maxPage || 1);
+            setPaginationDefaultPage(targetPage);
+            setResetPaginationToggle(prev => !prev);
+        }
+    }, [data]); // eslint-disable-line react-hooks/exhaustive-deps
+
     useEffect(() => {
         let defaultData = tableData;
         if (searchText !== "") {
@@ -144,6 +160,23 @@ const ReactDataTable: React.FC<ReactDataTableProps> = ({
             window.removeEventListener("resize", viewChange);
         };
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const CustomPagination = useCallback(({ currentPage, rowsPerPage, rowCount, onChangePage, onChangeRowsPerPage }: any) => {
+        // Track current page in ref so we can restore it after data changes
+        currentPageRef.current = currentPage;
+
+        return (
+            <DataTablePagination
+                customItemPerPage={rowsPerPageS}
+                itemPerPage={rowsPerPage}
+                totalItems={rowCount}
+                paginate={onChangePage}
+                currentPage={currentPage}
+                onChangeRowsPerPage={onChangeRowsPerPage}
+                setRowsPerPage={setRowsPerPage}
+            />
+        );
+    }, [rowsPerPageS]);
 
     return (
         <div className={`dataTables_wrapper dt-bootstrap4 no-footer ${className ? className : ""}`}>
@@ -203,17 +236,10 @@ const ReactDataTable: React.FC<ReactDataTableProps> = ({
                     </div>
                 }
                 pagination={pagination}
-                paginationComponent={({ currentPage, rowsPerPage, rowCount, onChangePage, onChangeRowsPerPage }) => (
-                    <DataTablePagination
-                        customItemPerPage={rowsPerPageS}
-                        itemPerPage={rowsPerPage}
-                        totalItems={rowCount}
-                        paginate={onChangePage}
-                        currentPage={currentPage}
-                        onChangeRowsPerPage={onChangeRowsPerPage}
-                        setRowsPerPage={setRowsPerPage}
-                    />
-                )}
+                paginationPerPage={rowsPerPageS}
+                paginationDefaultPage={paginationDefaultPage}
+                paginationResetDefaultPage={resetPaginationToggle}
+                paginationComponent={CustomPagination}
             ></DataTable>
         </div>
     );

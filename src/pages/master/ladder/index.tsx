@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from "react";
-import {Button, ButtonGroup, Spinner} from "reactstrap";
+import React, { useEffect, useMemo, useState } from "react";
+import { Button } from "reactstrap";
 import Head from "@/layout/head";
 import Content from "@/layout/content";
 import {
@@ -12,13 +12,14 @@ import {
     PreviewCard,
     ReactDataTable
 } from "@/components";
-import {get as getLadder, destroy as destroyLadder} from "@/common/api/master/ladder";
+import { get as getLadder, destroy as destroyLadder } from "@/common/api/master/ladder";
 import Partial from "@/pages/master/ladder/partial";
-import {ColumnType, LadderType} from "@/common/types";
+import { ColumnType, LadderType } from "@/common/types";
+import ButtonAction from "@/components/table/ButtonAction";
 
 const Ladder = () => {
     const [sm, updateSm] = useState(false);
-    const [loading, setLoading] = useState<boolean|number|undefined>(false);
+    const [loading, setLoading] = useState<boolean | number | undefined>(false);
     const [reloadData, setReloadData] = useState(true);
     const [ladders, setLadders] = useState<LadderType[]>([]);
     const [ladder, setLadder] = useState<LadderType>({
@@ -28,7 +29,7 @@ const Ladder = () => {
         description: "",
     });
     const [modal, setModal] = useState(false);
-    const Columns: ColumnType<LadderType>[] = [
+    const Columns: ColumnType<LadderType>[] = useMemo(() => [
         {
             name: "Nama Jenjang",
             selector: (row) => row.name,
@@ -50,26 +51,30 @@ const Ladder = () => {
             selector: (row) => row.id,
             sortable: false,
             width: "150px",
-            cell: (row) => (
-                <ButtonGroup size="sm">
-                    <Button outline color="warning" onClick={() => {
-                        setLadder(row);
-                        setModal(true);
-                    }}><Icon name="pen"/></Button>
-                    <Button outline color="danger" onClick={() => {
-                        setLoading(row?.id)
-                        destroyLadder(row?.id).then(() => {
-                            setLoading(false);
-                            setReloadData(true);
-                        }).catch(() => setLoading(false))
-                    }}>{loading === row.id ? <Spinner size="sm"/> : <Icon name="trash"/>}</Button>
-                </ButtonGroup>
-            )
+            cell: (row) => {
+                const type = {
+                    show: false,
+                    edit: true,
+                    destroy: true,
+                }
+                return (
+                    <ButtonAction<LadderType>
+                        types={type}
+                        data={row}
+                        setData={setLadder}
+                        setModal={setModal}
+                        loading={loading}
+                        setLoading={setLoading}
+                        destroyData={destroyLadder}
+                        setReloadData={setReloadData}
+                    />
+                )
+            }
         },
-    ];
+    ], [loading]); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
-        reloadData && getLadder({list: 'table'}).then((resp) => {
+        reloadData && getLadder<LadderType>({ type: 'datatable' }).then((resp) => {
             setLadders(resp);
             setReloadData(false);
         }).catch(() => {
@@ -78,7 +83,7 @@ const Ladder = () => {
     }, [reloadData]);
     return (
         <React.Fragment>
-            <Head title="Data Jenjang"/>
+            <Head title="Data Jenjang" />
             <Content page="component">
                 <Block size="lg">
                     <BlockHead>
@@ -97,11 +102,11 @@ const Ladder = () => {
                                     >
                                         <Icon name="menu-alt-r"></Icon>
                                     </Button>
-                                    <div className="toggle-expand-content" style={{display: sm ? "block" : "none"}}>
+                                    <div className="toggle-expand-content" style={{ display: sm ? "block" : "none" }}>
                                         <ul className="nk-block-tools g-3">
                                             <li>
                                                 <Button color="primary" size={"sm"} outline className="btn-white"
-                                                        onClick={() => setModal(true)}>
+                                                    onClick={() => setModal(true)}>
                                                     <Icon name="plus"></Icon>
                                                     <span>TAMBAH</span>
                                                 </Button>
@@ -113,7 +118,7 @@ const Ladder = () => {
                         </BlockBetween>
                     </BlockHead>
                     <PreviewCard>
-                        <ReactDataTable data={ladders} columns={Columns} expandableRows pagination/>
+                        <ReactDataTable data={ladders} columns={Columns} expandableRows pagination />
                     </PreviewCard>
                 </Block>
                 <Partial modal={modal} setModal={setModal} data={ladder} setData={setLadder} setReloadData={setReloadData} />

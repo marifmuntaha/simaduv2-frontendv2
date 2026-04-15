@@ -12,7 +12,7 @@ const Partial = ({modal, setModal, data, setData, setReloadData}: PartialModalPr
 
     const onSubmit = (values: LadderType) => {
         setLoading(true);
-        data.id === null ? onStore(values) : onUpdate(values);
+        data.id === undefined ? onStore(values) : onUpdate(values);
     }
     const onStore = (formData: LadderType) => {
         storeLadder(formData).then((resp) => {
@@ -49,7 +49,7 @@ const Partial = ({modal, setModal, data, setData, setReloadData}: PartialModalPr
     };
 
     useEffect(() => {
-        setValue('id', data.id);
+        setValue('id', data.id ?? undefined);
         setValue('name', data.name);
         setValue('alias', data.alias);
         setValue('description', data.description);
@@ -62,7 +62,7 @@ const Partial = ({modal, setModal, data, setData, setReloadData}: PartialModalPr
                     <Icon name="cross"/>
                 </button>
             }>
-                {data.id === null ? 'TAMBAH' : 'UBAH'}
+                {data.id === undefined ? 'TAMBAH' : 'UBAH'}
             </ModalHeader>
             <ModalBody>
                 <form className="is-alter" onSubmit={handleSubmit(onSubmit)}>

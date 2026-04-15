@@ -1,0 +1,28 @@
+diff --git a/node_modules/reactstrap/esm/PopperContent.js b/node_modules/reactstrap/esm/PopperContent.js
+index ff128f9..7116312 100644
+--- a/node_modules/reactstrap/esm/PopperContent.js
++++ b/node_modules/reactstrap/esm/PopperContent.js
+@@ -63,7 +63,7 @@ var defaultProps = {
+   modifiers: [],
+   onClosed: noop,
+   fade: true,
+-  transition: _objectSpread({}, Fade.defaultProps)
++  transition: { timeout: 150, appear: true, enter: true, exit: true, in: true, baseClass: 'fade', baseClassActive: 'show' }
+ };
+ var PopperContent = /*#__PURE__*/function (_React$Component) {
+   _inherits(PopperContent, _React$Component);
+@@ -166,9 +166,11 @@ var PopperContent = /*#__PURE__*/function (_React$Component) {
+         return !modifierNames.includes(m.name);
+       });
+       var extendedModifiers = [].concat(_toConsumableArray(baseModifiers), _toConsumableArray(modifiers));
+-      var popperTransition = _objectSpread(_objectSpread(_objectSpread({}, Fade.defaultProps), transition), {}, {
+-        baseClass: fade ? transition.baseClass : '',
+-        timeout: fade ? transition.timeout : 0
++      var _fadeDefaults = { timeout: 150, appear: true, enter: true, exit: true, in: true, baseClass: 'fade', baseClassActive: 'show' };
++      var _transition = transition || _fadeDefaults;
++      var popperTransition = _objectSpread(_objectSpread(_objectSpread({}, _fadeDefaults), _transition), {}, {
++        baseClass: fade ? _transition.baseClass : '',
++        timeout: fade ? _transition.timeout : 0
+       });
+       return /*#__PURE__*/React.createElement(Fade, _extends({}, popperTransition, attrs, {
+         "in": isOpen,

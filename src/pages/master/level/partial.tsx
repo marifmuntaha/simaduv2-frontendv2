@@ -1,29 +1,28 @@
 import React, {useEffect, useState} from "react";
 import {Button, Modal, ModalBody, ModalHeader, Spinner} from "reactstrap";
-import {useForm} from "react-hook-form";
+import {Controller, useForm} from "react-hook-form";
 import {Icon, RSelect} from "@/components";
 import {store as storeLevel, update as updateLevel} from "@/common/api/master/level";
 import {get as getLadder} from "@/common/api/master/ladder";
+import {LevelType, OptionsType, PartialModalProps} from "@/common/types";
 
-const Partial = ({modal, setModal, level, setLevel, setReloadData}) => {
+const Partial = ({modal, setModal, data, setData, setReloadData}: PartialModalProps<LevelType>) => {
     const [loading, setLoading] = useState(false);
-    const [ladderOptions, setLadderOptions] = useState([]);
+    const [ladderOptions, setLadderOptions] = useState<OptionsType[]>();
     const {
+        control,
         reset,
         handleSubmit,
         register,
         formState: {errors},
         setValue
-    } = useForm();
-    const handleChange = (e) => {
-        setLevel({...level, [e.target.name]: e.target.value});
+    } = useForm<LevelType>();
+    const onSubmit = (values: LevelType) => {
+        data.id === undefined ? onStore(values) : onUpdate(values);
     }
-    const onSubmit = () => {
-        level.id === null ? onStore() : onUpdate();
-    }
-    const onStore = async () => {
+    const onStore = async (values: LevelType) => {
         setLoading(true);
-        const store = await storeLevel(level);
+        const store = await storeLevel(values);
         if (store) {
             setLoading(false);
             setReloadData(true);
@@ -32,9 +31,9 @@ const Partial = ({modal, setModal, level, setLevel, setReloadData}) => {
             setLoading(false);
         }
     }
-    const onUpdate = async () => {
+    const onUpdate = async (values: LevelType) => {
         setLoading(true)
-        const update = await updateLevel(level);
+        const update = await updateLevel(values);
         if (update) {
             setLoading(false);
             setReloadData(true);
@@ -44,9 +43,9 @@ const Partial = ({modal, setModal, level, setLevel, setReloadData}) => {
         }
     }
     const handleReset = () => {
-        setLevel({
-            id: null,
-            ladderId: null,
+        setData({
+            id: undefined,
+            ladderId: undefined,
             name: "",
             alias: "",
             description: "",
@@ -59,17 +58,18 @@ const Partial = ({modal, setModal, level, setLevel, setReloadData}) => {
     };
 
     useEffect(() => {
-        modal && getLadder({type: 'select'}).then(data => {
+        modal && getLadder<OptionsType>({type: 'select'}).then(data => {
             setLadderOptions(data);
         });
     }, [modal]);
 
     useEffect(() => {
-        setValue('ladderId', level.ladderId);
-        setValue('name', level.name);
-        setValue('alias', level.alias);
-        setValue('description', level.description);
-    }, [level, setValue]);
+        setValue('id', data.id ?? undefined)
+        setValue('ladderId', data.ladderId);
+        setValue('name', data.name);
+        setValue('alias', data.alias);
+        setValue('description', data.description);
+    }, [data, setValue]);
 
     return (
         <Modal isOpen={modal} toggle={toggle}>
@@ -78,25 +78,31 @@ const Partial = ({modal, setModal, level, setLevel, setReloadData}) => {
                     <Icon name="cross"/>
                 </button>
             }>
-                {level.id === null ? 'TAMBAH' : 'UBAH'}
+                {data.id === undefined ? 'TAMBAH' : 'UBAH'}
             </ModalHeader>
             <ModalBody>
                 <form className="is-alter" onSubmit={handleSubmit(onSubmit)}>
                     <div className="form-group">
                         <label className="form-label" htmlFor="ladderId">Pilih Jenjang</label>
-                        <div className="form-control-wrap">
-                            <RSelect
-                                options={ladderOptions}
-                                value={ladderOptions?.find((c) => c.value === level.ladderId)}
-                                onChange={(e) => {
-                                    setLevel({...level, ladderId: e.value});
-                                    setValue('ladderId', e.value);
-                                }}
-                                placeholder="Pilih Jenjang"
+                        <Controller
+                            control={control}
+                            name="ladderId"
+                            rules={{required: true}}
+                            render={({field: {value, onChange}}) => (
+                                <React.Fragment>
+                                    <div className="form-control-wrap">
+                                        <RSelect
+                                            options={ladderOptions}
+                                            value={ladderOptions?.find((c) => c.value === value)}
+                                            onChange={(e) => onChange(e?.value)}
+                                            placeholder="Pilih Jenjang"
+                                        />
+                                        <input type="hidden" className="form-control" id="ladderId"/>
+                                        {errors.ladderId && <span className="invalid">Kolom tidak boleh kosong</span>}
+                                    </div>
+                                </React.Fragment>
+                            )}
                             />
-                            <input type="hidden" className="form-control" id="ladderId" {...register('ladderId', {required: true})} />
-                            {errors.ladderId && <span className="invalid">Kolom tidak boleh kosong</span>}
-                        </div>
                     </div>
                     <div className="form-group">
                         <label className="form-label" htmlFor="name">Nama Tingkat</label>
@@ -104,12 +110,8 @@ const Partial = ({modal, setModal, level, setLevel, setReloadData}) => {
                             <input
                                 type="text"
                                 className="form-control"
-                                name="name"
                                 placeholder="Ex. 1"
-                                {...register("name", {
-                                    required: true,
-                                    onChange: (e) => handleChange(e)
-                                })}
+                                {...register("name", {required: true})}
                             />
                             {errors.name && <span className="invalid">Kolom tidak boleh kosong</span>}
                         </div>
@@ -120,27 +122,19 @@ const Partial = ({modal, setModal, level, setLevel, setReloadData}) => {
                             <input
                                 type="text"
                                 className="form-control"
-                                name="alias"
                                 placeholder="Ex. I"
-                                {...register("alias", {
-                                    required: true,
-                                    onChange: (e) => handleChange(e)
-                                })}
+                                {...register("alias", {required: true})}
                             />
                             {errors.alias && <span className="invalid">Kolom tidak boleh kosong</span>}
                         </div>
                     </div>
                     <div className="form-group">
-                        <label className="form-label" htmlFor="description">Diskripsi</label>
+                        <label className="form-label" htmlFor="description">Deskripsi</label>
                         <div className="form-control-wrap">
                             <textarea
                                 className="form-control"
-                                name="description"
                                 placeholder="Ex. Tingkat 1"
-                                {...register("description", {
-                                    required: false,
-                                    onChange: (e) => handleChange(e)
-                                })}
+                                {...register("description", {required: false})}
                             />
                         </div>
                     </div>

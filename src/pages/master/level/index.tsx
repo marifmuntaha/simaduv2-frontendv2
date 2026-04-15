@@ -1,5 +1,4 @@
-import React, {useEffect, useState} from "react";
-import {ButtonGroup, Spinner} from "reactstrap";
+import React, {useEffect, useMemo, useState} from "react";
 import Head from "@/layout/head";
 import Content from "@/layout/content";
 import {
@@ -15,8 +14,9 @@ import {
 import {get as getLevel, destroy as destroyLevel} from "@/common/api/master/level";
 import Partial from "@/pages/master/level/partial";
 import {ColumnType, LevelType} from "@/common/types";
+import ButtonAction from "@/components/table/ButtonAction";
 
-const Ladder = () => {
+const Level = () => {
     const [sm, updateSm] = useState(false);
     const [reloadData, setReloadData] = useState(true);
     const [loading, setLoading] = useState<boolean|number|undefined>(false);
@@ -29,7 +29,12 @@ const Ladder = () => {
         alias: "",
         description: "",
     });
-    const Column: ColumnType<LevelType>[] = [
+    const buttonType = {
+        show: false,
+        edit: true,
+        destroy: true,
+    }
+    const Column: ColumnType<LevelType>[] = useMemo(() => [
         {
             name: "Jenjang",
             selector: (row) => row.ladder?.alias,
@@ -57,25 +62,22 @@ const Ladder = () => {
             sortable: false,
             width: "150px",
             cell: (row) => (
-                <ButtonGroup size="sm">
-                    <Button outline color="warning" onClick={() => {
-                        setLevel(row);
-                        setModal(true);
-                    }}><Icon name="pen"/></Button>
-                    <Button outline color="danger" onClick={() => {
-                        setLoading(row.id)
-                        destroyLevel(row.id).then(() => {
-                            setLoading(false);
-                            setReloadData(true);
-                        }).catch(() => setLoading(false))
-                    }}>{loading === row.id ? <Spinner size="sm" /> : <Icon name="trash" /> }</Button>
-                </ButtonGroup>
+                <ButtonAction<LevelType>
+                    types={buttonType}
+                    data={row}
+                    setData={setLevel}
+                    setModal={setModal}
+                    loading={loading}
+                    setLoading={setLoading}
+                    destroyData={destroyLevel}
+                    setReloadData={setReloadData}
+                />
             )
         },
-    ];
+    ], [loading]); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
-        reloadData && getLevel({list: 'table'}).then((resp) => {
+        reloadData && getLevel<LevelType>({type: 'datatable'}).then((resp) => {
             setLevels(resp);
             setReloadData(false);
         }).catch(() => setLoading(false));
@@ -120,11 +122,11 @@ const Ladder = () => {
                     <PreviewCard>
                         <ReactDataTable data={levels} columns={Column} pagination progressPending={reloadData} />
                     </PreviewCard>
-                    <Partial modal={modal} setModal={setModal} level={level} setLevel={setLevel} setReloadData={setReloadData}/>
+                    <Partial modal={modal} setModal={setModal} data={level} setData={setLevel} setReloadData={setReloadData}/>
                 </Block>
             </Content>
         </React.Fragment>
     )
 }
 
-export default Ladder;
+export default Level;

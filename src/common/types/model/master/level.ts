@@ -6,7 +6,7 @@ export type LevelType = {
     name: string;
     alias: string;
     description?: string;
+    ladder?: Partial<LadderType>
     created_at?: string;
     updated_at?: string;
-    ladder?: Partial<LadderType>
 }
